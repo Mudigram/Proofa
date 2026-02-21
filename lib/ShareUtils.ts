@@ -34,7 +34,8 @@ export const shareContent = async (options: ShareOptions): Promise<boolean> => {
  */
 export const shareOnWhatsApp = (text: string) => {
     const encodedText = encodeURIComponent(text);
-    const url = `https://wa.me/?text=${encodedText}`;
+    // Use api.whatsapp.com for better cross-platform compatibility
+    const url = `https://api.whatsapp.com/send?text=${encodedText}`;
     window.open(url, "_blank");
 };
 

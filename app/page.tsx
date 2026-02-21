@@ -87,6 +87,10 @@ export default function HomePage() {
     setIsEditingName(true);
   };
 
+  const now = new Date();
+  const hour = now.getHours();
+  const greeting = hour < 12 ? "Good Morning" : hour < 18 ? "Good Afternoon" : "Good Evening";
+
   const handleSaveName = () => {
     const finalName = tempName.trim() || "User";
     saveUserName(finalName);
@@ -138,7 +142,7 @@ export default function HomePage() {
               </div>
             ) : (
               <h1 className="text-3xl font-extrabold text-surface-900 tracking-tight flex items-center gap-1.5 group">
-                Good Morning, <span className="text-primary-600">{userName}</span>
+                {greeting}, <span className="text-primary-600">{userName}</span>
                 <button
                   onClick={handleEditName}
                   className="p-2 opacity-40 hover:opacity-100 hover:bg-surface-900 rounded-full transition-all text-surface-400"

@@ -24,6 +24,8 @@ export default function InvoiceForm() {
         items: [{ id: "1", name: "", quantity: 1, price: 0 }],
         notes: "",
         logoUrl: undefined,
+        includeVat: true,
+        vatRate: 7.5,
     });
 
     const [errors, setErrors] = useState<Record<string, string>>({});
@@ -33,7 +35,10 @@ export default function InvoiceForm() {
         return formData.items.reduce((acc, item) => acc + item.quantity * item.price, 0);
     }, [formData.items]);
 
-    const tax = useMemo(() => subtotal * 0.075, [subtotal]);
+    const tax = useMemo(() => {
+        return formData.includeVat ? subtotal * ((formData.vatRate || 0) / 100) : 0;
+    }, [subtotal, formData.includeVat, formData.vatRate]);
+
     const total = useMemo(() => subtotal + tax, [subtotal, tax]);
 
     useEffect(() => {
@@ -237,22 +242,32 @@ export default function InvoiceForm() {
                             </StaggerItem>
 
                             <StaggerItem>
-                                <div className="bg-white p-6 rounded-[2rem] border border-surface-100 shadow-sm">
-                                    <div className="flex flex-col gap-3">
-                                        <div className="flex justify-between items-center text-sm font-medium text-surface-500">
-                                            <span>Subtotal</span>
-                                            <span className="font-bold text-surface-900">{formatCurrency(subtotal)}</span>
-                                        </div>
-                                        <div className="flex justify-between items-center text-sm font-medium text-surface-500">
-                                            <span>Tax (7.5% VAT)</span>
-                                            <span className="font-bold text-surface-900">{formatCurrency(tax)}</span>
-                                        </div>
-                                        <div className="flex justify-between items-center mt-3 pt-3 border-t border-surface-100">
-                                            <span className="text-lg font-black text-surface-900 uppercase tracking-tight">Total Amount</span>
-                                            <span className="text-2xl font-black text-primary-500">{formatCurrency(total)}</span>
+                                <section className="flex flex-col gap-5 bg-white p-6 rounded-[2rem] border border-surface-100 shadow-sm transition-all focus-within:ring-2 focus-within:ring-primary-500/10">
+                                    <div className="flex items-center justify-between px-1">
+                                        <h3 className="text-[10px] font-black uppercase tracking-widest text-surface-400">Tax Settings</h3>
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-[10px] font-black uppercase text-surface-300">Include VAT</span>
+                                            <button
+                                                onClick={() => handleChange("includeVat", !formData.includeVat)}
+                                                className={`w-10 h-6 rounded-full transition-all relative ${formData.includeVat ? 'bg-primary-500' : 'bg-surface-200'}`}
+                                            >
+                                                <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${formData.includeVat ? 'left-5' : 'left-1'}`} />
+                                            </button>
                                         </div>
                                     </div>
-                                </div>
+                                    {formData.includeVat && (
+                                        <div className="animate-in fade-in slide-in-from-top-2 duration-300">
+                                            <Input
+                                                label="VAT RATE (%)"
+                                                type="number"
+                                                placeholder="7.5"
+                                                value={formData.vatRate}
+                                                onChange={(e) => handleChange("vatRate", parseFloat(e.target.value) || 0)}
+                                                className="bg-surface-50 border-none"
+                                            />
+                                        </div>
+                                    )}
+                                </section>
                             </StaggerItem>
 
                             <StaggerItem>
@@ -277,6 +292,26 @@ export default function InvoiceForm() {
                 )}
 
                 <StaggerContainer delayChildren={0.5}>
+                    <StaggerItem>
+                        <div className="bg-white p-8 rounded-[2.5rem] border border-surface-100 shadow-lg mb-6 mx-2 -mt-4 relative z-10">
+                            <div className="flex flex-col gap-4">
+                                <div className="flex justify-between items-center text-sm font-medium text-surface-500 tracking-tight">
+                                    <span className="uppercase tracking-widest text-[10px] font-black opacity-50">Subtotal</span>
+                                    <span className="font-bold text-surface-900">{formatCurrency(subtotal)}</span>
+                                </div>
+                                {formData.includeVat && (
+                                    <div className="flex justify-between items-center text-sm font-medium text-surface-500 tracking-tight">
+                                        <span className="uppercase tracking-widest text-[10px] font-black opacity-50">VAT ({formData.vatRate}%)</span>
+                                        <span className="font-bold text-surface-900">{formatCurrency(tax)}</span>
+                                    </div>
+                                )}
+                                <div className="flex justify-between items-center mt-2 pt-4 border-t border-surface-100">
+                                    <span className="text-sm font-black text-surface-900 uppercase tracking-widest italic">Total Amount</span>
+                                    <span className="text-2xl font-black text-primary-500 tracking-tighter">{formatCurrency(total)}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </StaggerItem>
                     <StaggerItem>
                         <div className="flex flex-col gap-4 mt-6">
                             <button

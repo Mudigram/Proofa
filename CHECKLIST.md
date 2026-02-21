@@ -168,6 +168,7 @@
 | 10 | Personalization | ✅ Done |
 | 11 | Templates Gallery | ✅ Done |
 | 12 | Developer Credits | ✅ Done |
+| 13 | Invoice Refinements | ✅ Done |
 
 ---
 

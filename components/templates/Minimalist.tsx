@@ -25,7 +25,12 @@ export default function MinimalistTemplate({ data, type }: TemplateProps) {
     // Calculate totals for multi-item documents
     const items = isReceipt ? [] : (isInvoice ? invoice.items : order.items);
     const subtotal = isReceipt ? receipt.amount : items.reduce((acc, item) => acc + (item.quantity * item.price), 0);
-    const tax = isInvoice ? subtotal * 0.075 : 0;
+
+    // Dynamic Tax Calculation
+    const vatRate = isInvoice ? (invoice.vatRate ?? 7.5) : 0;
+    const includeVat = isInvoice ? (invoice.includeVat ?? true) : false;
+    const tax = includeVat ? subtotal * (vatRate / 100) : 0;
+
     const total = isReceipt ? receipt.amount : (isOrder ? order.totalAmount : subtotal + tax);
 
     return (
@@ -111,14 +116,14 @@ export default function MinimalistTemplate({ data, type }: TemplateProps) {
 
             {/* Summary Section */}
             <div className="mt-12 pt-8 border-t-2 border-surface-900 flex flex-col gap-2">
-                {isInvoice && (
+                {isInvoice && includeVat && (
                     <>
                         <div className="flex justify-between items-center text-xs">
                             <span className="text-surface-400 font-bold uppercase tracking-widest">Subtotal</span>
                             <span className="font-bold">{formatCurrency(subtotal)}</span>
                         </div>
                         <div className="flex justify-between items-center text-xs">
-                            <span className="text-surface-400 font-bold uppercase tracking-widest">VAT (7.5%)</span>
+                            <span className="text-surface-400 font-bold uppercase tracking-widest">VAT ({vatRate}%)</span>
                             <span className="font-bold">{formatCurrency(tax)}</span>
                         </div>
                     </>

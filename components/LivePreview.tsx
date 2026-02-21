@@ -63,18 +63,30 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
         if (dataUrl) {
             const file = await dataUrlToFile(dataUrl, `Proofa-${type}.png`);
             if (file) {
-                const shared = await shareContent({
-                    title: `Proofa ${type}`,
-                    text: `Here is your ${type} from Proofa.`,
-                    files: [file],
-                });
+                // Check if sharing files is actually supported
+                const canShare = navigator.canShare && navigator.canShare({ files: [file] });
 
-                // Fallback to WhatsApp if native share fails or isn't available
-                if (!shared) {
-                    shareOnWhatsApp(`Check out this ${type} I generated with Proofa!`);
-                    showToast("Opening WhatsApp...", "info");
+                if (canShare) {
+                    try {
+                        await navigator.share({
+                            title: `Proofa ${type}`,
+                            text: `Here is your ${type} from Proofa.`,
+                            files: [file],
+                        });
+                        showToast(`${type.charAt(0).toUpperCase() + type.slice(1)} shared!`, "success");
+                    } catch (error) {
+                        if ((error as any).name !== "AbortError") {
+                            console.error("Share failed", error);
+                            // Fallback to text share
+                            shareOnWhatsApp(`I just generated a professional ${type} using Proofa! 🧾✨\n\nDownload Proofa on the Play Store or use proofa.app`);
+                            showToast("Opening WhatsApp...", "info");
+                        }
+                    }
                 } else {
-                    showToast(`${type.charAt(0).toUpperCase() + type.slice(1)} shared!`, "success");
+                    // Fallback for browsers that don't support file sharing (e.g. Desktop Chrome)
+                    shareOnWhatsApp(`I just generated a professional ${type} using Proofa! 🧾✨\n\nI'll download the image for you now so you can attach it manually.`);
+                    downloadImage(dataUrl, `Proofa-${type}-${Date.now()}.png`);
+                    showToast("Downloaded image for manual sharing", "info");
                 }
             }
         }
@@ -82,12 +94,15 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
     };
 
     const handleWhatsApp = async () => {
-        // For WhatsApp, we ideally want to send the image, 
-        // but simple wa.me links only support text.
-        // We'll encourage them to use the "Share" button for actual image sending,
-        // or just send a celebratory link.
-        shareOnWhatsApp(`I just generated a professional ${type} using Proofa! 🧾✨`);
-        showToast("Opening WhatsApp...", "info");
+        const dataUrl = await captureElementAsImage("document-preview");
+        if (dataUrl) {
+            shareOnWhatsApp(`I just generated a professional ${type} using Proofa! 🧾✨\n\nI've downloaded the document for you to share.`);
+            downloadImage(dataUrl, `Proofa-${type}-${Date.now()}.png`);
+            showToast("Opening WhatsApp & Downloading...", "info");
+        } else {
+            shareOnWhatsApp(`I just generated a professional ${type} using Proofa! 🧾✨`);
+            showToast("Opening WhatsApp...", "info");
+        }
     };
 
     return (

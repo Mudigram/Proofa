@@ -24,7 +24,12 @@ export default function BoldTemplate({ data, type }: TemplateProps) {
 
     const items = isReceipt ? [] : (isInvoice ? invoice.items : order.items);
     const subtotal = isReceipt ? receipt.amount : items.reduce((acc, item) => acc + (item.quantity * item.price), 0);
-    const tax = isInvoice ? subtotal * 0.075 : 0;
+
+    // Dynamic Tax Calculation
+    const vatRate = isInvoice ? (invoice.vatRate ?? 7.5) : 0;
+    const includeVat = isInvoice ? (invoice.includeVat ?? true) : false;
+    const tax = includeVat ? subtotal * (vatRate / 100) : 0;
+
     const total = isReceipt ? receipt.amount : (isOrder ? order.totalAmount : subtotal + tax);
 
     return (
@@ -122,9 +127,9 @@ export default function BoldTemplate({ data, type }: TemplateProps) {
                 <div className="mt-12 bg-surface-900 text-white p-8 rounded-[2rem] flex flex-col gap-4 shadow-2xl relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-primary-500 opacity-20 blur-3xl -translate-y-1/2 translate-x-1/2" />
 
-                    {isInvoice && (
+                    {isInvoice && includeVat && (
                         <div className="flex justify-between items-center text-xs opacity-60 font-bold uppercase tracking-widest">
-                            <span>Subtotal + VAT</span>
+                            <span>Subtotal + VAT ({vatRate}%)</span>
                             <span>{formatCurrency(subtotal + tax)}</span>
                         </div>
                     )}

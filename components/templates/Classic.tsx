@@ -24,7 +24,12 @@ export default function ClassicTemplate({ data, type }: TemplateProps) {
 
     const items = isReceipt ? [] : (isInvoice ? invoice.items : order.items);
     const subtotal = isReceipt ? receipt.amount : items.reduce((acc, item) => acc + (item.quantity * item.price), 0);
-    const tax = isInvoice ? subtotal * 0.085 : 0; // Using 8.5% as in the screenshot
+
+    // Dynamic Tax Calculation
+    const vatRate = isInvoice ? (invoice.vatRate ?? 8.5) : 0;
+    const includeVat = isInvoice ? (invoice.includeVat ?? true) : false;
+    const tax = includeVat ? subtotal * (vatRate / 100) : 0;
+
     const total = isReceipt ? receipt.amount : (isOrder ? order.totalAmount : subtotal + tax);
 
     return (
@@ -106,9 +111,9 @@ export default function ClassicTemplate({ data, type }: TemplateProps) {
                         <span className="uppercase tracking-widest">Subtotal</span>
                         <span>{formatCurrency(subtotal)}</span>
                     </div>
-                    {isInvoice && (
+                    {isInvoice && includeVat && (
                         <div className="flex justify-between items-center text-xs font-bold text-surface-400">
-                            <span className="uppercase tracking-widest">Tax (8.5%)</span>
+                            <span className="uppercase tracking-widest">Tax ({vatRate}%)</span>
                             <span>{formatCurrency(tax)}</span>
                         </div>
                     )}

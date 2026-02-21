@@ -48,6 +48,8 @@ export interface InvoiceData {
     items: LineItem[];
     notes?: string;
     logoUrl?: string;
+    includeVat: boolean;
+    vatRate?: number;
 }
 
 /** Order summary form data */
