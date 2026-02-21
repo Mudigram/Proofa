@@ -6,7 +6,7 @@ import MinimalistTemplate from "./templates/Minimalist";
 import BoldTemplate from "./templates/Bold";
 import ClassicTemplate from "./templates/Classic";
 
-import { captureElementAsImage, downloadImage } from "@/lib/ExportUtils";
+import { captureElementAsImage, downloadImage, downloadAsPDF } from "@/lib/ExportUtils";
 import { shareContent, shareOnWhatsApp, dataUrlToFile } from "@/lib/ShareUtils";
 import { saveDocument } from "@/lib/StorageUtils";
 import { useToast } from "@/components/ui/Toast";
@@ -41,6 +41,22 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
         }
     };
 
+    const handleDownloadPDF = async () => {
+        setIsExporting(true);
+        saveDocument(data, type, activeTemplate);
+
+        window.scrollTo(0, 0);
+        await new Promise(r => setTimeout(r, 100));
+
+        const success = await downloadAsPDF("document-preview", `Proofa-${type}-${Date.now()}.pdf`);
+        if (success) {
+            showToast(`${type.charAt(0).toUpperCase() + type.slice(1)} saved as PDF!`, "success");
+        } else {
+            showToast("PDF generation failed.", "error");
+        }
+        setIsExporting(false);
+    };
+
     const handleDownload = async () => {
         setIsExporting(true);
         // Save to history automatically on export
@@ -55,7 +71,7 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
         const dataUrl = await captureElementAsImage("document-preview");
         if (dataUrl) {
             downloadImage(dataUrl, `Proofa-${type}-${Date.now()}.png`);
-            showToast(`${type.charAt(0).toUpperCase() + type.slice(1)} saved & downloaded!`, "success");
+            showToast(`${type.charAt(0).toUpperCase() + type.slice(1)} saved as PNG!`, "success");
         }
         setIsExporting(false);
     };
@@ -160,13 +176,34 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
                             <div className="w-5 h-5 border-2 border-primary-500 border-t-transparent rounded-full animate-spin" />
                         ) : (
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                                <polyline points="7 10 12 15 17 10" />
-                                <line x1="12" y1="15" x2="12" y2="3" />
+                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                                <circle cx="8.5" cy="8.5" r="1.5" />
+                                <polyline points="21 15 16 10 5 21" />
                             </svg>
                         )}
                     </div>
-                    <span className="text-[10px] font-black uppercase tracking-widest text-surface-400">Save Image</span>
+                    <span className="text-[10px] font-black uppercase tracking-widest text-surface-400">Download PNG</span>
+                </button>
+
+                <button
+                    onClick={handleDownloadPDF}
+                    disabled={isExporting}
+                    className="flex flex-col items-center justify-center gap-2 bg-white border border-surface-200 p-5 rounded-[2rem] hover:bg-surface-50 active:scale-95 transition-all group disabled:opacity-50"
+                >
+                    <div className="w-12 h-12 bg-[#f1f5f9] rounded-full flex items-center justify-center text-surface-500 group-hover:text-red-500 group-hover:bg-red-50 transition-colors">
+                        {isExporting ? (
+                            <div className="w-5 h-5 border-2 border-red-500 border-t-transparent rounded-full animate-spin" />
+                        ) : (
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                                <polyline points="14 2 14 8 20 8" />
+                                <line x1="16" y1="13" x2="8" y2="13" />
+                                <line x1="16" y1="17" x2="8" y2="17" />
+                                <polyline points="10 9 9 9 8 9" />
+                            </svg>
+                        )}
+                    </div>
+                    <span className="text-[10px] font-black uppercase tracking-widest text-surface-400">Download PDF</span>
                 </button>
 
                 <button
@@ -187,12 +224,12 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
                             </svg>
                         )}
                     </div>
-                    <span className="text-[10px] font-black uppercase tracking-widest opacity-80">Share Now</span>
+                    <span className="text-[10px] font-black uppercase tracking-widest opacity-80">Share PNG</span>
                 </button>
 
                 <button
                     onClick={handleWhatsApp}
-                    className="col-span-2 flex items-center justify-center gap-3 bg-[#25D366] text-white p-5 rounded-[2rem] shadow-xl shadow-[#25D366]/20 hover:bg-[#20bd5a] active:scale-95 transition-all"
+                    className="flex items-center justify-center gap-3 bg-[#25D366] text-white p-5 rounded-[2rem] shadow-xl shadow-[#25D366]/20 hover:bg-[#20bd5a] active:scale-95 transition-all"
                 >
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M17.472 14.382c-.301-.15-1.767-.872-2.04-.971-.272-.1-.47-.15-.67.15-.198.301-.769.971-.941 1.171-.173.2-.347.225-.648.075-.301-.15-1.272-.469-2.422-1.496-.893-.797-1.496-1.782-1.671-2.083-.173-.301-.018-.464.133-.613.136-.134.301-.351.452-.527.151-.176.202-.301.302-.502.101-.2.051-.376-.026-.527-.076-.15-.67-1.615-.918-2.214-.242-.587-.487-.508-.67-.518-.172-.01-.37-.01-.568-.01-.198 0-.521.074-.794.301-.273.227-1.042.871-1.042 2.126 0 1.255.914 2.47 1.04 2.621.127.15 1.796 2.744 4.35 3.847.608.262 1.082.418 1.452.535.61.194 1.166.166 1.603.101.488-.072 1.49-.607 1.701-1.195.21-.588.21-1.091.147-1.195-.064-.104-.233-.151-.534-.301zM12 2C6.477 2 2 6.477 2 12c0 1.891.526 3.66 1.439 5.167L2 22l4.981-1.309A9.954 9.954 0 0 0 12 22c5.523 0 10-4.477 10-10S17.523 2 12 2z" />

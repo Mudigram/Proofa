@@ -7,24 +7,26 @@ export const captureElementAsImage = async (elementId: string): Promise<string |
 
     const originalElement = document.getElementById(elementId);
     if (!originalElement) {
-        console.error(`Element with id ${elementId} not found.`);
+        console.error(`[Export] Element with id ${elementId} not found.`);
         return null;
     }
+
+    console.log(`[Export] Starting capture for ${elementId}...`);
 
     try {
         const html2canvas = (await import("html2canvas")).default;
 
         const canvas = await html2canvas(originalElement, {
-            scale: 3, // High resolution for crispness
+            scale: 2, // 2x is high quality while remaining mobile-safe
             useCORS: true,
-            logging: false,
+            logging: true,
             backgroundColor: "#ffffff",
-            windowWidth: originalElement.scrollWidth,
-            windowHeight: originalElement.scrollHeight,
+            width: originalElement.offsetWidth,
+            height: originalElement.offsetHeight,
             onclone: (clonedDoc) => {
                 const element = clonedDoc.getElementById(elementId);
                 if (element) {
-                    // Remove shadows and artifacts that cause "buggy boxes"
+                    // Remove shadows/animations that cause artifacts
                     const allElements = element.getElementsByTagName('*');
                     for (let i = 0; i < allElements.length; i++) {
                         const el = allElements[i] as HTMLElement;
@@ -37,9 +39,10 @@ export const captureElementAsImage = async (elementId: string): Promise<string |
             }
         });
 
-        return canvas.toDataURL("image/png", 1.0);
+        console.log(`[Export] Canvas generated: ${canvas.width}x${canvas.height}`);
+        return canvas.toDataURL("image/png", 0.9);
     } catch (error) {
-        console.error("Error capturing element:", error);
+        console.error("[Export] Capture failed:", error);
         return null;
     }
 };
@@ -48,18 +51,21 @@ export const captureElementAsImage = async (elementId: string): Promise<string |
  * Generates and downloads a professional PDF of the document.
  */
 export const downloadAsPDF = async (elementId: string, filename: string) => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === 'undefined') return false;
 
     const originalElement = document.getElementById(elementId);
-    if (!originalElement) return;
+    if (!originalElement) return false;
+
+    console.log(`[Export] Generating PDF for ${elementId}...`);
 
     try {
         const jspdf = (await import("jspdf")).jsPDF;
         const html2canvas = (await import("html2canvas")).default;
 
         const canvas = await html2canvas(originalElement, {
-            scale: 2, // 2x is enough for sharp PDF while keeping file size small
+            scale: 2,
             useCORS: true,
+            allowTaint: true,
             logging: false,
             backgroundColor: "#ffffff",
             onclone: (clonedDoc) => {
@@ -76,7 +82,7 @@ export const downloadAsPDF = async (elementId: string, filename: string) => {
             }
         });
 
-        const imgData = canvas.toDataURL('image/png');
+        const imgData = canvas.toDataURL('image/png', 0.9);
         const pdf = new jspdf({
             orientation: 'portrait',
             unit: 'mm',
@@ -87,32 +93,53 @@ export const downloadAsPDF = async (elementId: string, filename: string) => {
         const pdfWidth = pdf.internal.pageSize.getWidth();
         const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
 
-        // If content is longer than A4, we might need multiple pages or taller page
-        // For Proofa invoices, a single long page or standard A4 usually works
         pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
         pdf.save(filename);
+
+        console.log(`[Export] PDF saved successfully.`);
         return true;
     } catch (error) {
-        console.error("PDF generation failed:", error);
+        console.error("[Export] PDF generation failed:", error);
         return false;
     }
 };
 
 /**
- * Triggers a download of a data URL image.
+ * Triggers a download of a data URL image using Blobs for mobile compatibility.
  */
-export const downloadImage = (dataUrl: string, filename: string) => {
+export const downloadImage = async (dataUrl: string, filename: string) => {
     if (typeof window === 'undefined') return;
 
+    console.log(`[Export] Triggering image download...`);
+
     try {
+        // Direct manual base64 to Blob conversion for stability
+        const parts = dataUrl.split(',');
+        const mime = parts[0].match(/:(.*?);/)?.[1] || 'image/png';
+        const binary = atob(parts[1]);
+        const array = [];
+        for (let i = 0; i < binary.length; i++) {
+            array.push(binary.charCodeAt(i));
+        }
+        const blob = new Blob([new Uint8Array(array)], { type: mime });
+        const url = window.URL.createObjectURL(blob);
+
         const link = document.createElement("a");
-        link.href = dataUrl;
+        link.href = url;
         link.download = filename;
+        link.style.display = 'none';
         document.body.appendChild(link);
         link.click();
-        document.body.removeChild(link);
+
+        // Cleanup with longer timeout for mobile
+        setTimeout(() => {
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+        }, 1000);
+
+        console.log(`[Export] Download triggered successfully.`);
     } catch (e) {
-        console.error("Download failed", e);
+        console.error("[Export] Download failed:", e);
         window.open(dataUrl, '_blank');
     }
 };
