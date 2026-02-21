@@ -42,9 +42,9 @@ export default function ClassicTemplate({ data, type }: TemplateProps) {
 
             <Watermark />
 
-            <div className="p-8 flex-1 flex flex-col items-center text-center relative z-10">
+            <div className="p-4 flex-1 flex flex-col items-center text-center relative z-10">
                 {/* Central Logo Header */}
-                <div className="mb-6">
+                <div className="">
                     {logoUrl ? (
                         <div className="w-20 h-20 rounded-full border-4 border-white shadow-xl mb-4 overflow-hidden bg-white">
                             <Image
@@ -80,7 +80,7 @@ export default function ClassicTemplate({ data, type }: TemplateProps) {
             </div>
 
             {/* Recipient Details (Modern Classic) */}
-            <div className="w-full flex justify-between items-start mb-6 px-2 text-left">
+            <div className="w-full flex justify-between items-start mb-2 px-2 text-left">
                 <div>
                     <p className="text-[8px] font-black text-surface-300 uppercase tracking-widest mb-1">Customer</p>
                     <p className="text-xs font-black uppercase">{isReceipt ? receipt.customerName || "Customer" : (isInvoice ? invoice.clientName : order.customerName)}</p>
@@ -102,7 +102,7 @@ export default function ClassicTemplate({ data, type }: TemplateProps) {
             <div className="w-full border-b-[3px] border-dashed border-surface-600 my-6" />
 
             {/* Item List */}
-            <div className="w-full flex flex-col gap-4 text-left">
+            <div className="w-full flex flex-col gap-2 text-left">
                 {isReceipt ? (
                     <div className="flex justify-between items-baseline group">
                         <div className="flex gap-2">
@@ -169,7 +169,7 @@ export default function ClassicTemplate({ data, type }: TemplateProps) {
 
 
             {data.terms && (
-                <div className="w-full mt-8 p-4 border border-surface-200 rounded-xl relative overflow-hidden bg-surface-50/30">
+                <div className="w-full mt-2 p-4 border border-surface-200 rounded-xl relative overflow-hidden bg-surface-50/30">
                     <div className="absolute top-0 left-0 w-1 h-full bg-[#eb4d4b]" />
                     <p className="text-[10px] font-black text-surface-400 uppercase tracking-[0.2em] mb-2">Terms & Conditions</p>
                     <p className="text-[10px] font-bold text-left italic leading-relaxed">{data.terms}</p>
