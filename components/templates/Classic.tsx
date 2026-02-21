@@ -30,7 +30,8 @@ export default function ClassicTemplate({ data, type }: TemplateProps) {
     const includeVat = isInvoice ? (invoice.includeVat ?? true) : false;
     const tax = includeVat ? subtotal * (vatRate / 100) : 0;
 
-    const total = isReceipt ? receipt.amount : (isOrder ? order.totalAmount : subtotal + tax);
+    const deliveryCost = data.deliveryInfo?.enabled ? (data.deliveryInfo.cost ?? 0) : 0;
+    const total = (isReceipt ? receipt.amount : (isOrder ? order.totalAmount : subtotal + tax)) + deliveryCost;
 
     return (
         <div className="relative bg-white min-h-[700px] flex flex-col font-mono text-[#2d3436] mx-auto max-w-[450px] shadow-2xl overflow-visible font-heading" id="document-preview">
@@ -117,11 +118,30 @@ export default function ClassicTemplate({ data, type }: TemplateProps) {
                             <span>{formatCurrency(tax)}</span>
                         </div>
                     )}
+                    {data.deliveryInfo?.enabled && (
+                        <div className="flex justify-between items-center text-xs font-bold text-surface-400">
+                            <span className="uppercase tracking-widest">Delivery</span>
+                            <span>{formatCurrency(data.deliveryInfo.cost)}</span>
+                        </div>
+                    )}
                     <div className="flex justify-between items-center mt-2 pt-4 border-t border-surface-50">
                         <span className="text-xl font-black uppercase tracking-[0.2em] text-[#eb4d4b]">TOTAL</span>
                         <span className="text-2xl font-black text-[#eb4d4b] tracking-tighter">{formatCurrency(total)}</span>
                     </div>
                 </div>
+
+                {data.bankDetails?.enabled && (
+                    <div className="w-full mt-8 flex flex-col items-center bg-surface-50/50 p-6 rounded-2xl border-2 border-dashed border-surface-200">
+                        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-surface-300 mb-4">Transfer Details</p>
+                        <div className="flex flex-col gap-1 mb-4">
+                            <p className="text-xs font-black uppercase">{data.bankDetails.bankName}</p>
+                            <p className="text-[10px] font-bold text-surface-400 uppercase tracking-widest">{data.bankDetails.accountName}</p>
+                        </div>
+                        <div className="text-lg font-black tracking-[0.2em] px-4 py-2 bg-white rounded-lg shadow-sm border border-surface-100">
+                            {data.bankDetails.accountNumber}
+                        </div>
+                    </div>
+                )}
 
 
 

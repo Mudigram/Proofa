@@ -30,7 +30,8 @@ export default function BoldTemplate({ data, type }: TemplateProps) {
     const includeVat = isInvoice ? (invoice.includeVat ?? true) : false;
     const tax = includeVat ? subtotal * (vatRate / 100) : 0;
 
-    const total = isReceipt ? receipt.amount : (isOrder ? order.totalAmount : subtotal + tax);
+    const deliveryCost = data.deliveryInfo?.enabled ? (data.deliveryInfo.cost ?? 0) : 0;
+    const total = (isReceipt ? receipt.amount : (isOrder ? order.totalAmount : subtotal + tax)) + deliveryCost;
 
     return (
         <div className="relative bg-white min-h-[600px] flex flex-col font-sans text-surface-900 shadow-2xl mx-auto max-w-[500px] overflow-hidden font-heading" id="document-preview">
@@ -127,20 +128,47 @@ export default function BoldTemplate({ data, type }: TemplateProps) {
                 <div className="mt-12 bg-surface-900 text-white p-8 rounded-[2rem] flex flex-col gap-4 shadow-2xl relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-primary-500 opacity-20 blur-3xl -translate-y-1/2 translate-x-1/2" />
 
-                    {isInvoice && includeVat && (
-                        <div className="flex justify-between items-center text-xs opacity-60 font-bold uppercase tracking-widest">
-                            <span>Subtotal + VAT ({vatRate}%)</span>
-                            <span>{formatCurrency(subtotal + tax)}</span>
+                    {(isInvoice && includeVat) || data.deliveryInfo?.enabled ? (
+                        <div className="flex flex-col gap-2 border-b border-white/10 pb-4">
+                            {isInvoice && includeVat && (
+                                <div className="flex justify-between items-center text-xs opacity-60 font-bold uppercase tracking-widest">
+                                    <span>Subtotal + VAT ({vatRate}%)</span>
+                                    <span>{formatCurrency(subtotal + tax)}</span>
+                                </div>
+                            )}
+                            {data.deliveryInfo?.enabled && (
+                                <div className="flex justify-between items-center text-xs opacity-60 font-bold uppercase tracking-widest">
+                                    <span>Delivery</span>
+                                    <span>{formatCurrency(data.deliveryInfo.cost)}</span>
+                                </div>
+                            )}
                         </div>
-                    )}
+                    ) : null}
 
-                    <div className="flex justify-between items-end border-t border-white/10 pt-4">
+                    <div className="flex justify-between items-end">
                         <span className="text-xs font-black uppercase tracking-[0.3em] opacity-80">Total Due</span>
                         <span className="text-3xl font-black tracking-tighter text-primary-400">
                             {formatCurrency(total)}
                         </span>
                     </div>
                 </div>
+
+                {data.bankDetails?.enabled && (
+                    <div className="mt-8 p-6 bg-primary-50 rounded-2xl border-2 border-primary-100 flex flex-col gap-4">
+                        <div className="flex justify-between items-center">
+                            <span className="text-[10px] font-black uppercase tracking-widest text-primary-400">Bank Transfer</span>
+                            <span className="text-xs font-black text-primary-600">{data.bankDetails.bankName}</span>
+                        </div>
+                        <div>
+                            <p className="text-[10px] font-black uppercase tracking-widest text-surface-400 mb-1">Account Holder</p>
+                            <p className="text-sm font-black">{data.bankDetails.accountName}</p>
+                        </div>
+                        <div className="bg-white p-4 rounded-xl border border-primary-200">
+                            <p className="text-[10px] font-black uppercase tracking-widest text-primary-400 mb-1 text-center">Account Number</p>
+                            <p className="text-2xl font-black tracking-[0.2em] text-primary-600 text-center">{data.bankDetails.accountNumber}</p>
+                        </div>
+                    </div>
+                )}
 
                 <Branding />
             </div>

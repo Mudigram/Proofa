@@ -26,6 +26,17 @@ export default function InvoiceForm() {
         logoUrl: undefined,
         includeVat: true,
         vatRate: 7.5,
+        bankDetails: {
+            bankName: "",
+            accountNumber: "",
+            accountName: "",
+            enabled: false,
+        },
+        deliveryInfo: {
+            location: "",
+            cost: 0,
+            enabled: false,
+        },
     });
 
     const [errors, setErrors] = useState<Record<string, string>>({});
@@ -39,13 +50,22 @@ export default function InvoiceForm() {
         return formData.includeVat ? subtotal * ((formData.vatRate || 0) / 100) : 0;
     }, [subtotal, formData.includeVat, formData.vatRate]);
 
-    const total = useMemo(() => subtotal + tax, [subtotal, tax]);
+    const deliveryCost = useMemo(() => {
+        return formData.deliveryInfo?.enabled ? formData.deliveryInfo.cost : 0;
+    }, [formData.deliveryInfo]);
+
+    const total = useMemo(() => subtotal + tax + deliveryCost, [subtotal, tax, deliveryCost]);
 
     useEffect(() => {
         if (docId) {
             const doc = getDocumentById(docId);
             if (doc && doc.type === "invoice") {
-                setFormData(doc.data as InvoiceData);
+                const data = doc.data as InvoiceData;
+                setFormData({
+                    ...data,
+                    bankDetails: data.bankDetails || { bankName: "", accountNumber: "", accountName: "", enabled: false },
+                    deliveryInfo: data.deliveryInfo || { location: "", cost: 0, enabled: false },
+                });
                 setMode("preview");
             }
         }
@@ -53,6 +73,7 @@ export default function InvoiceForm() {
 
     const handleChange = (field: keyof InvoiceData, value: any) => {
         setFormData((prev) => ({ ...prev, [field]: value }));
+        // Cleanup errors
         if (errors[field]) {
             setErrors(prev => {
                 const newErrors = { ...prev };
@@ -62,7 +83,31 @@ export default function InvoiceForm() {
         }
     };
 
+    const handleNestedChange = (parent: "bankDetails" | "deliveryInfo", field: string, value: any) => {
+        setFormData(prev => ({
+            ...prev,
+            [parent]: {
+                ...(prev[parent] as any),
+                [field]: value
+            }
+        }));
+
+        // Clear specific errors
+        if (errors[field] || errors.bankName || errors.accountName || errors.accountNumber || errors.deliveryLocation) {
+            setErrors(prev => {
+                const newErrors = { ...prev };
+                delete newErrors[field];
+                if (field === "bankName") delete newErrors.bankName;
+                if (field === "accountName") delete newErrors.accountName;
+                if (field === "accountNumber") delete newErrors.accountNumber;
+                if (field === "location") delete newErrors.deliveryLocation;
+                return newErrors;
+            });
+        }
+    };
+
     const updateItem = (index: number, field: keyof LineItem, value: any) => {
+        // ... existing updateItem code
         const newItems = [...formData.items];
         newItems[index] = { ...newItems[index], [field]: value };
         setFormData(prev => ({ ...prev, items: newItems }));
@@ -90,6 +135,18 @@ export default function InvoiceForm() {
         const newErrors: Record<string, string> = {};
         if (!formData.businessName.trim()) newErrors.businessName = "Required";
         if (!formData.clientName.trim()) newErrors.clientName = "Required";
+
+        if (formData.bankDetails?.enabled) {
+            if (!formData.bankDetails.bankName.trim()) newErrors.bankName = "Required";
+            if (!formData.bankDetails.accountName.trim()) newErrors.accountName = "Required";
+            if (formData.bankDetails.accountNumber.length !== 10) {
+                newErrors.accountNumber = "Must be 10 digits";
+            }
+        }
+
+        if (formData.deliveryInfo?.enabled) {
+            if (!formData.deliveryInfo.location.trim()) newErrors.deliveryLocation = "Required";
+        }
 
         let itemsValid = true;
         formData.items.forEach((item) => {
@@ -271,6 +328,86 @@ export default function InvoiceForm() {
                             </StaggerItem>
 
                             <StaggerItem>
+                                <section className="flex flex-col gap-5 bg-white p-6 rounded-[2rem] border border-surface-100 shadow-sm transition-all focus-within:ring-2 focus-within:ring-primary-500/10">
+                                    <div className="flex items-center justify-between px-1">
+                                        <h3 className="text-[10px] font-black uppercase tracking-widest text-surface-400">Bank details</h3>
+                                        <button
+                                            onClick={() => handleNestedChange("bankDetails", "enabled", !formData.bankDetails?.enabled)}
+                                            className={`w-10 h-6 rounded-full transition-all relative ${formData.bankDetails?.enabled ? 'bg-primary-500' : 'bg-surface-200'}`}
+                                        >
+                                            <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${formData.bankDetails?.enabled ? 'left-5' : 'left-1'}`} />
+                                        </button>
+                                    </div>
+
+                                    {formData.bankDetails?.enabled && (
+                                        <div className="flex flex-col gap-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                                            <Input
+                                                label="BANK NAME"
+                                                placeholder="e.g. GTBank"
+                                                value={formData.bankDetails.bankName}
+                                                onChange={(e) => handleNestedChange("bankDetails", "bankName", e.target.value)}
+                                                error={errors.bankName}
+                                                className="bg-surface-50 border-none"
+                                            />
+                                            <Input
+                                                label="ACCOUNT NAME"
+                                                placeholder="e.g. Mudiaga Dev"
+                                                value={formData.bankDetails.accountName}
+                                                onChange={(e) => handleNestedChange("bankDetails", "accountName", e.target.value)}
+                                                error={errors.accountName}
+                                                className="bg-surface-50 border-none"
+                                            />
+                                            <Input
+                                                label="ACCOUNT NUMBER"
+                                                placeholder="10 Digits"
+                                                type="number"
+                                                value={formData.bankDetails.accountNumber}
+                                                onChange={(e) => {
+                                                    const val = e.target.value.slice(0, 10);
+                                                    handleNestedChange("bankDetails", "accountNumber", val);
+                                                }}
+                                                error={errors.accountNumber}
+                                                className="bg-surface-50 border-none"
+                                            />
+                                        </div>
+                                    )}
+                                </section>
+                            </StaggerItem>
+
+                            <StaggerItem>
+                                <section className="flex flex-col gap-5 bg-white p-6 rounded-[2rem] border border-surface-100 shadow-sm transition-all focus-within:ring-2 focus-within:ring-primary-500/10">
+                                    <div className="flex items-center justify-between px-1">
+                                        <h3 className="text-[10px] font-black uppercase tracking-widest text-surface-400">Delivery</h3>
+                                        <button
+                                            onClick={() => handleNestedChange("deliveryInfo", "enabled", !formData.deliveryInfo?.enabled)}
+                                            className={`w-10 h-6 rounded-full transition-all relative ${formData.deliveryInfo?.enabled ? 'bg-primary-500' : 'bg-surface-200'}`}
+                                        >
+                                            <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${formData.deliveryInfo?.enabled ? 'left-5' : 'left-1'}`} />
+                                        </button>
+                                    </div>
+
+                                    {formData.deliveryInfo?.enabled && (
+                                        <div className="flex flex-col gap-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                                            <Input
+                                                label="DELIVERY LOCATION"
+                                                placeholder="e.g. Island, Lagos"
+                                                value={formData.deliveryInfo.location}
+                                                onChange={(e) => handleNestedChange("deliveryInfo", "location", e.target.value)}
+                                                error={errors.deliveryLocation}
+                                                className="bg-surface-50 border-none"
+                                            />
+                                            <CurrencyInput
+                                                label="DELIVERY COST"
+                                                value={formData.deliveryInfo.cost}
+                                                onChange={(val) => handleNestedChange("deliveryInfo", "cost", val)}
+                                                className="bg-surface-50 border-none"
+                                            />
+                                        </div>
+                                    )}
+                                </section>
+                            </StaggerItem>
+
+                            <StaggerItem>
                                 <TextArea
                                     label="NOTES (OPTIONAL)"
                                     placeholder="Thank you for your business!"
@@ -303,6 +440,12 @@ export default function InvoiceForm() {
                                     <div className="flex justify-between items-center text-sm font-medium text-surface-500 tracking-tight">
                                         <span className="uppercase tracking-widest text-[10px] font-black opacity-50">VAT ({formData.vatRate}%)</span>
                                         <span className="font-bold text-surface-900">{formatCurrency(tax)}</span>
+                                    </div>
+                                )}
+                                {formData.deliveryInfo?.enabled && (
+                                    <div className="flex justify-between items-center text-sm font-medium text-surface-500 tracking-tight">
+                                        <span className="uppercase tracking-widest text-[10px] font-black opacity-50">Delivery</span>
+                                        <span className="font-bold text-surface-900">{formatCurrency(deliveryCost)}</span>
                                     </div>
                                 )}
                                 <div className="flex justify-between items-center mt-2 pt-4 border-t border-surface-100">

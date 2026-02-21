@@ -25,6 +25,21 @@ export interface LineItem {
 /** Payment method options */
 export type PaymentMethod = "Transfer" | "Cash" | "POS" | "Card";
 
+/** Bank Account Details */
+export interface BankDetails {
+    bankName: string;
+    accountNumber: string;
+    accountName: string;
+    enabled: boolean;
+}
+
+/** Delivery Information */
+export interface DeliveryInfo {
+    location: string;
+    cost: number;
+    enabled: boolean;
+}
+
 /** Receipt form data */
 export interface ReceiptData {
     businessName: string;
@@ -35,6 +50,8 @@ export interface ReceiptData {
     paymentMethod: PaymentMethod;
     date: string;
     logoUrl?: string;
+    bankDetails?: BankDetails;
+    deliveryInfo?: DeliveryInfo;
 }
 
 /** Invoice form data */
@@ -50,6 +67,8 @@ export interface InvoiceData {
     logoUrl?: string;
     includeVat: boolean;
     vatRate?: number;
+    bankDetails?: BankDetails;
+    deliveryInfo?: DeliveryInfo;
 }
 
 /** Order summary form data */
@@ -59,6 +78,8 @@ export interface OrderData {
     totalAmount: number;
     deliveryStatus: DeliveryStatus;
     logoUrl?: string;
+    bankDetails?: BankDetails;
+    deliveryInfo?: DeliveryInfo;
 }
 
 /** Saved document record in LocalStorage */

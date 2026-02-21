@@ -31,7 +31,8 @@ export default function MinimalistTemplate({ data, type }: TemplateProps) {
     const includeVat = isInvoice ? (invoice.includeVat ?? true) : false;
     const tax = includeVat ? subtotal * (vatRate / 100) : 0;
 
-    const total = isReceipt ? receipt.amount : (isOrder ? order.totalAmount : subtotal + tax);
+    const deliveryCost = data.deliveryInfo?.enabled ? (data.deliveryInfo.cost ?? 0) : 0;
+    const total = (isReceipt ? receipt.amount : (isOrder ? order.totalAmount : subtotal + tax)) + deliveryCost;
 
     return (
         <div className="relative bg-white p-10 min-h-[600px] flex flex-col font-sans text-surface-900 shadow-2xl mx-auto max-w-[500px] border border-surface-100 overflow-hidden font-heading" id="document-preview">
@@ -110,6 +111,16 @@ export default function MinimalistTemplate({ data, type }: TemplateProps) {
                                 <p className="text-xs font-black">{formatCurrency(item.quantity * item.price)}</p>
                             </div>
                         ))}
+
+                        {data.deliveryInfo?.enabled && (
+                            <div className="flex justify-between items-start px-1 pt-2 border-t border-dashed border-surface-100 italic">
+                                <div className="flex-1 mr-4">
+                                    <p className="text-xs font-bold mb-0.5">Delivery: {data.deliveryInfo.location}</p>
+                                    <p className="text-[10px] text-surface-400 font-medium uppercase">Standard Delivery</p>
+                                </div>
+                                <p className="text-xs font-black">{formatCurrency(data.deliveryInfo.cost)}</p>
+                            </div>
+                        )}
                     </div>
                 )}
             </div>
@@ -128,6 +139,12 @@ export default function MinimalistTemplate({ data, type }: TemplateProps) {
                         </div>
                     </>
                 )}
+                {data.deliveryInfo?.enabled && (
+                    <div className="flex justify-between items-center text-xs">
+                        <span className="text-surface-400 font-bold uppercase tracking-widest">Delivery</span>
+                        <span className="font-bold">{formatCurrency(data.deliveryInfo.cost)}</span>
+                    </div>
+                )}
                 <div className="flex justify-between items-center mt-2">
                     <span className="text-sm font-black uppercase tracking-widest">Total Amount</span>
                     <span className="text-xl font-black">{formatCurrency(total)}</span>
@@ -140,6 +157,26 @@ export default function MinimalistTemplate({ data, type }: TemplateProps) {
                     <p className="text-[10px] text-surface-500 font-medium leading-relaxed italic border-l-2 border-surface-100 pl-3">
                         {invoice.notes}
                     </p>
+                </div>
+            )}
+
+            {data.bankDetails?.enabled && (
+                <div className="mt-8 p-4 bg-surface-50 rounded-xl border border-surface-100">
+                    <p className="text-[10px] font-black text-surface-300 uppercase tracking-widest mb-2">Payment Information</p>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <p className="text-[10px] text-surface-400 font-bold uppercase">Bank Name</p>
+                            <p className="text-xs font-black">{data.bankDetails.bankName}</p>
+                        </div>
+                        <div className="text-right">
+                            <p className="text-[10px] text-surface-400 font-bold uppercase">Account Name</p>
+                            <p className="text-xs font-black">{data.bankDetails.accountName}</p>
+                        </div>
+                    </div>
+                    <div className="mt-3 pt-3 border-t border-surface-100/50">
+                        <p className="text-[10px] text-surface-400 font-bold uppercase">Account Number</p>
+                        <p className="text-lg font-black tracking-widest text-primary-600 underline decoration-2">{data.bankDetails.accountNumber}</p>
+                    </div>
                 </div>
             )}
 
