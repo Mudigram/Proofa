@@ -429,8 +429,8 @@ export default function InvoiceForm() {
                                                 key={preset}
                                                 onClick={() => handleChange("terms", formData.terms === preset ? "" : preset)}
                                                 className={`text-[9px] font-bold px-3 py-1.5 rounded-full border transition-all ${formData.terms === preset
-                                                        ? "bg-primary-500 text-white border-primary-500"
-                                                        : "bg-surface-50 text-surface-500 border-surface-200 hover:border-primary-200"
+                                                    ? "bg-primary-500 text-white border-primary-500"
+                                                    : "bg-surface-50 text-surface-500 border-surface-200 hover:border-primary-200"
                                                     }`}
                                             >
                                                 {preset}
@@ -447,7 +447,7 @@ export default function InvoiceForm() {
                                 </section>
                             </StaggerItem>
 
-                            <StaggerItem>
+                            {/* <StaggerItem>
                                 <section className="flex flex-col gap-5 bg-white p-6 rounded-[2rem] border border-surface-100 shadow-sm">
                                     <h3 className="text-[10px] font-black uppercase tracking-widest text-surface-400 px-1">Authorized Signature / Stamp</h3>
                                     <LogoUpload
@@ -456,7 +456,7 @@ export default function InvoiceForm() {
                                         label="UPLOAD SIGNATURE"
                                     />
                                 </section>
-                            </StaggerItem>
+                            </StaggerItem> */}
 
                             <StaggerItem>
                                 <TextArea

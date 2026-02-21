@@ -218,13 +218,16 @@ export default function ReceiptForm() {
                                             onChange={(e) => handleChange("date", e.target.value)}
                                         />
                                     </div>
-                                    <div className="grid grid-cols-2 gap-4">
+                                    <div className="">
                                         <SegmentedControl
                                             label="STATUS"
                                             options={["Paid", "Deposit", "Due"]}
                                             value={formData.status}
                                             onChange={(val) => handleChange("status", val)}
                                         />
+
+                                    </div>
+                                    <div>
                                         <SegmentedControl
                                             label="METHOD"
                                             options={["Transfer", "Cash", "POS", "Card"]}

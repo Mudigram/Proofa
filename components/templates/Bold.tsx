@@ -40,9 +40,9 @@ export default function BoldTemplate({ data, type }: TemplateProps) {
             {/* Bold Top Stripe */}
             <div className="h-4 bg-primary-500 w-full" />
 
-            <div className="p-10 flex-1 flex flex-col">
+            <div className="p-8 flex-1 flex flex-col">
                 {/* Header */}
-                <div className="flex flex-col mb-12">
+                <div className="flex flex-col mb-8">
                     <div className="flex justify-between items-start mb-6">
                         <div className="w-16 h-16 bg-surface-900 text-white flex items-center justify-center text-4xl font-black rounded-full shadow-lg overflow-hidden">
                             {logoUrl ? (
@@ -81,7 +81,7 @@ export default function BoldTemplate({ data, type }: TemplateProps) {
                 </div>
 
                 {/* Recipient Box */}
-                <div className="bg-surface-50 p-6 rounded-2xl mb-12 flex justify-between items-center border border-surface-100">
+                <div className="bg-surface-50 p-6 rounded-2xl mb-8 flex justify-between items-center border border-surface-100">
                     <div>
                         <p className="text-[10px] font-black uppercase tracking-widest text-surface-300 mb-1">Prepared For</p>
                         <p className="text-sm font-black italic">{isReceipt ? receipt.customerName || "Customer" : (isInvoice ? invoice.clientName : order.customerName)}</p>
@@ -130,7 +130,7 @@ export default function BoldTemplate({ data, type }: TemplateProps) {
                 </div>
 
                 {/* Totals Box */}
-                <div className="mt-12 bg-surface-900 text-white p-8 rounded-[2rem] flex flex-col gap-4 shadow-2xl relative overflow-hidden">
+                <div className="mt-8 bg-surface-900 text-white p-6 rounded-[2rem] flex flex-col gap-4 shadow-2xl relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-primary-500 opacity-20 blur-3xl -translate-y-1/2 translate-x-1/2" />
 
                     {(isInvoice && includeVat) || data.deliveryInfo?.enabled ? (
@@ -182,24 +182,6 @@ export default function BoldTemplate({ data, type }: TemplateProps) {
                     </div>
                 )}
 
-                {(isReceipt || isInvoice) && (data as any).signatureUrl && (
-                    <div className="mt-12 flex justify-end">
-                        <div className="flex flex-col items-center gap-2">
-                            <div className="w-32 h-16 relative">
-                                <Image
-                                    src={(data as any).signatureUrl}
-                                    alt="Signature"
-                                    fill
-                                    unoptimized
-                                    className="object-contain"
-                                />
-                            </div>
-                            <div className="px-4 py-1.5 bg-surface-900 text-white text-[8px] font-black uppercase tracking-[0.2em] rounded-full">
-                                Verified Stamp
-                            </div>
-                        </div>
-                    </div>
-                )}
             </div>
         </div>
     );

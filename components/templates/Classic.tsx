@@ -42,9 +42,9 @@ export default function ClassicTemplate({ data, type }: TemplateProps) {
 
             <Watermark />
 
-            <div className="p-10 flex-1 flex flex-col items-center text-center relative z-10">
+            <div className="p-8 flex-1 flex flex-col items-center text-center relative z-10">
                 {/* Central Logo Header */}
-                <div className="mb-8">
+                <div className="mb-6">
                     {logoUrl ? (
                         <div className="w-20 h-20 rounded-full border-4 border-white shadow-xl mb-4 overflow-hidden bg-white">
                             <Image
@@ -174,20 +174,6 @@ export default function ClassicTemplate({ data, type }: TemplateProps) {
                 </div>
             )}
 
-            {(isReceipt || isInvoice) && (data as any).signatureUrl && (
-                <div className="w-full mt-12 flex flex-col items-center">
-                    <div className="w-32 h-16 relative mb-2 opacity-80 contrast-125">
-                        <Image
-                            src={(data as any).signatureUrl}
-                            alt="Signature"
-                            fill
-                            unoptimized
-                            className="object-contain grayscale"
-                        />
-                    </div>
-                    <p className="text-[9px] font-black uppercase tracking-[0.3em] text-surface-300">Authorized Signature</p>
-                </div>
-            )}
 
             <Branding />
 

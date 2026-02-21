@@ -35,11 +35,11 @@ export default function MinimalistTemplate({ data, type }: TemplateProps) {
     const total = (isReceipt ? receipt.amount : (isOrder ? order.totalAmount : subtotal + tax)) + deliveryCost;
 
     return (
-        <div className="relative bg-white p-10 min-h-[600px] flex flex-col font-sans text-surface-900 shadow-2xl mx-auto max-w-[500px] border border-surface-100 overflow-hidden font-heading" id="document-preview">
+        <div className="relative bg-white p-8 min-h-[500px] flex flex-col font-sans text-surface-900 shadow-2xl mx-auto max-w-[480px] border border-surface-100 overflow-hidden font-heading" id="document-preview">
             <Watermark />
 
             {/* Header */}
-            <div className="flex justify-between items-start mb-12">
+            <div className="flex justify-between items-start mb-8">
                 <div>
                     <h1 className="text-2xl font-black uppercase tracking-tighter mb-1">
                         {isReceipt ? "Payment Receipt" : (isInvoice ? "Invoice" : "Order Summary")}
@@ -68,7 +68,7 @@ export default function MinimalistTemplate({ data, type }: TemplateProps) {
             </div>
 
             {/* Info Grid */}
-            <div className="grid grid-cols-2 gap-8 mb-12 pb-8 border-b border-surface-100">
+            <div className="grid grid-cols-2 gap-8 mb-8 pb-6 border-b border-surface-100">
                 <div>
                     <p className="text-[10px] font-black text-surface-300 uppercase tracking-widest mb-1.5"> {isReceipt ? "From" : "Billed By"}</p>
                     <p className="text-xs font-bold">{isInvoice ? invoice.businessName : (isReceipt ? receipt.businessName : "Proofa Store")}</p>
@@ -133,7 +133,7 @@ export default function MinimalistTemplate({ data, type }: TemplateProps) {
             </div>
 
             {/* Summary Section */}
-            <div className="mt-12 pt-8 border-t-2 border-surface-900 flex flex-col gap-2">
+            <div className="mt-8 pt-6 border-t-2 border-surface-900 flex flex-col gap-2">
                 {isInvoice && includeVat && (
                     <>
                         <div className="flex justify-between items-center text-xs">
@@ -196,22 +196,6 @@ export default function MinimalistTemplate({ data, type }: TemplateProps) {
                 </div>
             )}
 
-            {(isReceipt || isInvoice) && (data as any).signatureUrl && (
-                <div className="mt-8 flex flex-col items-end">
-                    <div className="w-32 h-16 relative">
-                        <Image
-                            src={(data as any).signatureUrl}
-                            alt="Signature"
-                            fill
-                            unoptimized
-                            className="object-contain object-right"
-                        />
-                    </div>
-                    <div className="w-40 border-t border-surface-900 mt-2 text-center">
-                        <p className="text-[9px] font-black uppercase tracking-widest mt-1">Authorized Signature</p>
-                    </div>
-                </div>
-            )}
 
             {/* Status Badge for Order/Receipt */}
             {(isOrder || isReceipt) && (

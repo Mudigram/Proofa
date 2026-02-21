@@ -54,12 +54,17 @@ export const downloadAsPDF = async (elementId: string, filename: string) => {
     if (typeof window === 'undefined') return false;
 
     const originalElement = document.getElementById(elementId);
-    if (!originalElement) return false;
+    if (!originalElement) {
+        console.error(`[Export] PDF element ${elementId} not found`);
+        return false;
+    }
 
     console.log(`[Export] Generating PDF for ${elementId}...`);
 
     try {
-        const jspdf = (await import("jspdf")).jsPDF;
+        // Robust dynamic import for jspdf
+        const jspdfModule = await import("jspdf");
+        const jsPDF = jspdfModule.jsPDF || (jspdfModule as any).default;
         const html2canvas = (await import("html2canvas")).default;
 
         const canvas = await html2canvas(originalElement, {
@@ -82,8 +87,8 @@ export const downloadAsPDF = async (elementId: string, filename: string) => {
             }
         });
 
-        const imgData = canvas.toDataURL('image/png', 0.9);
-        const pdf = new jspdf({
+        const imgData = canvas.toDataURL('image/jpeg', 0.85); // JPEG is often safer for large PDFs
+        const pdf = new jsPDF({
             orientation: 'portrait',
             unit: 'mm',
             format: 'a4'
@@ -93,7 +98,7 @@ export const downloadAsPDF = async (elementId: string, filename: string) => {
         const pdfWidth = pdf.internal.pageSize.getWidth();
         const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
 
-        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+        pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight, undefined, 'FAST');
         pdf.save(filename);
 
         console.log(`[Export] PDF saved successfully.`);
@@ -113,15 +118,17 @@ export const downloadImage = async (dataUrl: string, filename: string) => {
     console.log(`[Export] Triggering image download...`);
 
     try {
-        // Direct manual base64 to Blob conversion for stability
+        // Robust Base64 to Blob conversion
         const parts = dataUrl.split(',');
         const mime = parts[0].match(/:(.*?);/)?.[1] || 'image/png';
         const binary = atob(parts[1]);
-        const array = [];
+        const array = new Uint8Array(binary.length);
+
         for (let i = 0; i < binary.length; i++) {
-            array.push(binary.charCodeAt(i));
+            array[i] = binary.charCodeAt(i);
         }
-        const blob = new Blob([new Uint8Array(array)], { type: mime });
+
+        const blob = new Blob([array], { type: mime });
         const url = window.URL.createObjectURL(blob);
 
         const link = document.createElement("a");
@@ -131,15 +138,18 @@ export const downloadImage = async (dataUrl: string, filename: string) => {
         document.body.appendChild(link);
         link.click();
 
-        // Cleanup with longer timeout for mobile
+        // Cleanup with longer timeout for mobile settlement
         setTimeout(() => {
-            document.body.removeChild(link);
+            if (document.body.contains(link)) {
+                document.body.removeChild(link);
+            }
             window.URL.revokeObjectURL(url);
-        }, 1000);
+        }, 2000);
 
         console.log(`[Export] Download triggered successfully.`);
     } catch (e) {
         console.error("[Export] Download failed:", e);
+        // Fallback for extremely restricted mobile browsers
         window.open(dataUrl, '_blank');
     }
 };

@@ -158,8 +158,8 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
             </div>
 
             {/* Actual Preview Frame */}
-            <div className="w-full bg-surface-100/50 rounded-[2.5rem] p-4 md:p-8 flex justify-center border border-surface-200/50 min-h-[500px]">
-                <div className="w-full origin-top transform scale-[1.0] md:scale-100 transition-all duration-500 rounded-2xl overflow-hidden shadow-[0_20px_60px_-15px_rgba(0,0,0,0.15)] flex justify-center items-start">
+            <div className="w-full bg-surface-100/50 rounded-[2.5rem] p-2 md:p-4 flex justify-center border border-surface-200/50 min-h-[400px]">
+                <div className="w-full origin-top transform scale-[0.95] md:scale-100 transition-all duration-500 rounded-2xl overflow-hidden shadow-[0_20px_60px_-15px_rgba(0,0,0,0.15)] flex justify-center items-start">
                     {renderTemplate()}
                 </div>
             </div>
