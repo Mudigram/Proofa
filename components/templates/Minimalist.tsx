@@ -78,7 +78,14 @@ export default function MinimalistTemplate({ data, type }: TemplateProps) {
                 </div>
                 <div className="text-right">
                     <p className="text-[10px] font-black text-surface-300 uppercase tracking-widest mb-1.5">{isReceipt ? "Customer" : "Billed To"}</p>
-                    <p className="text-xs font-bold leading-tight">{isReceipt ? receipt.customerName || "Customer" : (isInvoice ? invoice.clientName : order.customerName)}</p>
+                    <p className="text-xs font-bold leading-tight">
+                        {isReceipt ? receipt.customerName || "Customer" : (isInvoice ? invoice.clientName : order.customerName)}
+                    </p>
+                    {(isReceipt ? receipt.customerPhone : (isInvoice ? invoice.clientPhone : order.customerPhone)) && (
+                        <p className="text-[10px] text-surface-400 font-bold mt-1">
+                            {isReceipt ? receipt.customerPhone : (isInvoice ? invoice.clientPhone : order.customerPhone)}
+                        </p>
+                    )}
                     <p className="text-[10px] text-surface-400 font-medium mt-1">
                         Dated: {formatDate(isReceipt ? receipt.date : (isInvoice ? invoice.issueDate : new Date().toISOString()))}
                     </p>
@@ -176,6 +183,32 @@ export default function MinimalistTemplate({ data, type }: TemplateProps) {
                     <div className="mt-3 pt-3 border-t border-surface-100/50">
                         <p className="text-[10px] text-surface-400 font-bold uppercase">Account Number</p>
                         <p className="text-lg font-black tracking-widest text-primary-600 underline decoration-2">{data.bankDetails.accountNumber}</p>
+                    </div>
+                </div>
+            )}
+
+            {data.terms && (
+                <div className="mt-8">
+                    <p className="text-[10px] font-black text-surface-300 uppercase tracking-widest mb-1.5">Important Notes</p>
+                    <p className="text-[10px] text-primary-600 font-bold leading-relaxed bg-primary-50 p-3 rounded-lg border-l-4 border-primary-500">
+                        {data.terms}
+                    </p>
+                </div>
+            )}
+
+            {(isReceipt || isInvoice) && (data as any).signatureUrl && (
+                <div className="mt-8 flex flex-col items-end">
+                    <div className="w-32 h-16 relative">
+                        <Image
+                            src={(data as any).signatureUrl}
+                            alt="Signature"
+                            fill
+                            unoptimized
+                            className="object-contain object-right"
+                        />
+                    </div>
+                    <div className="w-40 border-t border-surface-900 mt-2 text-center">
+                        <p className="text-[9px] font-black uppercase tracking-widest mt-1">Authorized Signature</p>
                     </div>
                 </div>
             )}

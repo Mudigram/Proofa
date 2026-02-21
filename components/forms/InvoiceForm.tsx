@@ -223,13 +223,21 @@ export default function InvoiceForm() {
                             <StaggerItem>
                                 <section className="flex flex-col gap-5 bg-white p-6 rounded-[2rem] border border-surface-100 shadow-sm">
                                     <h3 className="text-[10px] font-black uppercase tracking-widest text-surface-400 px-1">Client & Invoice Info</h3>
-                                    <Input
-                                        label="CLIENT NAME"
-                                        placeholder="Who are you billing?"
-                                        value={formData.clientName}
-                                        onChange={(e) => handleChange("clientName", e.target.value)}
-                                        error={errors.clientName}
-                                    />
+                                    <div className="flex flex-col gap-4">
+                                        <Input
+                                            label="CLIENT NAME"
+                                            placeholder="Who are you billing?"
+                                            value={formData.clientName}
+                                            onChange={(e) => handleChange("clientName", e.target.value)}
+                                            error={errors.clientName}
+                                        />
+                                        <Input
+                                            label="CLIENT PHONE (OPTIONAL)"
+                                            placeholder="e.g. 09012345678"
+                                            value={formData.clientPhone || ""}
+                                            onChange={(e) => handleChange("clientPhone", e.target.value)}
+                                        />
+                                    </div>
                                     <div className="grid grid-cols-2 gap-4">
                                         <Input
                                             label="INVOICE #"
@@ -404,6 +412,49 @@ export default function InvoiceForm() {
                                             />
                                         </div>
                                     )}
+                                </section>
+                            </StaggerItem>
+
+                            <StaggerItem>
+                                <section className="flex flex-col gap-5 bg-white p-6 rounded-[2rem] border border-surface-100 shadow-sm">
+                                    <h3 className="text-[10px] font-black uppercase tracking-widest text-surface-400 px-1">Invoice Disclaimers / Terms</h3>
+                                    <div className="flex flex-wrap gap-2 mb-2">
+                                        {[
+                                            "No refund after payment",
+                                            "Validity: 7 Days",
+                                            "Balance due on delivery",
+                                            "Subject to availability"
+                                        ].map(preset => (
+                                            <button
+                                                key={preset}
+                                                onClick={() => handleChange("terms", formData.terms === preset ? "" : preset)}
+                                                className={`text-[9px] font-bold px-3 py-1.5 rounded-full border transition-all ${formData.terms === preset
+                                                        ? "bg-primary-500 text-white border-primary-500"
+                                                        : "bg-surface-50 text-surface-500 border-surface-200 hover:border-primary-200"
+                                                    }`}
+                                            >
+                                                {preset}
+                                            </button>
+                                        ))}
+                                    </div>
+                                    <TextArea
+                                        label="CUSTOM TERMS"
+                                        placeholder="e.g. No refund after payment"
+                                        value={formData.terms || ""}
+                                        onChange={(e: any) => handleChange("terms", e.target.value)}
+                                        className="min-h-[80px]"
+                                    />
+                                </section>
+                            </StaggerItem>
+
+                            <StaggerItem>
+                                <section className="flex flex-col gap-5 bg-white p-6 rounded-[2rem] border border-surface-100 shadow-sm">
+                                    <h3 className="text-[10px] font-black uppercase tracking-widest text-surface-400 px-1">Authorized Signature / Stamp</h3>
+                                    <LogoUpload
+                                        value={formData.signatureUrl}
+                                        onChange={(url) => handleChange("signatureUrl", url)}
+                                        label="UPLOAD SIGNATURE"
+                                    />
                                 </section>
                             </StaggerItem>
 

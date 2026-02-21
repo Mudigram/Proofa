@@ -44,6 +44,7 @@ export interface DeliveryInfo {
 export interface ReceiptData {
     businessName: string;
     customerName?: string;
+    customerPhone?: string;
     description: string;
     amount: number;
     status: PaymentStatus;
@@ -52,6 +53,8 @@ export interface ReceiptData {
     logoUrl?: string;
     bankDetails?: BankDetails;
     deliveryInfo?: DeliveryInfo;
+    terms?: string;
+    signatureUrl?: string;
 }
 
 /** Invoice form data */
@@ -59,6 +62,7 @@ export interface InvoiceData {
     businessName: string;
     businessAddress?: string;
     clientName: string;
+    clientPhone?: string;
     invoiceNumber: string;
     issueDate: string;
     dueDate?: string;
@@ -69,17 +73,21 @@ export interface InvoiceData {
     vatRate?: number;
     bankDetails?: BankDetails;
     deliveryInfo?: DeliveryInfo;
+    terms?: string;
+    signatureUrl?: string;
 }
 
 /** Order summary form data */
 export interface OrderData {
     customerName: string;
+    customerPhone?: string;
     items: LineItem[];
     totalAmount: number;
     deliveryStatus: DeliveryStatus;
     logoUrl?: string;
     bankDetails?: BankDetails;
     deliveryInfo?: DeliveryInfo;
+    terms?: string;
 }
 
 /** Saved document record in LocalStorage */

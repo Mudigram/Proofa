@@ -159,7 +159,7 @@ export default function ReceiptForm() {
 
                             <StaggerItem>
                                 <section className="flex flex-col gap-5 bg-white p-6 rounded-[2rem] border border-surface-100 shadow-sm">
-                                    <h3 className="text-[10px] font-black uppercase tracking-widest text-surface-400 px-1">Business & Customer</h3>
+                                    <h3 className="text-[10px] font-black uppercase tracking-widest text-surface-400 px-1">Business Details</h3>
                                     <Input
                                         label="BUSINESS NAME"
                                         placeholder="Enter business name"
@@ -167,12 +167,29 @@ export default function ReceiptForm() {
                                         onChange={(e) => handleChange("businessName", e.target.value)}
                                         error={errors.businessName}
                                     />
-                                    <Input
-                                        label="CUSTOMER NAME (OPTIONAL)"
-                                        placeholder="Enter customer name"
-                                        value={formData.customerName}
-                                        onChange={(e) => handleChange("customerName", e.target.value)}
-                                    />
+                                </section>
+                            </StaggerItem>
+
+                            <StaggerItem>
+                                <section className="flex flex-col gap-6 bg-white p-7 rounded-[2.5rem] border border-surface-100 shadow-sm border-b-4 border-b-surface-200">
+                                    <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-surface-400 px-1">Customer / Client</h3>
+                                    <div className="flex flex-col gap-4">
+                                        <Input
+                                            label="NAME (OPTIONAL)"
+                                            placeholder="Who paid you?"
+                                            value={formData.customerName || ""}
+                                            onChange={(e) => handleChange("customerName", e.target.value)}
+                                            className="bg-white"
+                                        />
+                                        <Input
+                                            label="PHONE NUMBER (OPTIONAL)"
+                                            placeholder="e.g. 08012345678"
+                                            type="tel"
+                                            value={formData.customerPhone || ""}
+                                            onChange={(e) => handleChange("customerPhone", e.target.value)}
+                                            className="bg-white"
+                                        />
+                                    </div>
                                 </section>
                             </StaggerItem>
 

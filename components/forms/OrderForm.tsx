@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Input, SegmentedControl, CurrencyInput } from "@/components/ui/FormInput";
+import { Input, SegmentedControl, CurrencyInput, TextArea } from "@/components/ui/FormInput";
 import { LogoUpload } from "@/components/ui/LogoUpload";
 import LivePreview from "@/components/LivePreview";
 import { OrderData, LineItem } from "@/lib/types";
@@ -192,14 +192,23 @@ export default function OrderForm() {
                             </StaggerItem>
 
                             <StaggerItem>
-                                <Input
-                                    label="CUSTOMER NAME"
-                                    placeholder="Who is this order for?"
-                                    value={formData.customerName}
-                                    onChange={(e) => handleChange("customerName", e.target.value)}
-                                    className="bg-white border-surface-200"
-                                    error={errors.customerName}
-                                />
+                                <div className="flex flex-col gap-4">
+                                    <Input
+                                        label="CUSTOMER NAME"
+                                        placeholder="Who is this order for?"
+                                        value={formData.customerName}
+                                        onChange={(e) => handleChange("customerName", e.target.value)}
+                                        className="bg-white border-surface-200"
+                                        error={errors.customerName}
+                                    />
+                                    <Input
+                                        label="CUSTOMER PHONE (OPTIONAL)"
+                                        placeholder="e.g. 07022334455"
+                                        value={formData.customerPhone || ""}
+                                        onChange={(e) => handleChange("customerPhone", e.target.value)}
+                                        className="bg-white border-surface-200"
+                                    />
+                                </div>
                             </StaggerItem>
 
                             <StaggerItem>
@@ -340,6 +349,18 @@ export default function OrderForm() {
                                             />
                                         </div>
                                     )}
+                                </section>
+                            </StaggerItem>
+
+                            <StaggerItem>
+                                <section className="flex flex-col gap-5 bg-white p-6 rounded-[2rem] border border-surface-100 shadow-sm">
+                                    <h3 className="text-[10px] font-black uppercase tracking-widest text-surface-400 px-1">Order Notes / Terms</h3>
+                                    <TextArea
+                                        placeholder="e.g. Delivery takes 3-5 days"
+                                        value={formData.terms || ""}
+                                        onChange={(e: any) => handleChange("terms", e.target.value)}
+                                        className="min-h-[80px]"
+                                    />
                                 </section>
                             </StaggerItem>
 

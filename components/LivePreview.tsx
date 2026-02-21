@@ -46,6 +46,12 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
         // Save to history automatically on export
         saveDocument(data, type, activeTemplate);
 
+        // Scroll to top for capture reliability on mobile
+        window.scrollTo(0, 0);
+
+        // Brief delay to allow mobile browsers to settle after scroll
+        await new Promise(r => setTimeout(r, 100));
+
         const dataUrl = await captureElementAsImage("document-preview");
         if (dataUrl) {
             downloadImage(dataUrl, `Proofa-${type}-${Date.now()}.png`);
@@ -58,6 +64,10 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
         setIsExporting(true);
         // Save to history automatically on share
         saveDocument(data, type, activeTemplate);
+
+        // Scroll to top for capture reliability on mobile
+        window.scrollTo(0, 0);
+        await new Promise(r => setTimeout(r, 100));
 
         const dataUrl = await captureElementAsImage("document-preview");
         if (dataUrl) {
@@ -94,6 +104,9 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
     };
 
     const handleWhatsApp = async () => {
+        window.scrollTo(0, 0);
+        await new Promise(r => setTimeout(r, 100));
+
         const dataUrl = await captureElementAsImage("document-preview");
         if (dataUrl) {
             shareOnWhatsApp(`I just generated a professional ${type} using Proofa! 🧾✨\n\nI've downloaded the document for you to share.`);

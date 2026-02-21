@@ -7,9 +7,10 @@ import Image from "next/image";
 interface LogoUploadProps {
     value?: string;
     onChange: (base64?: string) => void;
+    label?: string;
 }
 
-export const LogoUpload = ({ value, onChange }: LogoUploadProps) => {
+export const LogoUpload = ({ value, onChange, label = "Business Logo" }: LogoUploadProps) => {
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -73,7 +74,7 @@ export const LogoUpload = ({ value, onChange }: LogoUploadProps) => {
             )}
 
             <div className="flex flex-col gap-1">
-                <h4 className="font-black text-surface-900 text-lg tracking-tight">Business Logo</h4>
+                <h4 className="font-black text-surface-900 text-lg tracking-tight">{label}</h4>
                 <p className="text-[10px] text-surface-400 font-bold uppercase tracking-[0.2em] max-w-[180px] mx-auto leading-relaxed">
                     {value ? "Tap box to change logo" : "Professionalize your docs with your brand logo"}
                 </p>

@@ -77,87 +77,130 @@ export default function ClassicTemplate({ data, type }: TemplateProps) {
                     </p>
                 </div>
 
-                {/* Dashed separator */}
-                <div className="w-full border-b-[3px] border-dashed border-surface-600 my-6" />
+            </div>
 
-                {/* Item List */}
-                <div className="w-full flex flex-col gap-4 text-left">
-                    {isReceipt ? (
-                        <div className="flex justify-between items-baseline group">
-                            <div className="flex gap-2">
-                                <span className="text-surface-400 font-bold">1x</span>
-                                <span className="font-bold text-sm tracking-tight">{receipt.description || "General Purchase"}</span>
-                            </div>
-                            <span className="font-bold text-sm">{formatCurrency(receipt.amount)}</span>
-                        </div>
-                    ) : (
-                        items.map(item => (
-                            <div key={item.id} className="flex justify-between items-baseline">
-                                <div className="flex gap-2">
-                                    <span className="text-surface-400 font-bold">{item.quantity}x</span>
-                                    <span className="font-bold text-sm tracking-tight">{item.name || "Item"}</span>
-                                </div>
-                                <span className="font-bold text-sm">{formatCurrency(item.price * item.quantity)}</span>
-                            </div>
-                        ))
+            {/* Recipient Details (Modern Classic) */}
+            <div className="w-full flex justify-between items-start mb-6 px-2 text-left">
+                <div>
+                    <p className="text-[8px] font-black text-surface-300 uppercase tracking-widest mb-1">Customer</p>
+                    <p className="text-xs font-black uppercase">{isReceipt ? receipt.customerName || "Customer" : (isInvoice ? invoice.clientName : order.customerName)}</p>
+                    {(isReceipt ? receipt.customerPhone : (isInvoice ? invoice.clientPhone : order.customerPhone)) && (
+                        <p className="text-[9px] font-bold text-surface-400 mt-0.5">
+                            {isReceipt ? receipt.customerPhone : (isInvoice ? invoice.clientPhone : order.customerPhone)}
+                        </p>
                     )}
                 </div>
-
-                {/* Dotted separator */}
-                <div className="w-full border-b-[3px] border-dotted border-surface-600 my-8" />
-
-                {/* Summary */}
-                <div className="w-full flex flex-col gap-2">
-                    <div className="flex justify-between items-center text-xs font-bold text-surface-400">
-                        <span className="uppercase tracking-widest">Subtotal</span>
-                        <span>{formatCurrency(subtotal)}</span>
-                    </div>
-                    {isInvoice && includeVat && (
-                        <div className="flex justify-between items-center text-xs font-bold text-surface-400">
-                            <span className="uppercase tracking-widest">Tax ({vatRate}%)</span>
-                            <span>{formatCurrency(tax)}</span>
-                        </div>
-                    )}
-                    {data.deliveryInfo?.enabled && (
-                        <div className="flex justify-between items-center text-xs font-bold text-surface-400">
-                            <span className="uppercase tracking-widest">Delivery</span>
-                            <span>{formatCurrency(data.deliveryInfo.cost)}</span>
-                        </div>
-                    )}
-                    <div className="flex justify-between items-center mt-2 pt-4 border-t border-surface-50">
-                        <span className="text-xl font-black uppercase tracking-[0.2em] text-[#eb4d4b]">TOTAL</span>
-                        <span className="text-2xl font-black text-[#eb4d4b] tracking-tighter">{formatCurrency(total)}</span>
-                    </div>
-                </div>
-
-                {data.bankDetails?.enabled && (
-                    <div className="w-full mt-8 flex flex-col items-center bg-surface-50/50 p-6 rounded-2xl border-2 border-dashed border-surface-200">
-                        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-surface-300 mb-4">Transfer Details</p>
-                        <div className="flex flex-col gap-1 mb-4">
-                            <p className="text-xs font-black uppercase">{data.bankDetails.bankName}</p>
-                            <p className="text-[10px] font-bold text-surface-400 uppercase tracking-widest">{data.bankDetails.accountName}</p>
-                        </div>
-                        <div className="text-lg font-black tracking-[0.2em] px-4 py-2 bg-white rounded-lg shadow-sm border border-surface-100">
-                            {data.bankDetails.accountNumber}
-                        </div>
+                {isInvoice && invoice.dueDate && (
+                    <div className="text-right">
+                        <p className="text-[8px] font-black text-surface-300 uppercase tracking-widest mb-1">Payment Due</p>
+                        <p className="text-xs font-black uppercase text-[#eb4d4b]">{formatDate(invoice.dueDate)}</p>
                     </div>
                 )}
+            </div>
 
+            {/* Dashed separator */}
+            <div className="w-full border-b-[3px] border-dashed border-surface-600 my-6" />
 
-
-                <Branding />
-
-                {/* Serrated Bottom Edge */}
-                <div className="absolute -bottom-6 left-0 right-0 h-8 bg-white z-20 overflow-hidden">
-                    <div className="flex w-[200%] animate-none">
-                        {Array.from({ length: 40 }).map((_, i) => (
-                            <div
-                                key={i}
-                                className="w-4 h-4 bg-surface-100/50 transform rotate-45 -translate-y-1/2"
-                                style={{ marginLeft: '-1px' }}
-                            />
-                        ))}
+            {/* Item List */}
+            <div className="w-full flex flex-col gap-4 text-left">
+                {isReceipt ? (
+                    <div className="flex justify-between items-baseline group">
+                        <div className="flex gap-2">
+                            <span className="text-surface-400 font-bold">1x</span>
+                            <span className="font-bold text-sm tracking-tight">{receipt.description || "General Purchase"}</span>
+                        </div>
+                        <span className="font-bold text-sm">{formatCurrency(receipt.amount)}</span>
                     </div>
+                ) : (
+                    items.map(item => (
+                        <div key={item.id} className="flex justify-between items-baseline">
+                            <div className="flex gap-2">
+                                <span className="text-surface-400 font-bold">{item.quantity}x</span>
+                                <span className="font-bold text-sm tracking-tight">{item.name || "Item"}</span>
+                            </div>
+                            <span className="font-bold text-sm">{formatCurrency(item.price * item.quantity)}</span>
+                        </div>
+                    ))
+                )}
+            </div>
+
+            {/* Dotted separator */}
+            <div className="w-full border-b-[3px] border-dotted border-surface-600 my-8" />
+
+            {/* Summary */}
+            <div className="w-full flex flex-col gap-2">
+                <div className="flex justify-between items-center text-xs font-bold text-surface-400">
+                    <span className="uppercase tracking-widest">Subtotal</span>
+                    <span>{formatCurrency(subtotal)}</span>
+                </div>
+                {isInvoice && includeVat && (
+                    <div className="flex justify-between items-center text-xs font-bold text-surface-400">
+                        <span className="uppercase tracking-widest">Tax ({vatRate}%)</span>
+                        <span>{formatCurrency(tax)}</span>
+                    </div>
+                )}
+                {data.deliveryInfo?.enabled && (
+                    <div className="flex justify-between items-center text-xs font-bold text-surface-400">
+                        <span className="uppercase tracking-widest">Delivery</span>
+                        <span>{formatCurrency(data.deliveryInfo.cost)}</span>
+                    </div>
+                )}
+                <div className="flex justify-between items-center mt-2 pt-4 border-t border-surface-50">
+                    <span className="text-xl font-black uppercase tracking-[0.2em] text-[#eb4d4b]">TOTAL</span>
+                    <span className="text-2xl font-black text-[#eb4d4b] tracking-tighter">{formatCurrency(total)}</span>
+                </div>
+            </div>
+
+            {data.bankDetails?.enabled && (
+                <div className="w-full mt-8 flex flex-col items-center bg-surface-50/50 p-6 rounded-2xl border-2 border-dashed border-surface-200">
+                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-surface-300 mb-4">Transfer Details</p>
+                    <div className="flex flex-col gap-1 mb-4">
+                        <p className="text-xs font-black uppercase">{data.bankDetails.bankName}</p>
+                        <p className="text-[10px] font-bold text-surface-400 uppercase tracking-widest">{data.bankDetails.accountName}</p>
+                    </div>
+                    <div className="text-lg font-black tracking-[0.2em] px-4 py-2 bg-white rounded-lg shadow-sm border border-surface-100">
+                        {data.bankDetails.accountNumber}
+                    </div>
+                </div>
+            )}
+
+
+
+            {data.terms && (
+                <div className="w-full mt-8 p-4 border border-surface-200 rounded-xl relative overflow-hidden bg-surface-50/30">
+                    <div className="absolute top-0 left-0 w-1 h-full bg-[#eb4d4b]" />
+                    <p className="text-[10px] font-black text-surface-400 uppercase tracking-[0.2em] mb-2">Terms & Conditions</p>
+                    <p className="text-[10px] font-bold text-left italic leading-relaxed">{data.terms}</p>
+                </div>
+            )}
+
+            {(isReceipt || isInvoice) && (data as any).signatureUrl && (
+                <div className="w-full mt-12 flex flex-col items-center">
+                    <div className="w-32 h-16 relative mb-2 opacity-80 contrast-125">
+                        <Image
+                            src={(data as any).signatureUrl}
+                            alt="Signature"
+                            fill
+                            unoptimized
+                            className="object-contain grayscale"
+                        />
+                    </div>
+                    <p className="text-[9px] font-black uppercase tracking-[0.3em] text-surface-300">Authorized Signature</p>
+                </div>
+            )}
+
+            <Branding />
+
+            {/* Serrated Bottom Edge */}
+            <div className="absolute -bottom-6 left-0 right-0 h-8 bg-white z-20 overflow-hidden">
+                <div className="flex w-[200%] animate-none">
+                    {Array.from({ length: 40 }).map((_, i) => (
+                        <div
+                            key={i}
+                            className="w-4 h-4 bg-surface-100/50 transform rotate-45 -translate-y-1/2"
+                            style={{ marginLeft: '-1px' }}
+                        />
+                    ))}
                 </div>
             </div>
         </div>

@@ -85,6 +85,11 @@ export default function BoldTemplate({ data, type }: TemplateProps) {
                     <div>
                         <p className="text-[10px] font-black uppercase tracking-widest text-surface-300 mb-1">Prepared For</p>
                         <p className="text-sm font-black italic">{isReceipt ? receipt.customerName || "Customer" : (isInvoice ? invoice.clientName : order.customerName)}</p>
+                        {(isReceipt ? receipt.customerPhone : (isInvoice ? invoice.clientPhone : order.customerPhone)) && (
+                            <p className="text-[10px] font-black text-surface-400 mt-0.5">
+                                {isReceipt ? receipt.customerPhone : (isInvoice ? invoice.clientPhone : order.customerPhone)}
+                            </p>
+                        )}
                     </div>
                     {isInvoice && invoice.dueDate && (
                         <div className="text-right">
@@ -170,7 +175,31 @@ export default function BoldTemplate({ data, type }: TemplateProps) {
                     </div>
                 )}
 
-                <Branding />
+                {data.terms && (
+                    <div className="mt-8 border-l-4 border-surface-900 pl-4 py-1">
+                        <p className="text-[10px] font-black uppercase tracking-widest text-surface-300 mb-1">Notice</p>
+                        <p className="text-xs font-black italic text-surface-600">{data.terms}</p>
+                    </div>
+                )}
+
+                {(isReceipt || isInvoice) && (data as any).signatureUrl && (
+                    <div className="mt-12 flex justify-end">
+                        <div className="flex flex-col items-center gap-2">
+                            <div className="w-32 h-16 relative">
+                                <Image
+                                    src={(data as any).signatureUrl}
+                                    alt="Signature"
+                                    fill
+                                    unoptimized
+                                    className="object-contain"
+                                />
+                            </div>
+                            <div className="px-4 py-1.5 bg-surface-900 text-white text-[8px] font-black uppercase tracking-[0.2em] rounded-full">
+                                Verified Stamp
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );
