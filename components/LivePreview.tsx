@@ -48,6 +48,11 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
         window.scrollTo(0, 0);
         await new Promise(r => setTimeout(r, 100));
 
+        const element = document.getElementById("document-preview");
+        if (element) {
+            console.log(`[Export] PDF Document dimensions: ${element.scrollWidth}x${element.scrollHeight}`);
+        }
+
         const success = await downloadAsPDF("document-preview", `Proofa-${type}-${Date.now()}.pdf`);
         if (success) {
             showToast(`${type.charAt(0).toUpperCase() + type.slice(1)} saved as PDF!`, "success");
@@ -67,6 +72,14 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
 
         // Brief delay to allow mobile browsers to settle after scroll
         await new Promise(r => setTimeout(r, 100));
+
+        const element = document.getElementById("document-preview");
+        if (element) {
+            console.log(`[Export] Document dimensions: ${element.scrollWidth}x${element.scrollHeight}`);
+            if (element.scrollHeight > 1800) {
+                showToast("Document is very long, export might take a moment.", "info");
+            }
+        }
 
         const dataUrl = await captureElementAsImage("document-preview");
         if (dataUrl) {

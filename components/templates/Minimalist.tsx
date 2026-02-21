@@ -35,11 +35,11 @@ export default function MinimalistTemplate({ data, type }: TemplateProps) {
     const total = (isReceipt ? receipt.amount : (isOrder ? order.totalAmount : subtotal + tax)) + deliveryCost;
 
     return (
-        <div className="relative bg-white p-8 min-h-[500px] flex flex-col font-sans text-surface-900 shadow-2xl mx-auto max-w-[480px] border border-surface-100 overflow-hidden font-heading" id="document-preview">
+        <div className="relative bg-white p-8 min-h-[600px] flex flex-col font-sans text-surface-900 shadow-2xl mx-auto max-w-[480px] border border-surface-100 overflow-hidden font-heading" id="document-preview">
             <Watermark />
 
             {/* Header */}
-            <div className="flex justify-between items-start mb-8">
+            <div className="flex justify-between items-start mb-4">
                 <div>
                     <h1 className="text-2xl font-black uppercase tracking-tighter mb-1">
                         {isReceipt ? "Payment Receipt" : (isInvoice ? "Invoice" : "Order Summary")}
@@ -68,7 +68,7 @@ export default function MinimalistTemplate({ data, type }: TemplateProps) {
             </div>
 
             {/* Info Grid */}
-            <div className="grid grid-cols-2 gap-8 mb-8 pb-6 border-b border-surface-100">
+            <div className="grid grid-cols-2 gap-8 mb-4 pb-2 border-b border-surface-100">
                 <div>
                     <p className="text-[10px] font-black text-surface-300 uppercase tracking-widest mb-1.5"> {isReceipt ? "From" : "Billed By"}</p>
                     <p className="text-xs font-bold">{isInvoice ? invoice.businessName : (isReceipt ? receipt.businessName : "Proofa Store")}</p>
@@ -133,7 +133,7 @@ export default function MinimalistTemplate({ data, type }: TemplateProps) {
             </div>
 
             {/* Summary Section */}
-            <div className="mt-8 pt-6 border-t-2 border-surface-900 flex flex-col gap-2">
+            <div className="mt-2 pt-2 border-t-2 border-surface-900 flex flex-col gap-2">
                 {isInvoice && includeVat && (
                     <>
                         <div className="flex justify-between items-center text-xs">
@@ -159,7 +159,7 @@ export default function MinimalistTemplate({ data, type }: TemplateProps) {
             </div>
 
             {isInvoice && invoice.notes && (
-                <div className="mt-8">
+                <div className="mt-4">
                     <p className="text-[10px] font-black text-surface-300 uppercase tracking-widest mb-1.5">Notes</p>
                     <p className="text-[10px] text-surface-500 font-medium leading-relaxed italic border-l-2 border-surface-100 pl-3">
                         {invoice.notes}
@@ -168,27 +168,26 @@ export default function MinimalistTemplate({ data, type }: TemplateProps) {
             )}
 
             {data.bankDetails?.enabled && (
-                <div className="mt-8 p-4 bg-surface-50 rounded-xl border border-surface-100">
-                    <p className="text-[10px] font-black text-surface-300 uppercase tracking-widest mb-2">Payment Information</p>
-                    <div className="grid grid-cols-2 gap-4">
+                <div className="mt-6 p-3 bg-surface-50 rounded-xl border border-surface-100">
+                    <div className="flex justify-between items-center mb-2">
+                        <p className="text-[10px] font-black text-surface-300 uppercase tracking-widest leading-none">Bank Details</p>
+                        <p className="text-xs font-black text-primary-600 leading-none">{data.bankDetails.bankName}</p>
+                    </div>
+                    <div className="flex justify-between items-end pt-2 border-t border-surface-100/50">
                         <div>
-                            <p className="text-[10px] text-surface-400 font-bold uppercase">Bank Name</p>
-                            <p className="text-xs font-black">{data.bankDetails.bankName}</p>
+                            <p className="text-[9px] text-surface-400 font-bold uppercase mb-0.5">Acct Name</p>
+                            <p className="text-xs font-black leading-none">{data.bankDetails.accountName}</p>
                         </div>
                         <div className="text-right">
-                            <p className="text-[10px] text-surface-400 font-bold uppercase">Account Name</p>
-                            <p className="text-xs font-black">{data.bankDetails.accountName}</p>
+                            <p className="text-[9px] text-surface-400 font-bold uppercase mb-0.5">Acct Number</p>
+                            <p className="text-sm font-black tracking-widest text-primary-600 leading-none">{data.bankDetails.accountNumber}</p>
                         </div>
-                    </div>
-                    <div className="mt-3 pt-3 border-t border-surface-100/50">
-                        <p className="text-[10px] text-surface-400 font-bold uppercase">Account Number</p>
-                        <p className="text-lg font-black tracking-widest text-primary-600 underline decoration-2">{data.bankDetails.accountNumber}</p>
                     </div>
                 </div>
             )}
 
             {data.terms && (
-                <div className="mt-8">
+                <div className="mt-4">
                     <p className="text-[10px] font-black text-surface-300 uppercase tracking-widest mb-1.5">Important Notes</p>
                     <p className="text-[10px] text-primary-600 font-bold leading-relaxed bg-primary-50 p-3 rounded-lg border-l-4 border-primary-500">
                         {data.terms}

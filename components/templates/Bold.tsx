@@ -40,9 +40,9 @@ export default function BoldTemplate({ data, type }: TemplateProps) {
             {/* Bold Top Stripe */}
             <div className="h-4 bg-primary-500 w-full" />
 
-            <div className="p-8 flex-1 flex flex-col">
+            <div className="p-4 flex-1 flex flex-col">
                 {/* Header */}
-                <div className="flex flex-col mb-8">
+                <div className="flex flex-col">
                     <div className="flex justify-between items-start mb-6">
                         <div className="w-16 h-16 bg-surface-900 text-white flex items-center justify-center text-4xl font-black rounded-full shadow-lg overflow-hidden">
                             {logoUrl ? (
@@ -81,7 +81,7 @@ export default function BoldTemplate({ data, type }: TemplateProps) {
                 </div>
 
                 {/* Recipient Box */}
-                <div className="bg-surface-50 p-6 rounded-2xl mb-8 flex justify-between items-center border border-surface-100">
+                <div className="bg-surface-50 p-2 rounded-2xl mb-4 flex justify-between items-center border border-surface-100">
                     <div>
                         <p className="text-[10px] font-black uppercase tracking-widest text-surface-300 mb-1">Prepared For</p>
                         <p className="text-sm font-black italic">{isReceipt ? receipt.customerName || "Customer" : (isInvoice ? invoice.clientName : order.customerName)}</p>
@@ -101,9 +101,8 @@ export default function BoldTemplate({ data, type }: TemplateProps) {
 
                 {/* Items */}
                 <div className="flex-1">
-                    <div className="grid grid-cols-[1fr,100px] gap-4 mb-4 px-2">
+                    <div className="grid grid-cols-[1fr,100px] gap-4 mb-2 px-2">
                         <span className="text-[10px] font-black uppercase tracking-[0.2em] text-surface-400">Description</span>
-                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-surface-400 text-right">Amount</span>
                     </div>
 
                     {isReceipt ? (
@@ -115,14 +114,14 @@ export default function BoldTemplate({ data, type }: TemplateProps) {
                             </div>
                         </div>
                     ) : (
-                        <div className="flex flex-col gap-3">
+                        <div className="flex flex-col">
                             {items.map((item) => (
                                 <div key={item.id} className="flex justify-between items-center bg-white border border-surface-100 p-4 rounded-xl group hover:border-primary-500 transition-colors">
                                     <div>
                                         <p className="text-sm font-black">{item.name || "Item"}</p>
                                         <p className="text-[10px] font-bold text-surface-400 uppercase tracking-widest">{item.quantity} QTY × {formatCurrency(item.price)}</p>
                                     </div>
-                                    <p className="text-sm font-black">{formatCurrency(item.quantity * item.price)}</p>
+                                    <p className="text-sm font-black text-right">{formatCurrency(item.quantity * item.price)}</p>
                                 </div>
                             ))}
                         </div>
@@ -130,8 +129,8 @@ export default function BoldTemplate({ data, type }: TemplateProps) {
                 </div>
 
                 {/* Totals Box */}
-                <div className="mt-8 bg-surface-900 text-white p-6 rounded-[2rem] flex flex-col gap-4 shadow-2xl relative overflow-hidden">
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-primary-500 opacity-20 blur-3xl -translate-y-1/2 translate-x-1/2" />
+                <div className="mt-4 bg-surface-900 text-white p-4 rounded-[2rem] flex flex-col gap-2 shadow-2xl relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-24 h-24 bg-primary-500 opacity-20 blur-3xl -translate-y-1/2 translate-x-1/2" />
 
                     {(isInvoice && includeVat) || data.deliveryInfo?.enabled ? (
                         <div className="flex flex-col gap-2 border-b border-white/10 pb-4">
@@ -159,24 +158,26 @@ export default function BoldTemplate({ data, type }: TemplateProps) {
                 </div>
 
                 {data.bankDetails?.enabled && (
-                    <div className="mt-8 p-6 bg-primary-50 rounded-2xl border-2 border-primary-100 flex flex-col gap-4">
+                    <div className="mt-4 p-4 bg-primary-50 rounded-2xl border-2 border-primary-100 flex flex-col gap-2">
                         <div className="flex justify-between items-center">
                             <span className="text-[10px] font-black uppercase tracking-widest text-primary-400">Bank Transfer</span>
                             <span className="text-xs font-black text-primary-600">{data.bankDetails.bankName}</span>
                         </div>
-                        <div>
-                            <p className="text-[10px] font-black uppercase tracking-widest text-surface-400 mb-1">Account Holder</p>
-                            <p className="text-sm font-black">{data.bankDetails.accountName}</p>
-                        </div>
-                        <div className="bg-white p-4 rounded-xl border border-primary-200">
-                            <p className="text-[10px] font-black uppercase tracking-widest text-primary-400 mb-1 text-center">Account Number</p>
-                            <p className="text-2xl font-black tracking-[0.2em] text-primary-600 text-center">{data.bankDetails.accountNumber}</p>
+                        <div className="flex justify-between items-center bg-white p-3 rounded-xl border border-primary-200">
+                            <div>
+                                <p className="text-[9px] font-black uppercase tracking-widest text-surface-400 mb-0.5">Account Holder</p>
+                                <p className="text-xs font-black">{data.bankDetails.accountName}</p>
+                            </div>
+                            <div className="text-right">
+                                <p className="text-[9px] font-black uppercase tracking-widest text-primary-400 mb-0.5">Account Number</p>
+                                <p className="text-sm font-black tracking-widest text-primary-600">{data.bankDetails.accountNumber}</p>
+                            </div>
                         </div>
                     </div>
                 )}
 
                 {data.terms && (
-                    <div className="mt-8 border-l-4 border-surface-900 pl-4 py-1">
+                    <div className="mt-4 border-l-4 border-surface-900 pl-4 py-1">
                         <p className="text-[10px] font-black uppercase tracking-widest text-surface-300 mb-1">Notice</p>
                         <p className="text-xs font-black italic text-surface-600">{data.terms}</p>
                     </div>

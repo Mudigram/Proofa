@@ -152,14 +152,16 @@ export default function ClassicTemplate({ data, type }: TemplateProps) {
             </div>
 
             {data.bankDetails?.enabled && (
-                <div className="w-full mt-8 flex flex-col items-center bg-surface-50/50 p-6 rounded-2xl border-2 border-dashed border-surface-200">
-                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-surface-300 mb-4">Transfer Details</p>
-                    <div className="flex flex-col gap-1 mb-4">
-                        <p className="text-xs font-black uppercase">{data.bankDetails.bankName}</p>
-                        <p className="text-[10px] font-bold text-surface-400 uppercase tracking-widest">{data.bankDetails.accountName}</p>
-                    </div>
-                    <div className="text-lg font-black tracking-[0.2em] px-4 py-2 bg-white rounded-lg shadow-sm border border-surface-100">
-                        {data.bankDetails.accountNumber}
+                <div className="w-full mt-6 flex flex-col bg-surface-50/50 p-4 rounded-2xl border-2 border-dashed border-surface-200">
+                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-surface-300 mb-3 text-center">Transfer Details</p>
+                    <div className="flex justify-between items-end px-2">
+                        <div>
+                            <p className="text-xs font-black uppercase mb-0.5">{data.bankDetails.bankName}</p>
+                            <p className="text-[9px] font-bold text-surface-400 uppercase tracking-widest">{data.bankDetails.accountName}</p>
+                        </div>
+                        <div className="text-sm font-black tracking-[0.1em] px-3 py-1.5 bg-white rounded-lg shadow-sm border border-surface-100">
+                            {data.bankDetails.accountNumber}
+                        </div>
                     </div>
                 </div>
             )}

@@ -21,8 +21,10 @@ export const captureElementAsImage = async (elementId: string): Promise<string |
             useCORS: true,
             logging: true,
             backgroundColor: "#ffffff",
-            width: originalElement.offsetWidth,
-            height: originalElement.offsetHeight,
+            width: originalElement.scrollWidth,
+            height: originalElement.scrollHeight,
+            windowWidth: originalElement.scrollWidth,
+            windowHeight: originalElement.scrollHeight,
             onclone: (clonedDoc) => {
                 const element = clonedDoc.getElementById(elementId);
                 if (element) {
@@ -73,6 +75,10 @@ export const downloadAsPDF = async (elementId: string, filename: string) => {
             allowTaint: true,
             logging: false,
             backgroundColor: "#ffffff",
+            width: originalElement.scrollWidth,
+            height: originalElement.scrollHeight,
+            windowWidth: originalElement.scrollWidth,
+            windowHeight: originalElement.scrollHeight,
             onclone: (clonedDoc) => {
                 const element = clonedDoc.getElementById(elementId);
                 if (element) {
