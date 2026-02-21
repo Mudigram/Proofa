@@ -1,10 +1,11 @@
-import domtoimage from "dom-to-image-more";
-
 /**
  * Captures a DOM element and returns it as a high-quality PNG data URL.
  * Uses dom-to-image-more for better mobile compatibility.
  */
 export const captureElementAsImage = async (elementId: string): Promise<string | null> => {
+    // Ensure we are in the browser
+    if (typeof window === 'undefined') return null;
+
     const originalElement = document.getElementById(elementId);
     if (!originalElement) {
         console.error(`Element with id ${elementId} not found.`);
@@ -24,10 +25,13 @@ export const captureElementAsImage = async (elementId: string): Promise<string |
     document.body.appendChild(clone);
 
     try {
+        // Dynamic import to avoid SSR errors (ReferenceError: Node is not defined)
+        const domtoimage = (await import("dom-to-image-more")).default;
+
         // Wait for images in the clone to load
         const images = clone.getElementsByTagName('img');
         await Promise.all(Array.from(images).map(img => {
-            if (img.complete) return Promise.resolve();
+            if ((img as HTMLImageElement).complete) return Promise.resolve();
             return new Promise(resolve => {
                 img.onload = resolve;
                 img.onerror = resolve;
@@ -46,15 +50,19 @@ export const captureElementAsImage = async (elementId: string): Promise<string |
         console.error("Error capturing element with dom-to-image-more:", error);
         return null;
     } finally {
-        document.body.removeChild(clone);
+        const clone = document.getElementById(`clone-${elementId}`);
+        if (clone && clone.parentNode) {
+            clone.parentNode.removeChild(clone);
+        }
     }
 };
 
 /**
  * Triggers a download of a data URL image.
- * Uses Blobs for better mobile compatibility.
  */
 export const downloadImage = (dataUrl: string, filename: string) => {
+    if (typeof window === 'undefined') return;
+
     try {
         const link = document.createElement("a");
         link.href = dataUrl;
