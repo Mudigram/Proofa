@@ -1,9 +1,8 @@
 /**
- * Captures a DOM element and returns it as a high-quality PNG data URL.
- * Uses dom-to-image-more for better mobile compatibility.
+ * Captures a DOM element and returns it as a high-quality PNG data URL or triggers a PDF download.
+ * Uses html2canvas for refined image capture and jspdf for professional PDF export.
  */
 export const captureElementAsImage = async (elementId: string): Promise<string | null> => {
-    // Ensure we are in the browser
     if (typeof window === 'undefined') return null;
 
     const originalElement = document.getElementById(elementId);
@@ -12,48 +11,90 @@ export const captureElementAsImage = async (elementId: string): Promise<string |
         return null;
     }
 
-    // Clone the element to avoid issues with parent scaling/overflow
-    const clone = originalElement.cloneNode(true) as HTMLElement;
-    clone.style.position = 'fixed';
-    clone.style.top = '-9999px';
-    clone.style.left = '0';
-    clone.style.width = originalElement.offsetWidth + 'px';
-    clone.style.transform = 'none';
-    clone.style.margin = '0';
-    clone.id = `clone-${elementId}`;
-
-    document.body.appendChild(clone);
-
     try {
-        // Dynamic import to avoid SSR errors (ReferenceError: Node is not defined)
-        const domtoimage = (await import("dom-to-image-more")).default;
+        const html2canvas = (await import("html2canvas")).default;
 
-        // Wait for images in the clone to load
-        const images = clone.getElementsByTagName('img');
-        await Promise.all(Array.from(images).map(img => {
-            if ((img as HTMLImageElement).complete) return Promise.resolve();
-            return new Promise(resolve => {
-                img.onload = resolve;
-                img.onerror = resolve;
-            });
-        }));
-
-        const dataUrl = await domtoimage.toPng(clone, {
-            quality: 0.95,
-            bgcolor: "#ffffff",
-            width: originalElement.offsetWidth,
-            height: originalElement.offsetHeight,
+        const canvas = await html2canvas(originalElement, {
+            scale: 3, // High resolution for crispness
+            useCORS: true,
+            logging: false,
+            backgroundColor: "#ffffff",
+            windowWidth: originalElement.scrollWidth,
+            windowHeight: originalElement.scrollHeight,
+            onclone: (clonedDoc) => {
+                const element = clonedDoc.getElementById(elementId);
+                if (element) {
+                    // Remove shadows and artifacts that cause "buggy boxes"
+                    const allElements = element.getElementsByTagName('*');
+                    for (let i = 0; i < allElements.length; i++) {
+                        const el = allElements[i] as HTMLElement;
+                        el.style.boxShadow = 'none';
+                        el.style.textShadow = 'none';
+                        el.style.animation = 'none';
+                        el.style.transition = 'none';
+                    }
+                }
+            }
         });
 
-        return dataUrl;
+        return canvas.toDataURL("image/png", 1.0);
     } catch (error) {
-        console.error("Error capturing element with dom-to-image-more:", error);
+        console.error("Error capturing element:", error);
         return null;
-    } finally {
-        const clone = document.getElementById(`clone-${elementId}`);
-        if (clone && clone.parentNode) {
-            clone.parentNode.removeChild(clone);
-        }
+    }
+};
+
+/**
+ * Generates and downloads a professional PDF of the document.
+ */
+export const downloadAsPDF = async (elementId: string, filename: string) => {
+    if (typeof window === 'undefined') return;
+
+    const originalElement = document.getElementById(elementId);
+    if (!originalElement) return;
+
+    try {
+        const jspdf = (await import("jspdf")).jsPDF;
+        const html2canvas = (await import("html2canvas")).default;
+
+        const canvas = await html2canvas(originalElement, {
+            scale: 2, // 2x is enough for sharp PDF while keeping file size small
+            useCORS: true,
+            logging: false,
+            backgroundColor: "#ffffff",
+            onclone: (clonedDoc) => {
+                const element = clonedDoc.getElementById(elementId);
+                if (element) {
+                    const allElements = element.getElementsByTagName('*');
+                    for (let i = 0; i < allElements.length; i++) {
+                        const el = allElements[i] as HTMLElement;
+                        el.style.boxShadow = 'none';
+                        el.style.textShadow = 'none';
+                        el.style.animation = 'none';
+                    }
+                }
+            }
+        });
+
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jspdf({
+            orientation: 'portrait',
+            unit: 'mm',
+            format: 'a4'
+        });
+
+        const imgProps = pdf.getImageProperties(imgData);
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+
+        // If content is longer than A4, we might need multiple pages or taller page
+        // For Proofa invoices, a single long page or standard A4 usually works
+        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+        pdf.save(filename);
+        return true;
+    } catch (error) {
+        console.error("PDF generation failed:", error);
+        return false;
     }
 };
 
@@ -72,11 +113,6 @@ export const downloadImage = (dataUrl: string, filename: string) => {
         document.body.removeChild(link);
     } catch (e) {
         console.error("Download failed", e);
-        // Fallback for mobile restricted environments
-        const newWindow = window.open();
-        if (newWindow) {
-            newWindow.document.write(`<img src="${dataUrl}" style="width:100%" />`);
-            newWindow.document.title = filename;
-        }
+        window.open(dataUrl, '_blank');
     }
 };
