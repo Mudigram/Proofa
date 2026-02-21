@@ -1,26 +1,97 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* ===========================
+   Proofa Design System
+   =========================== */
+
+@theme {
+  /* ── Brand Colors ── */
+  /* Burnt Orange Palette (Rich, Earthy, Premium) */
+  --color-primary-50: #fff4ed;
+  --color-primary-100: #ffe5d6;
+  --color-primary-200: #ffd1b3;
+  --color-primary-300: #ffb185;
+  --color-primary-400: #ff814d;
+  --color-primary-500: #e8590c;
+  /* Base Burnt Orange */
+  --color-primary-600: #d44d0b;
+  --color-primary-700: #bc420a;
+  --color-primary-800: #9e360d;
+  --color-primary-900: #7f2e0e;
+
+  /* Dashboard Dark Theme Element (Switched from Navy to Rich Charcoal/Black) */
+  --color-secondary-900: #1a1a1a;
+  --color-secondary-950: #0d0d0d;
+
+  /* ── Surface / Neutral ── */
+  --color-surface-50: #fafafa;
+  --color-surface-100: #f5f5f5;
+  --color-surface-200: #eeeeee;
+  --color-surface-300: #e0e0e0;
+  --color-surface-400: #bdbdbd;
+  --color-surface-500: #9e9e9e;
+  --color-surface-600: #757575;
+  --color-surface-700: #616161;
+  --color-surface-800: #424242;
+  --color-surface-900: #212121;
+
+  /* ── Radius Scale ── */
+  --radius-xs: 0.25rem;
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.25rem;
+  --radius-2xl: 1.5rem;
+  --radius-3xl: 2rem;
+
+  /* ── Font Family ── */
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-heading: "Outfit", var(--font-sans);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* ── Base Resets ── */
+* {
+  -webkit-tap-highlight-color: transparent;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+h4,
+.font-heading {
+  font-family: var(--font-heading);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--color-surface-50);
+  color: var(--color-surface-900);
+  min-height: 100dvh;
+}
+
+/* ── Mobile container ── */
+.app-container {
+  max-width: 480px;
+  margin-inline: auto;
+  padding-inline: 1.25rem;
+  width: 100%;
+}
+
+/* ── Custom UI Helpers ── */
+.glass-effect {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.shadow-card {
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+}
+
+.shadow-card-hover:hover {
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.07), 0 4px 6px -4px rgb(0 0 0 / 0.07);
 }

@@ -1,36 +1,67 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# PROOFA 🧾✨
 
-## Getting Started
+**Professionalize your business documentation in seconds.**
 
-First, run the development server:
+Proofa is a high-fidelity, mobile-first document generator designed specifically for Nigerian SMEs, entrepreneurs, and freelancers. Create clean, modern receipts, invoices, and order summaries optimized for instant sharing via WhatsApp.
+
+---
+
+## 🚀 Key Features
+
+- **Multi-Document Support**: Generate Receipts, Invoices, and Order Summaries with ease.
+- **Premium Templates**: Choose between **Minimalist**, **Bold**, and **Classic** designs.
+- **WhatsApp Optimization**: Export documents as high-quality images ready for sharing.
+- **Local History**: Your 10 most recent documents are saved locally for quick access.
+- **Branding**: Upload your business logo to create professional, branded documents.
+- **Nigerian Context**: Pre-configured with Naira (₦) currency and local VAT standards.
+
+---
+
+## 🛠️ Built With
+
+- **Framework**: [Next.js 15+](https://nextjs.org/) (App Router)
+- **Styling**: [Tailwind CSS 4](https://tailwindcss.com/)
+- **Animations**: [Framer Motion](https://www.framer.com/motion/)
+- **Icons**: [Lucide React](https://lucide.dev/)
+- **Typography**: [Outfit](https://fonts.google.com/specimen/Outfit) & [Inter](https://fonts.google.com/specimen/Inter)
+- **Export**: `html2canvas` & `dom-to-image-more`
+
+---
+
+## 📅 Future Roadmap (Monetization & Scaling)
+
+We believe in empowering businesses. Here's what's coming next:
+
+### 🌟 Proofa Pro (Subscription)
+- **Unlimited History**: Cloud-sync all your documents across devices.
+- **No Watermarks**: Professional branding without the "Created with Proofa" tag.
+- **Advanced Analytics**: Insights into your sales and business document flow.
+- **Exclusive Templates**: Access to premium, industry-specific designs.
+- **PDF Export**: Generate high-quality PDF versions for formal email correspondence.
+
+---
+
+## 🏗️ Getting Started
+
+First, install the dependencies:
+
+```bash
+npm install
+```
+
+Then, run the development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## ⚖️ Privacy
+Proofa (MVP) stores all document data locally in your browser's `localStorage`. We do not store your business or customer data on our servers in this version.
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+*Made with ❤️ for the Nigerian Business Community.*
