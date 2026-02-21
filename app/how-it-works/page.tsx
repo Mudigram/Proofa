@@ -220,16 +220,25 @@ export default function HowItWorks() {
                     </StaggerItem>
                 </StaggerContainer>
 
-                {/* Footer Branding */}
                 <footer className="mt-20 pb-10 text-center">
                     <div className="flex flex-col items-center justify-center gap-4">
-                        <div className="w-10 h-10 rounded-full bg-white border border-surface-100 flex items-center justify-center shadow-sm">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#e8590c" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                                <polyline points="14 2 14 8 20 8" />
-                            </svg>
+                        <div className="flex flex-col items-center justify-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-white border border-surface-100 flex items-center justify-center shadow-sm">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#e8590c" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                                    <polyline points="14 2 14 8 20 8" />
+                                </svg>
+                            </div>
+                            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-surface-300">Proofa v1.0</span>
                         </div>
-                        <span className="text-[10px] font-black uppercase tracking-[0.3em] text-surface-300">Proofa v1.0</span>
+                        <a
+                            href="https://mudiaga-dev.vercel.app/"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-[10px] font-black text-surface-400 uppercase tracking-[0.3em] hover:text-primary-500 transition-all flex items-center gap-2"
+                        >
+                            Built with <span className="text-red-500 animate-pulse text-xs">❤️</span> by Mudi
+                        </a>
                     </div>
                 </footer>
             </main>

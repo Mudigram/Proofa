@@ -58,9 +58,19 @@ export default function ProfilePage() {
                     </StaggerItem>
 
                     <StaggerItem>
-                        <button className="w-full mt-10 py-5 bg-surface-100 text-surface-400 font-black uppercase text-[10px] tracking-[0.3em] rounded-2xl active:scale-95 transition-all">
-                            Sign Out
-                        </button>
+                        <div className="flex flex-col gap-4 items-center">
+                            <button className="w-full mt-10 py-5 bg-surface-100 text-surface-400 font-black uppercase text-[10px] tracking-[0.3em] rounded-2xl active:scale-95 transition-all">
+                                Sign Out
+                            </button>
+                            <a
+                                href="https://mudiaga-dev.vercel.app/"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="mt-8 px-6 py-3 bg-primary-500/5 border border-primary-500/10 rounded-full text-[10px] font-black text-primary-600 uppercase tracking-[0.2em] hover:bg-primary-500 hover:text-white transition-all transform active:scale-95 shadow-sm"
+                            >
+                                Built by Mudiaga
+                            </a>
+                        </div>
                     </StaggerItem>
                 </StaggerContainer>
             </main>
