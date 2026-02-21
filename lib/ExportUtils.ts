@@ -1,31 +1,52 @@
-import html2canvas from "html2canvas";
+import domtoimage from "dom-to-image-more";
 
 /**
  * Captures a DOM element and returns it as a high-quality PNG data URL.
+ * Uses dom-to-image-more for better mobile compatibility.
  */
 export const captureElementAsImage = async (elementId: string): Promise<string | null> => {
-    const element = document.getElementById(elementId);
-    if (!element) {
+    const originalElement = document.getElementById(elementId);
+    if (!originalElement) {
         console.error(`Element with id ${elementId} not found.`);
         return null;
     }
 
+    // Clone the element to avoid issues with parent scaling/overflow
+    const clone = originalElement.cloneNode(true) as HTMLElement;
+    clone.style.position = 'fixed';
+    clone.style.top = '-9999px';
+    clone.style.left = '0';
+    clone.style.width = originalElement.offsetWidth + 'px';
+    clone.style.transform = 'none';
+    clone.style.margin = '0';
+    clone.id = `clone-${elementId}`;
+
+    document.body.appendChild(clone);
+
     try {
-        // We use a scale of 2 for a good balance between quality and mobile performance
-        const canvas = await html2canvas(element, {
-            scale: 2,
-            useCORS: true,
-            logging: false,
-            backgroundColor: "#ffffff",
-            allowTaint: true,
-            scrollX: 0,
-            scrollY: 0, // Better to use 0 if we scroll to top
+        // Wait for images in the clone to load
+        const images = clone.getElementsByTagName('img');
+        await Promise.all(Array.from(images).map(img => {
+            if (img.complete) return Promise.resolve();
+            return new Promise(resolve => {
+                img.onload = resolve;
+                img.onerror = resolve;
+            });
+        }));
+
+        const dataUrl = await domtoimage.toPng(clone, {
+            quality: 0.95,
+            bgcolor: "#ffffff",
+            width: originalElement.offsetWidth,
+            height: originalElement.offsetHeight,
         });
 
-        return canvas.toDataURL("image/png", 0.9);
+        return dataUrl;
     } catch (error) {
-        console.error("Error capturing element:", error);
+        console.error("Error capturing element with dom-to-image-more:", error);
         return null;
+    } finally {
+        document.body.removeChild(clone);
     }
 };
 
@@ -35,33 +56,19 @@ export const captureElementAsImage = async (elementId: string): Promise<string |
  */
 export const downloadImage = (dataUrl: string, filename: string) => {
     try {
-        // Convert dataUrl to Blob for better mobile support
-        const parts = dataUrl.split(';base64,');
-        const contentType = parts[0].split(':')[1];
-        const raw = window.atob(parts[1]);
-        const rawLength = raw.length;
-        const uInt8Array = new Uint8Array(rawLength);
-
-        for (let i = 0; i < rawLength; ++i) {
-            uInt8Array[i] = raw.charCodeAt(i);
-        }
-
-        const blob = new Blob([uInt8Array], { type: contentType });
-        const url = URL.createObjectURL(blob);
-
-        const link = document.body.appendChild(document.createElement("a"));
-        link.href = url;
+        const link = document.createElement("a");
+        link.href = dataUrl;
         link.download = filename;
-        link.style.display = 'none';
+        document.body.appendChild(link);
         link.click();
-
-        // Cleanup
-        setTimeout(() => {
-            URL.revokeObjectURL(url);
-            document.body.removeChild(link);
-        }, 100);
+        document.body.removeChild(link);
     } catch (e) {
-        console.error("Download failed, falling back to window.open", e);
-        window.open(dataUrl, '_blank');
+        console.error("Download failed", e);
+        // Fallback for mobile restricted environments
+        const newWindow = window.open();
+        if (newWindow) {
+            newWindow.document.write(`<img src="${dataUrl}" style="width:100%" />`);
+            newWindow.document.title = filename;
+        }
     }
 };
