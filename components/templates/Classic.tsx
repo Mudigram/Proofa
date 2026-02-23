@@ -34,7 +34,7 @@ export default function ClassicTemplate({ data, type }: TemplateProps) {
     const total = (isReceipt ? receipt.amount : (isOrder ? order.totalAmount : subtotal + tax)) + deliveryCost;
 
     return (
-        <div className="relative bg-white min-h-[700px] flex flex-col font-mono text-[#2d3436] mx-auto max-w-[450px] shadow-2xl overflow-visible font-heading" id="document-preview">
+        <div className="relative bg-white min-h-[750px] flex flex-col font-mono text-[#2d3436] mx-auto max-w-[450px] shadow-2xl overflow-visible font-heading pb-12" id="document-preview">
             {/* Dot Grid Background */}
             <div className="absolute inset-0 opacity-[0.03] pointer-events-none"
                 style={{ backgroundImage: 'radial-gradient(#000 1px, transparent 1px)', backgroundSize: '20px 20px' }}
@@ -42,9 +42,9 @@ export default function ClassicTemplate({ data, type }: TemplateProps) {
 
             <Watermark />
 
-            <div className="p-4 flex-1 flex flex-col items-center text-center relative z-10">
+            <div className="p-10 flex-1 flex flex-col items-center text-center relative z-10">
                 {/* Central Logo Header */}
-                <div className="">
+                <div className="mb-8">
                     {logoUrl ? (
                         <div className="w-20 h-20 rounded-full border-4 border-white shadow-xl mb-4 overflow-hidden bg-white">
                             <Image
@@ -80,7 +80,7 @@ export default function ClassicTemplate({ data, type }: TemplateProps) {
             </div>
 
             {/* Recipient Details (Modern Classic) */}
-            <div className="w-full flex justify-between items-start mb-2 px-2 text-left">
+            <div className="w-full flex justify-between items-start mb-6 px-4 text-left">
                 <div>
                     <p className="text-[8px] font-black text-surface-300 uppercase tracking-widest mb-1">Customer</p>
                     <p className="text-xs font-black uppercase">{isReceipt ? receipt.customerName || "Customer" : (isInvoice ? invoice.clientName : order.customerName)}</p>
@@ -102,7 +102,7 @@ export default function ClassicTemplate({ data, type }: TemplateProps) {
             <div className="w-full border-b-[3px] border-dashed border-surface-600 my-6" />
 
             {/* Item List */}
-            <div className="w-full flex flex-col gap-2 text-left">
+            <div className="w-full flex flex-col gap-4 text-left px-2">
                 {isReceipt ? (
                     <div className="flex justify-between items-baseline group">
                         <div className="flex gap-2">
@@ -180,7 +180,7 @@ export default function ClassicTemplate({ data, type }: TemplateProps) {
             <Branding />
 
             {/* Serrated Bottom Edge */}
-            <div className="absolute -bottom-6 left-0 right-0 h-8 bg-white z-20 overflow-hidden">
+            <div className="absolute bottom-0 left-0 right-0 h-4 bg-white z-20 overflow-hidden transform translate-y-[100%]">
                 <div className="flex w-[200%] animate-none">
                     {Array.from({ length: 40 }).map((_, i) => (
                         <div

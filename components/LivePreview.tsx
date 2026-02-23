@@ -20,13 +20,17 @@ interface LivePreviewProps {
 export default function LivePreview({ data, type, initialTemplate = "minimalist" }: LivePreviewProps) {
     const [activeTemplate, setActiveTemplate] = useState<TemplateName>(initialTemplate);
     const [isExporting, setIsExporting] = useState(false);
+    const [isPremium, setIsPremium] = useState(false); // Default to free user
     const { showToast } = useToast();
 
     const templates = [
-        { id: "minimalist", label: "Minimal" },
-        { id: "bold", label: "Bold" },
-        { id: "classic", label: "Classic" },
+        { id: "minimalist", label: "Minimal", premium: false },
+        { id: "bold", label: "Bold", premium: false },
+        { id: "classic", label: "Classic", premium: true },
     ];
+
+    const currentTemplateConfig = templates.find(t => t.id === activeTemplate);
+    const isLocked = currentTemplateConfig?.premium && !isPremium;
 
     const renderTemplate = () => {
         switch (activeTemplate) {
@@ -41,7 +45,16 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
         }
     };
 
+    const blockIfLocked = () => {
+        if (isLocked) {
+            showToast("Classic Template is a Premium feature! 💎", "info");
+            return true;
+        }
+        return false;
+    };
+
     const handleDownloadPDF = async () => {
+        if (blockIfLocked()) return;
         setIsExporting(true);
         saveDocument(data, type, activeTemplate);
 
@@ -63,6 +76,7 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
     };
 
     const handleDownload = async () => {
+        if (blockIfLocked()) return;
         setIsExporting(true);
         // Save to history automatically on export
         saveDocument(data, type, activeTemplate);
@@ -90,6 +104,7 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
     };
 
     const handleShare = async () => {
+        if (blockIfLocked()) return;
         setIsExporting(true);
         // Save to history automatically on share
         saveDocument(data, type, activeTemplate);
@@ -133,6 +148,7 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
     };
 
     const handleWhatsApp = async () => {
+        if (blockIfLocked()) return;
         window.scrollTo(0, 0);
         await new Promise(r => setTimeout(r, 100));
 
@@ -159,22 +175,54 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
                         <button
                             key={t.id}
                             onClick={() => setActiveTemplate(t.id as TemplateName)}
-                            className={`flex-1 min-w-[100px] whitespace-nowrap py-3 px-4 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTemplate === t.id
+                            className={`flex-1 min-w-[100px] whitespace-nowrap py-3 px-4 rounded-xl text-xs font-black uppercase tracking-widest transition-all relative ${activeTemplate === t.id
                                 ? "bg-white text-primary-500 shadow-md shadow-black/5 ring-1 ring-black/5"
                                 : "text-surface-400 hover:text-surface-600"
                                 }`}
                         >
-                            {t.label}
+                            <span className="relative z-10 flex items-center justify-center gap-1.5">
+                                {t.label}
+                                {t.premium && !isPremium && (
+                                    <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" className="text-amber-500">
+                                        <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
+                                    </svg>
+                                )}
+                            </span>
                         </button>
                     ))}
                 </div>
             </div>
 
             {/* Actual Preview Frame */}
-            <div className="w-full bg-surface-100/50 rounded-[2.5rem] p-1 md:p-2 flex justify-center border border-surface-200/50 min-h-[400px]">
-                <div className="w-full origin-top transform scale-[0.95] md:scale-100 transition-all duration-500 rounded-2xl overflow-hidden shadow-[0_20px_60px_-15px_rgba(0,0,0,0.15)] flex justify-center items-start">
+            <div className="w-full bg-surface-100/50 rounded-[2.5rem] p-4 md:p-8 flex justify-center border border-surface-200/50 min-h-[400px] relative">
+                <div className={`w-full origin-top transform scale-[0.95] md:scale-100 transition-all duration-500 rounded-2xl ${activeTemplate === 'classic' ? 'overflow-visible' : 'overflow-hidden'} shadow-[0_20px_60px_-15px_rgba(0,0,0,0.15)] flex justify-center items-start ${isLocked ? 'blur-md pointer-events-none grayscale' : ''}`}>
                     {renderTemplate()}
                 </div>
+
+                {isLocked && (
+                    <div className="absolute inset-0 flex items-center justify-center z-30 p-8">
+                        <div className="bg-white/90 backdrop-blur-xl p-8 rounded-[2.5rem] border border-white shadow-2xl flex flex-col items-center text-center gap-6 max-w-[280px] animate-in fade-in zoom-in duration-300">
+                            <div className="w-16 h-16 bg-amber-500 text-white rounded-full flex items-center justify-center shadow-lg shadow-amber-500/20">
+                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                                    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                                </svg>
+                            </div>
+                            <div className="flex flex-col gap-2">
+                                <h3 className="text-lg font-black uppercase tracking-tight text-surface-900">Premium Style</h3>
+                                <p className="text-[11px] font-bold text-surface-400 uppercase tracking-widest leading-relaxed">
+                                    Unlock the Classic Design and generate unlimited professional receipts.
+                                </p>
+                            </div>
+                            <button
+                                onClick={() => setIsPremium(true)} // Simulated upgrade
+                                className="w-full py-4 bg-surface-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-xl hover:bg-black active:scale-95 transition-all"
+                            >
+                                Upgrade to Premium
+                            </button>
+                        </div>
+                    </div>
+                )}
             </div>
 
             {/* Action Bar */}
