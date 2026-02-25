@@ -102,7 +102,7 @@ export default function BoldTemplate({ data, type }: TemplateProps) {
                 <div className="flex-1 flex flex-col gap-2 p-3 border-b-4 border-surface-900">
                     {/* Doc type + ref pill — same row */}
                     <div className="flex items-start justify-between gap-2">
-                        <h2 className="text-4xl font-black uppercase italic tracking-tighter leading-none text-surface-900">
+                        <h2 className="text-2xl font-black uppercase italic tracking-tighter leading-none text-surface-900">
                             {type}
                         </h2>
                         <div className="bg-primary-500 px-2.5 py-1 rounded-full flex-shrink-0 mt-1">
