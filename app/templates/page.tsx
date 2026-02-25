@@ -38,12 +38,7 @@ const templates: TemplateInfo[] = [
         description: "Energetic colors with modern shapes",
         component: BoldTemplate,
     },
-    {
-        id: "classic",
-        name: "Classic Receipt",
-        description: "Professional and timeless layout",
-        component: ClassicTemplate,
-    },
+
 ];
 
 export default function TemplatesPage() {
@@ -69,7 +64,7 @@ export default function TemplatesPage() {
                                         <div className="absolute inset-0 bg-gradient-to-br from-primary-500/5 to-transparent pointer-events-none" />
 
                                         {/* Scaled Template Preview */}
-                                        <div className="w-[500px] origin-top scale-[0.45] sm:scale-[0.6] mt-[-10%] transition-transform duration-500 group-hover:scale-[0.47] sm:group-hover:scale-[0.62] pointer-events-none">
+                                        <div className="w-[500px] scale-[0.5] sm:scale-[0.8] transition-transform duration-500 group-hover:scale-[0.47] sm:group-hover:scale-[0.62] pointer-events-none">
                                             <template.component data={MOCK_DATA} type="receipt" />
                                         </div>
 
