@@ -20,176 +20,118 @@ export default function ClassicTemplate({ data, type }: TemplateProps) {
     const invoice = data as InvoiceData;
     const order = data as OrderData;
 
-    const logoUrl = data.logoUrl;
-
     const items = isReceipt ? [] : (isInvoice ? invoice.items : order.items);
     const subtotal = isReceipt ? receipt.amount : items.reduce((acc, item) => acc + (item.quantity * item.price), 0);
-
-    // Dynamic Tax Calculation
-    const vatRate = isInvoice ? (invoice.vatRate ?? 8.5) : 0;
+    const vatRate = isInvoice ? (invoice.vatRate ?? 7.5) : 0;
     const includeVat = isInvoice ? (invoice.includeVat ?? true) : false;
     const tax = includeVat ? subtotal * (vatRate / 100) : 0;
-
     const deliveryCost = data.deliveryInfo?.enabled ? (data.deliveryInfo.cost ?? 0) : 0;
     const total = (isReceipt ? receipt.amount : (isOrder ? order.totalAmount : subtotal + tax)) + deliveryCost;
 
     return (
-        <div className="relative bg-white min-h-[750px] flex flex-col font-mono text-[#2d3436] mx-auto max-w-[450px] shadow-2xl overflow-visible font-heading pb-12" id="document-preview">
-            {/* Dot Grid Background */}
-            <div className="absolute inset-0 opacity-[0.03] pointer-events-none"
-                style={{ backgroundImage: 'radial-gradient(#000 1px, transparent 1px)', backgroundSize: '20px 20px' }}
-            />
-
+        <div className="relative bg-white min-h-[600px] flex flex-col font-mono text-zinc-800 mx-auto max-w-[480px] shadow-2xl p-8" id="document-preview">
             <Watermark />
 
-            <div className="p-10 flex-1 flex flex-col items-center text-center relative z-10">
-                {/* Central Logo Header */}
-                <div className="mb-8">
-                    {logoUrl ? (
-                        <div className="w-20 h-20 rounded-full border-4 border-white shadow-xl mb-4 overflow-hidden bg-white">
-                            <Image
-                                src={logoUrl}
-                                alt="Logo"
-                                width={80}
-                                height={80}
-                                unoptimized
-                                className="w-full h-full object-contain"
-                            />
-                        </div>
-                    ) : (
-                        <div className="w-16 h-16 bg-[#eb4d4b] rounded-[1.5rem] flex items-center justify-center text-white shadow-lg mb-6 transform rotate-3">
-                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
-                                <path d="M3 6h18" />
-                                <path d="M16 10a4 4 0 0 1-8 0" />
-                            </svg>
-                        </div>
-                    )}
-
-                    <h1 className="text-2xl font-black uppercase tracking-[0.15em] text-[#000] mb-2 leading-tight">
-                        {isOrder ? "Proofa Premium" : (isReceipt ? receipt.businessName : invoice.businessName)}
-                    </h1>
-                    <p className="text-[10px] font-bold text-surface-400 uppercase tracking-widest max-w-[250px]">
-                        {isInvoice ? invoice.businessAddress : "123 DESIGN AVENUE, CREATIVE SUITE 404"}
-                    </p>
-                    <p className="text-[9px] text-surface-300 font-bold mt-2 uppercase tracking-tighter">
-                        {formatDate(isReceipt ? receipt.date : (isInvoice ? invoice.issueDate : new Date().toISOString()))} • 02:45 PM
-                    </p>
-                </div>
-
+            {/* 1. MINIMAL LETTERHEAD */}
+            <div className="flex flex-col items-center border-b-2 border-zinc-900 pb-4 mb-4">
+                {data.logoUrl && (
+                    <div className="w-16 h-16 mb-2 grayscale">
+                        <Image src={data.logoUrl} alt="Logo" width={64} height={64} unoptimized className="object-contain" />
+                    </div>
+                )}
+                <h1 className="text-xl font-bold uppercase tracking-[0.2em]">
+                    {isInvoice ? invoice.businessName : (isReceipt ? receipt.businessName : "Store")}
+                </h1>
+                <p className="text-[9px] uppercase tracking-widest text-zinc-500 mt-1 max-w-[300px] text-center">
+                    {isInvoice ? invoice.businessAddress : "Lagos, Nigeria"}
+                </p>
             </div>
 
-            {/* Recipient Details (Modern Classic) */}
-            <div className="w-full flex justify-between items-start mb-6 px-4 text-left">
+            {/* 2. DOCUMENT META */}
+            <div className="flex justify-between items-end mb-6 text-[10px] uppercase font-bold tracking-tight">
                 <div>
-                    <p className="text-[8px] font-black text-surface-300 uppercase tracking-widest mb-1">Customer</p>
-                    <p className="text-xs font-black uppercase">{isReceipt ? receipt.customerName || "Customer" : (isInvoice ? invoice.clientName : order.customerName)}</p>
-                    {(isReceipt ? receipt.customerPhone : (isInvoice ? invoice.clientPhone : order.customerPhone)) && (
-                        <p className="text-[9px] font-bold text-surface-400 mt-0.5">
-                            {isReceipt ? receipt.customerPhone : (isInvoice ? invoice.clientPhone : order.customerPhone)}
+                    <p className="text-zinc-400">Issued To:</p>
+                    <p className="text-sm font-black">{isReceipt ? receipt.customerName || "Customer" : (isInvoice ? invoice.clientName : order.customerName)}</p>
+                    {data.deliveryInfo?.enabled && (
+                        <p className="text-[9px] font-normal text-zinc-500 mt-1 italic leading-tight max-w-[150px]">
+                            {data.deliveryInfo.address}
                         </p>
                     )}
                 </div>
-                {isInvoice && invoice.dueDate && (
-                    <div className="text-right">
-                        <p className="text-[8px] font-black text-surface-300 uppercase tracking-widest mb-1">Payment Due</p>
-                        <p className="text-xs font-black uppercase text-[#eb4d4b]">{formatDate(invoice.dueDate)}</p>
-                    </div>
-                )}
+                <div className="text-right">
+                    <p><span className="text-zinc-400">Ref:</span> {isInvoice ? invoice.invoiceNumber : "TXN-001"}</p>
+                    <p><span className="text-zinc-400">Date:</span> {formatDate(isReceipt ? receipt.date : (isInvoice ? invoice.issueDate : new Date().toISOString()))}</p>
+                </div>
             </div>
 
-            {/* Dashed separator */}
-            <div className="w-full border-b-[3px] border-dashed border-surface-600 my-6" />
+            {/* 3. TABLE HEADER */}
+            <div className="grid grid-cols-12 border-y border-zinc-900 py-2 text-[9px] font-black uppercase tracking-widest mb-4">
+                <div className="col-span-1">#</div>
+                <div className="col-span-7">Description</div>
+                <div className="col-span-4 text-right">Amount</div>
+            </div>
 
-            {/* Item List */}
-            <div className="w-full flex flex-col gap-4 text-left px-2">
+            {/* 4. ITEMS LIST */}
+            <div className="flex-1 space-y-3">
                 {isReceipt ? (
-                    <div className="flex justify-between items-baseline group">
-                        <div className="flex gap-2">
-                            <span className="text-surface-400 font-bold">1x</span>
-                            <span className="font-bold text-sm tracking-tight">{receipt.description || "General Purchase"}</span>
-                        </div>
-                        <span className="font-bold text-sm">{formatCurrency(receipt.amount)}</span>
+                    <div className="grid grid-cols-12 text-xs">
+                        <div className="col-span-1">01</div>
+                        <div className="col-span-7 font-bold uppercase">{receipt.description || "General Purchase"}</div>
+                        <div className="col-span-4 text-right font-bold">{formatCurrency(receipt.amount)}</div>
                     </div>
                 ) : (
-                    items.map(item => (
-                        <div key={item.id} className="flex justify-between items-baseline">
-                            <div className="flex gap-2">
-                                <span className="text-surface-400 font-bold">{item.quantity}x</span>
-                                <span className="font-bold text-sm tracking-tight">{item.name || "Item"}</span>
+                    items.map((item, idx) => (
+                        <div key={item.id} className="grid grid-cols-12 text-xs items-baseline">
+                            <div className="col-span-1 text-zinc-400">{idx + 1}</div>
+                            <div className="col-span-7 flex flex-col">
+                                <span className="font-bold uppercase leading-none">{item.name}</span>
+                                <span className="text-[9px] text-zinc-500 mt-1">{item.quantity} x {formatCurrency(item.price)}</span>
                             </div>
-                            <span className="font-bold text-sm">{formatCurrency(item.price * item.quantity)}</span>
+                            <div className="col-span-4 text-right font-bold">{formatCurrency(item.quantity * item.price)}</div>
                         </div>
                     ))
                 )}
             </div>
 
-            {/* Dotted separator */}
-            <div className="w-full border-b-[3px] border-dotted border-surface-600 my-8" />
-
-            {/* Summary */}
-            <div className="w-full flex flex-col gap-2">
-                <div className="flex justify-between items-center text-xs font-bold text-surface-400">
-                    <span className="uppercase tracking-widest">Subtotal</span>
+            {/* 5. SUMMARY LEDGER */}
+            <div className="border-t border-zinc-200 pt-4 flex flex-col gap-1.5">
+                <div className="flex justify-between text-[10px] uppercase">
+                    <span>Subtotal</span>
                     <span>{formatCurrency(subtotal)}</span>
                 </div>
                 {isInvoice && includeVat && (
-                    <div className="flex justify-between items-center text-xs font-bold text-surface-400">
-                        <span className="uppercase tracking-widest">Tax ({vatRate}%)</span>
+                    <div className="flex justify-between text-[10px] uppercase">
+                        <span>VAT ({vatRate}%)</span>
                         <span>{formatCurrency(tax)}</span>
                     </div>
                 )}
                 {data.deliveryInfo?.enabled && (
-                    <div className="flex justify-between items-center text-xs font-bold text-surface-400">
-                        <span className="uppercase tracking-widest">Delivery</span>
-                        <span>{formatCurrency(data.deliveryInfo.cost)}</span>
+                    <div className="flex justify-between text-[10px] uppercase">
+                        <span>Delivery</span>
+                        <span>{formatCurrency(deliveryCost)}</span>
                     </div>
                 )}
-                <div className="flex justify-between items-center mt-2 pt-4 border-t border-surface-50">
-                    <span className="text-xl font-black uppercase tracking-[0.2em] text-[#eb4d4b]">TOTAL</span>
-                    <span className="text-2xl font-black text-[#eb4d4b] tracking-tighter">{formatCurrency(total)}</span>
+                <div className="flex justify-between border-t-2 border-zinc-900 mt-2 pt-2">
+                    <span className="text-sm font-black uppercase tracking-[0.2em]">Total Due</span>
+                    <span className="text-xl font-black">{formatCurrency(total)}</span>
                 </div>
             </div>
 
+            {/* 6. BANK INFO (Clean & Integrated) */}
             {data.bankDetails?.enabled && (
-                <div className="w-full mt-6 flex flex-col bg-surface-50/50 p-4 rounded-2xl border-2 border-dashed border-surface-200">
-                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-surface-300 mb-3 text-center">Transfer Details</p>
-                    <div className="flex justify-between items-end px-2">
-                        <div>
-                            <p className="text-xs font-black uppercase mb-0.5">{data.bankDetails.bankName}</p>
-                            <p className="text-[9px] font-bold text-surface-400 uppercase tracking-widest">{data.bankDetails.accountName}</p>
-                        </div>
-                        <div className="text-sm font-black tracking-[0.1em] px-3 py-1.5 bg-white rounded-lg shadow-sm border border-surface-100">
-                            {data.bankDetails.accountNumber}
-                        </div>
+                <div className="mt-6 pt-4 border-t border-dotted border-zinc-300">
+                    <p className="text-[8px] font-bold uppercase text-zinc-400 mb-2">Payment Information</p>
+                    <div className="flex justify-between text-[10px] font-bold">
+                        <span>{data.bankDetails.bankName} / {data.bankDetails.accountName}</span>
+                        <span className="tracking-widest">{data.bankDetails.accountNumber}</span>
                     </div>
                 </div>
             )}
 
-
-
-            {data.terms && (
-                <div className="w-full mt-2 p-4 border border-surface-200 rounded-xl relative overflow-hidden bg-surface-50/30">
-                    <div className="absolute top-0 left-0 w-1 h-full bg-[#eb4d4b]" />
-                    <p className="text-[10px] font-black text-surface-400 uppercase tracking-[0.2em] mb-2">Terms & Conditions</p>
-                    <p className="text-[10px] font-bold text-left italic leading-relaxed">{data.terms}</p>
-                </div>
-            )}
-
-
-            <Branding />
-
-            {/* Serrated Bottom Edge */}
-            <div className="absolute bottom-0 left-0 right-0 h-4 bg-white z-20 overflow-hidden transform translate-y-[100%]">
-                <div className="flex w-[200%] animate-none">
-                    {Array.from({ length: 40 }).map((_, i) => (
-                        <div
-                            key={i}
-                            className="w-4 h-4 bg-surface-100/50 transform rotate-45 -translate-y-1/2"
-                            style={{ marginLeft: '-1px' }}
-                        />
-                    ))}
-                </div>
+            {/* 7. FOOTER */}
+            <div className="mt-auto pt-2 flex justify-between items-center text-[8px] uppercase tracking-tighter text-zinc-400">
+                <p>{data.terms || "Goods sold are not returnable."}</p>
+                <Branding />
             </div>
         </div>
     );

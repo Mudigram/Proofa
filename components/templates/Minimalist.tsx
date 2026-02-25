@@ -35,8 +35,12 @@ export default function MinimalistTemplate({ data, type }: TemplateProps) {
     const total = (isReceipt ? receipt.amount : (isOrder ? order.totalAmount : subtotal + tax)) + deliveryCost;
 
     return (
-        <div className="relative bg-white p-8 min-h-[600px] flex flex-col font-sans text-surface-900 shadow-2xl mx-auto max-w-[480px] border border-surface-100 overflow-hidden font-heading" id="document-preview">
+        <div
+            id="document-preview"
+            className="relative bg-white p-8 min-h-[550px] flex flex-col font-sans text-surface-900 border border-surface-100 overflow-hidden font-heading w-[480px]"
+        >
             <Watermark />
+
 
             {/* Header */}
             <div className="flex justify-between items-start mb-4">
@@ -68,7 +72,7 @@ export default function MinimalistTemplate({ data, type }: TemplateProps) {
             </div>
 
             {/* Info Grid */}
-            <div className="grid grid-cols-2 gap-8 mb-4 pb-2 border-b border-surface-100">
+            <div className="grid grid-cols-2 gap-8 mb-2 pb-2 border-b border-surface-100">
                 <div>
                     <p className="text-[10px] font-black text-surface-300 uppercase tracking-widest mb-1.5"> {isReceipt ? "From" : "Billed By"}</p>
                     <p className="text-xs font-bold">{isInvoice ? invoice.businessName : (isReceipt ? receipt.businessName : "Proofa Store")}</p>
@@ -94,7 +98,7 @@ export default function MinimalistTemplate({ data, type }: TemplateProps) {
 
             {/* Items Table */}
             <div className="flex-1">
-                <div className="flex items-center justify-between py-2 border-b-2 border-surface-900 mb-4 px-1">
+                <div className="flex items-center justify-between py-2 border-b-2 border-surface-900 mb-2 px-1">
                     <span className="text-[10px] font-black uppercase tracking-widest">Description</span>
                     <span className="text-[10px] font-black uppercase tracking-widest">Total</span>
                 </div>
@@ -102,13 +106,13 @@ export default function MinimalistTemplate({ data, type }: TemplateProps) {
                 {isReceipt ? (
                     <div className="flex justify-between items-start py-4 px-1 border-b border-surface-50">
                         <div className="flex-1 mr-4">
-                            <p className="text-xs font-bold mb-0.5">{receipt.description || "Payment for services"}</p>
+                            <p className="text-xs font-bold mb-1">{receipt.description || "Payment for services"}</p>
                             <p className="text-[10px] text-surface-400 font-medium uppercase tracking-wider">{receipt.status}</p>
                         </div>
                         <p className="text-xs font-black">{formatCurrency(receipt.amount)}</p>
                     </div>
                 ) : (
-                    <div className="flex flex-col gap-4">
+                    <div className="flex flex-col">
                         {items.map((item) => (
                             <div key={item.id} className="flex justify-between items-start px-1">
                                 <div className="flex-1 mr-4">
@@ -120,7 +124,7 @@ export default function MinimalistTemplate({ data, type }: TemplateProps) {
                         ))}
 
                         {data.deliveryInfo?.enabled && (
-                            <div className="flex justify-between items-start px-1 pt-2 border-t border-dashed border-surface-100 italic">
+                            <div className="flex justify-between items-start px-1 pt-2 border-t border-dashed border-surface-300 italic">
                                 <div className="flex-1 mr-4">
                                     <p className="text-xs font-bold mb-0.5">Delivery: {data.deliveryInfo.location}</p>
                                     <p className="text-[10px] text-surface-400 font-medium uppercase">Standard Delivery</p>
@@ -133,7 +137,7 @@ export default function MinimalistTemplate({ data, type }: TemplateProps) {
             </div>
 
             {/* Summary Section */}
-            <div className="mt-2 pt-2 border-t-2 border-surface-900 flex flex-col gap-2">
+            <div className="pt-2 border-t-2 border-surface-900 flex flex-col gap-1">
                 {isInvoice && includeVat && (
                     <>
                         <div className="flex justify-between items-center text-xs">
@@ -153,13 +157,13 @@ export default function MinimalistTemplate({ data, type }: TemplateProps) {
                     </div>
                 )}
                 <div className="flex justify-between items-center mt-2">
-                    <span className="text-sm font-black uppercase tracking-widest">Total Amount</span>
+                    <span className="text-sm font-black uppercase tracking-widest">Total</span>
                     <span className="text-xl font-black">{formatCurrency(total)}</span>
                 </div>
             </div>
 
             {isInvoice && invoice.notes && (
-                <div className="mt-4">
+                <div className="mt-2">
                     <p className="text-[10px] font-black text-surface-300 uppercase tracking-widest mb-1.5">Notes</p>
                     <p className="text-[10px] text-surface-500 font-medium leading-relaxed italic border-l-2 border-surface-100 pl-3">
                         {invoice.notes}
@@ -168,26 +172,35 @@ export default function MinimalistTemplate({ data, type }: TemplateProps) {
             )}
 
             {data.bankDetails?.enabled && (
-                <div className="mt-6 p-3 bg-surface-50 rounded-xl border border-surface-100">
-                    <div className="flex justify-between items-center mb-2">
-                        <p className="text-[10px] font-black text-surface-300 uppercase tracking-widest leading-none">Bank Details</p>
-                        <p className="text-xs font-black text-primary-600 leading-none">{data.bankDetails.bankName}</p>
+                <div className="mt-2 px-3 py-2 bg-surface-100 rounded-lg border border-surface-200 flex items-center justify-between gap-4">
+                    {/* Section 1: Bank Name */}
+                    <div className="flex-[1.5] border-r border-surface-200/50 pr-4">
+                        <p className="text-[8px] text-surface-400 font-bold uppercase tracking-tighter leading-none mb-1">Bank</p>
+                        <p className="text-[10px] font-black text-surface-900 uppercase whitespace-normal">
+                            {data.bankDetails.bankName}
+                        </p>
                     </div>
-                    <div className="flex justify-between items-end pt-2 border-t border-surface-100/50">
-                        <div>
-                            <p className="text-[9px] text-surface-400 font-bold uppercase mb-0.5">Acct Name</p>
-                            <p className="text-xs font-black leading-none">{data.bankDetails.accountName}</p>
-                        </div>
-                        <div className="text-right">
-                            <p className="text-[9px] text-surface-400 font-bold uppercase mb-0.5">Acct Number</p>
-                            <p className="text-sm font-black tracking-widest text-primary-600 leading-none">{data.bankDetails.accountNumber}</p>
-                        </div>
+
+                    {/* Section 2: Account Name */}
+                    <div className="flex-[2] border-r border-surface-200/50 pr-4">
+                        <p className="text-[8px] text-surface-400 font-bold uppercase tracking-tighter leading-none mb-1">Payee</p>
+                        <p className="text-[10px] font-black text-surface-900 uppercase whitespace-normal">
+                            {data.bankDetails.accountName}
+                        </p>
+                    </div>
+
+                    {/* Section 3: Account Number (The Hero) */}
+                    <div className="flex-none text-right">
+                        <p className="text-[8px] text-primary-600/70 font-bold uppercase tracking-tighter leading-none mb-1">Acct Number</p>
+                        <p className="text-sm font-black tracking-widest text-primary-600 leading-none tabular-nums">
+                            {data.bankDetails.accountNumber}
+                        </p>
                     </div>
                 </div>
             )}
 
             {data.terms && (
-                <div className="mt-4">
+                <div className="mt-2">
                     <p className="text-[10px] font-black text-surface-300 uppercase tracking-widest mb-1.5">Important Notes</p>
                     <p className="text-[10px] text-primary-600 font-bold leading-relaxed bg-primary-50 p-3 rounded-lg border-l-4 border-primary-500">
                         {data.terms}
@@ -205,7 +218,7 @@ export default function MinimalistTemplate({ data, type }: TemplateProps) {
                 </div>
             )}
 
-            <Branding />
+
         </div>
     );
 }

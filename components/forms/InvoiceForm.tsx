@@ -358,7 +358,7 @@ export default function InvoiceForm() {
                                                 className="bg-surface-50 border-none"
                                             />
                                             <Input
-                                                label="ACCOUNT NAME"
+                                                label="ACCT NAME"
                                                 placeholder="e.g. Mudiaga Dev"
                                                 value={formData.bankDetails.accountName}
                                                 onChange={(e) => handleNestedChange("bankDetails", "accountName", e.target.value)}
@@ -366,7 +366,7 @@ export default function InvoiceForm() {
                                                 className="bg-surface-50 border-none"
                                             />
                                             <Input
-                                                label="ACCOUNT NUMBER"
+                                                label="ACCT NUMBER"
                                                 placeholder="10 Digits"
                                                 type="number"
                                                 value={formData.bankDetails.accountNumber}

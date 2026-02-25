@@ -1,161 +1,167 @@
 /**
- * Captures a DOM element and returns it as a high-quality PNG data URL or triggers a PDF download.
- * Uses html2canvas for refined image capture and jspdf for professional PDF export.
+ * ExportUtils.ts
+ * Uses html-to-image instead of html2canvas.
+ * html-to-image renders via SVG foreignObject, which delegates all CSS
+ * parsing to the browser itself — so oklab/oklch, container queries,
+ * and every other modern CSS feature just works.
+ *
+ * Install: npm install html-to-image
  */
-export const captureElementAsImage = async (elementId: string): Promise<string | null> => {
-    if (typeof window === 'undefined') return null;
 
-    const originalElement = document.getElementById(elementId);
-    if (!originalElement) {
-        console.error(`[Export] Element with id ${elementId} not found.`);
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+/**
+ * Clones a node, strips transforms on it and all its ancestors,
+ * and returns { clone, cleanup }.
+ * We render this clean clone off-screen so the captured image is never
+ * affected by any scale()/translate() on the visual preview wrapper.
+ */
+const buildCleanClone = (root: HTMLElement): { clone: HTMLElement; container: HTMLDivElement; cleanup: () => void } => {
+    const container = document.createElement("div");
+
+    // Position off-screen, not display:none — html-to-image needs it painted
+    Object.assign(container.style, {
+        position: "fixed",
+        top: "0",
+        left: "-99999px",
+        width: `${root.scrollWidth}px`,
+        zIndex: "-1",
+        pointerEvents: "none",
+        overflow: "visible",
+    });
+
+    const clone = root.cloneNode(true) as HTMLElement;
+
+    // Reset any transforms / overflow on the clone itself
+    Object.assign(clone.style, {
+        transform: "none",
+        scale: "unset",
+        overflow: "visible",
+        position: "relative",
+        margin: "0",
+        height: "auto",
+        maxHeight: "none",
+    });
+
+    container.appendChild(clone);
+    document.body.appendChild(container);
+
+    const cleanup = () => {
+        if (document.body.contains(container)) document.body.removeChild(container);
+    };
+
+    return { clone, container, cleanup };
+};
+
+// ─── Core capture ─────────────────────────────────────────────────────────────
+
+export const captureElementAsImage = async (elementId: string): Promise<string | null> => {
+    if (typeof window === "undefined") return null;
+
+    const root = document.getElementById(elementId);
+    if (!root) {
+        console.error(`[Export] Element #${elementId} not found`);
         return null;
     }
 
-    console.log(`[Export] Starting capture for ${elementId}...`);
+    const oldScrollY = window.scrollY;
+    window.scrollTo(0, 0);
+    await new Promise((r) => setTimeout(r, 80));
+
+    console.log(`[Export] Capturing element: ${root.scrollWidth}x${root.scrollHeight}`);
+
+    // Build a transform-free off-screen clone so any scale() on the
+    // visual preview wrapper doesn't affect the exported image
+    const { clone, cleanup } = buildCleanClone(root);
 
     try {
-        const html2canvas = (await import("html2canvas")).default;
+        // Dynamically import html-to-image (tree-shakes unused formats)
+        const { toPng } = await import("html-to-image");
 
-        const canvas = await html2canvas(originalElement, {
-            scale: 2, // 2x is high quality while remaining mobile-safe
-            useCORS: true,
-            logging: true,
+        const dataUrl = await toPng(clone, {
+            pixelRatio: 2,
             backgroundColor: "#ffffff",
-            width: originalElement.scrollWidth,
-            height: originalElement.scrollHeight,
-            windowWidth: originalElement.scrollWidth,
-            windowHeight: originalElement.scrollHeight,
-            onclone: (clonedDoc) => {
-                const element = clonedDoc.getElementById(elementId);
-                if (element) {
-                    // Remove shadows/animations that cause artifacts
-                    const allElements = element.getElementsByTagName('*');
-                    for (let i = 0; i < allElements.length; i++) {
-                        const el = allElements[i] as HTMLElement;
-                        el.style.boxShadow = 'none';
-                        el.style.textShadow = 'none';
-                        el.style.animation = 'none';
-                        el.style.transition = 'none';
-                    }
+            // Skip external/cross-origin nodes that can't be inlined
+            filter: (node) => {
+                if (node instanceof HTMLElement) {
+                    // Don't try to inline cross-origin iframes
+                    if (node.tagName === "IFRAME") return false;
                 }
-            }
+                return true;
+            },
         });
 
-        console.log(`[Export] Canvas generated: ${canvas.width}x${canvas.height}`);
-        return canvas.toDataURL("image/png", 0.9);
+        window.scrollTo(0, oldScrollY);
+        return dataUrl;
+
     } catch (error) {
         console.error("[Export] Capture failed:", error);
         return null;
+    } finally {
+        cleanup();
     }
 };
 
-/**
- * Generates and downloads a professional PDF of the document.
- */
-export const downloadAsPDF = async (elementId: string, filename: string) => {
-    if (typeof window === 'undefined') return false;
+// ─── PDF export ───────────────────────────────────────────────────────────────
 
-    const originalElement = document.getElementById(elementId);
-    if (!originalElement) {
-        console.error(`[Export] PDF element ${elementId} not found`);
-        return false;
-    }
-
-    console.log(`[Export] Generating PDF for ${elementId}...`);
+export const downloadAsPDF = async (elementId: string, filename: string): Promise<boolean> => {
+    if (typeof window === "undefined") return false;
 
     try {
-        // Robust dynamic import for jspdf
         const jspdfModule = await import("jspdf");
         const jsPDF = jspdfModule.jsPDF || (jspdfModule as any).default;
-        const html2canvas = (await import("html2canvas")).default;
 
-        const canvas = await html2canvas(originalElement, {
-            scale: 2,
-            useCORS: true,
-            allowTaint: true,
-            logging: false,
-            backgroundColor: "#ffffff",
-            width: originalElement.scrollWidth,
-            height: originalElement.scrollHeight,
-            windowWidth: originalElement.scrollWidth,
-            windowHeight: originalElement.scrollHeight,
-            onclone: (clonedDoc) => {
-                const element = clonedDoc.getElementById(elementId);
-                if (element) {
-                    const allElements = element.getElementsByTagName('*');
-                    for (let i = 0; i < allElements.length; i++) {
-                        const el = allElements[i] as HTMLElement;
-                        el.style.boxShadow = 'none';
-                        el.style.textShadow = 'none';
-                        el.style.animation = 'none';
-                    }
-                }
-            }
-        });
+        const dataUrl = await captureElementAsImage(elementId);
+        if (!dataUrl) return false;
 
-        const imgData = canvas.toDataURL('image/jpeg', 0.85); // JPEG is often safer for large PDFs
-        const pdf = new jsPDF({
-            orientation: 'portrait',
-            unit: 'mm',
-            format: 'a4'
-        });
+        const img = new Image();
+        img.src = dataUrl;
+        await new Promise((resolve) => (img.onload = resolve));
 
-        const imgProps = pdf.getImageProperties(imgData);
-        const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+        const imgWidth = 210; // A4 width in mm
+        const imgHeight = (img.height * imgWidth) / img.width;
 
-        pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight, undefined, 'FAST');
+        const pdf = new jsPDF({ orientation: "p", unit: "mm", format: [imgWidth, imgHeight] });
+        pdf.addImage(dataUrl, "PNG", 0, 0, imgWidth, imgHeight, undefined, "FAST");
         pdf.save(filename);
-
-        console.log(`[Export] PDF saved successfully.`);
         return true;
+
     } catch (error) {
         console.error("[Export] PDF generation failed:", error);
         return false;
     }
 };
 
-/**
- * Triggers a download of a data URL image using Blobs for mobile compatibility.
- */
-export const downloadImage = async (dataUrl: string, filename: string) => {
-    if (typeof window === 'undefined') return;
+// ─── Image download ───────────────────────────────────────────────────────────
 
-    console.log(`[Export] Triggering image download...`);
+export const downloadImage = async (dataUrl: string, filename: string): Promise<void> => {
+    if (typeof window === "undefined") return;
 
     try {
-        // Robust Base64 to Blob conversion
-        const parts = dataUrl.split(',');
-        const mime = parts[0].match(/:(.*?);/)?.[1] || 'image/png';
-        const binary = atob(parts[1]);
-        const array = new Uint8Array(binary.length);
+        const [meta, b64] = dataUrl.split(",");
+        const mime = meta.match(/:(.*?);/)?.[1] ?? "image/png";
+        const binary = atob(b64);
+        const bytes = new Uint8Array(binary.length);
+        for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
 
-        for (let i = 0; i < binary.length; i++) {
-            array[i] = binary.charCodeAt(i);
-        }
+        const blob = new Blob([bytes], { type: mime });
+        const url = URL.createObjectURL(blob);
 
-        const blob = new Blob([array], { type: mime });
-        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        a.style.display = "none";
+        document.body.appendChild(a);
+        a.click();
 
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = filename;
-        link.style.display = 'none';
-        document.body.appendChild(link);
-        link.click();
-
-        // Cleanup with longer timeout for mobile settlement
         setTimeout(() => {
-            if (document.body.contains(link)) {
-                document.body.removeChild(link);
-            }
-            window.URL.revokeObjectURL(url);
+            if (document.body.contains(a)) document.body.removeChild(a);
+            URL.revokeObjectURL(url);
         }, 2000);
 
-        console.log(`[Export] Download triggered successfully.`);
+        console.log("[Export] Download triggered successfully.");
     } catch (e) {
         console.error("[Export] Download failed:", e);
-        // Fallback for extremely restricted mobile browsers
-        window.open(dataUrl, '_blank');
+        window.open(dataUrl, "_blank");
     }
 };
