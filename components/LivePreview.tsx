@@ -7,7 +7,7 @@ import BoldTemplate from "./templates/Bold";
 import ClassicTemplate from "./templates/Classic";
 
 import { captureElementAsImage, downloadImage, downloadAsPDF } from "@/lib/ExportUtils";
-import { shareContent, shareOnWhatsApp, dataUrlToFile } from "@/lib/ShareUtils";
+import { shareToWhatsApp, shareViaWebShare } from "@/lib/ShareUtils";
 import { saveDocument } from "@/lib/StorageUtils";
 import { useToast } from "@/components/ui/Toast";
 
@@ -98,48 +98,39 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
         await new Promise(r => setTimeout(r, 100));
 
         const dataUrl = await captureElementAsImage(CAPTURE_ID);
-        if (dataUrl) {
-            const file = await dataUrlToFile(dataUrl, `Proofa-${type}.png`);
-            if (file) {
-                const canShare = navigator.canShare && navigator.canShare({ files: [file] });
-                if (canShare) {
-                    try {
-                        await navigator.share({
-                            title: `Proofa ${type}`,
-                            text: `Here is your ${type} from Proofa.`,
-                            files: [file],
-                        });
-                        showToast(`${type.charAt(0).toUpperCase() + type.slice(1)} shared!`, "success");
-                    } catch (error) {
-                        if ((error as any).name !== "AbortError") {
-                            shareOnWhatsApp(`I just generated a professional ${type} using Proofa! 🧾✨\n\nDownload Proofa on the Play Store or use proofa.app`);
-                            showToast("Opening WhatsApp...", "info");
-                        }
-                    }
-                } else {
-                    shareOnWhatsApp(`I just generated a professional ${type} using Proofa! 🧾✨\n\nI'll download the image for you now so you can attach it manually.`);
-                    downloadImage(dataUrl, `Proofa-${type}-${Date.now()}.png`);
-                    showToast("Downloaded image for manual sharing", "info");
-                }
-            }
-        }
+        if (!dataUrl) { setIsExporting(false); return; }
+
+        const filename = `Proofa-${type}-${Date.now()}.png`;
+        const result = await shareViaWebShare({ dataUrl, docType: type, filename });
+
+        if (result === "shared") showToast("Shared successfully!", "success");
+        else if (result === "downloaded") showToast("Image saved — attach it in your app", "info");
+        else if (result === "error") showToast("Share failed. Try downloading instead.", "error");
+        // "aborted" → user dismissed sheet, show nothing
+
         setIsExporting(false);
     };
 
     const handleWhatsApp = async () => {
         if (blockIfLocked()) return;
+        setIsExporting(true);
+        saveDocument(data, type, activeTemplate);
+
         window.scrollTo(0, 0);
         await new Promise(r => setTimeout(r, 100));
 
         const dataUrl = await captureElementAsImage(CAPTURE_ID);
-        if (dataUrl) {
-            shareOnWhatsApp(`I just generated a professional ${type} using Proofa! 🧾✨\n\nI've downloaded the document for you to share.`);
-            downloadImage(dataUrl, `Proofa-${type}-${Date.now()}.png`);
-            showToast("Opening WhatsApp & Downloading...", "info");
-        } else {
-            shareOnWhatsApp(`I just generated a professional ${type} using Proofa! 🧾✨`);
-            showToast("Opening WhatsApp...", "info");
-        }
+        if (!dataUrl) { setIsExporting(false); return; }
+
+        const filename = `Proofa-${type}-${Date.now()}.png`;
+        const result = await shareToWhatsApp({ dataUrl, docType: type, filename });
+
+        if (result === "shared") showToast("Sent to WhatsApp! 🟢", "success");
+        else if (result === "downloaded") showToast("Image saved — open WhatsApp and attach it 📎", "info");
+        else if (result === "aborted") showToast("Share cancelled", "info");
+        else showToast("Something went wrong. Try again.", "error");
+
+        setIsExporting(false);
     };
 
     return (

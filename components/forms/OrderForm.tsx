@@ -261,7 +261,7 @@ export default function OrderForm() {
                                 </div>
                             </StaggerItem>
 
-                            <StaggerItem>
+                            {/* <StaggerItem>
                                 <section className="flex flex-col gap-5 bg-white p-6 rounded-[2rem] border border-surface-100 shadow-sm transition-all focus-within:ring-2 focus-within:ring-primary-500/10">
                                     <div className="flex items-center justify-between px-1">
                                         <h3 className="text-[10px] font-black uppercase tracking-widest text-surface-400">Payment details</h3>
@@ -306,7 +306,7 @@ export default function OrderForm() {
                                         </div>
                                     )}
                                 </section>
-                            </StaggerItem>
+                            </StaggerItem> */}
 
                             <StaggerItem>
                                 <section className="flex flex-col gap-5 bg-white p-6 rounded-[2rem] border border-surface-100 shadow-sm transition-all focus-within:ring-2 focus-within:ring-primary-500/10">
