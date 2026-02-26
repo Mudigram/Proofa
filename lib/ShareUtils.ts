@@ -1,33 +1,30 @@
 /**
  * ShareUtils.ts
  *
- * WhatsApp sharing strategy:
+ * THE CORE PWA PROBLEM:
+ * iOS Safari requires navigator.share() to be called synchronously within
+ * a user gesture handler. Any await before the call (fetch, canvas ops, etc.)
+ * breaks the gesture chain and iOS silently drops the files, sharing text only.
  *
- *  Mobile (Android/iOS) — navigator.share({ files }) is supported and
- *  WhatsApp registers itself as a share target. The image lands directly
- *  in the user's WhatsApp share sheet. Best experience.
+ * SOLUTION — two-phase approach:
+ *   Phase 1 (background): As soon as the preview renders, we silently capture
+ *   the image and convert it to a File object. This runs outside any gesture.
  *
- *  Desktop Chrome / unsupported — Web Share API either doesn't exist or
- *  doesn't support files. We download the image and open WhatsApp Web
- *  so the user can attach it manually. We show a clear toast explaining this.
- *
- *  User cancelled share sheet — navigator.share throws AbortError.
- *  We treat this silently (no error toast).
+ *   Phase 2 (on tap): The button handler uses the pre-built File directly.
+ *   navigator.share({ files }) is called with ZERO async work before it.
+ *   iOS keeps the gesture context → files go through → image lands in WhatsApp.
  */
 
-export type ShareResult =
-    | "shared"        // Web Share API succeeded
-    | "downloaded"    // Fallback: image downloaded + WhatsApp Web opened
-    | "aborted"       // User dismissed the share sheet
-    | "error";        // Something unexpected went wrong
+export type ShareResult = "shared" | "downloaded" | "aborted" | "error";
 
-// ─── Core primitive: convert dataUrl → File ───────────────────────────────────
+// ─── File conversion ──────────────────────────────────────────────────────────
 
 export const dataUrlToFile = async (
     dataUrl: string,
     filename: string
 ): Promise<File | null> => {
     try {
+        // Use fetch + blob — most reliable cross-browser way
         const res = await fetch(dataUrl);
         const blob = await res.blob();
         return new File([blob], filename, { type: "image/png" });
@@ -37,148 +34,105 @@ export const dataUrlToFile = async (
     }
 };
 
-// ─── Check capabilities ───────────────────────────────────────────────────────
+// ─── Capability checks ────────────────────────────────────────────────────────
 
-/**
- * Returns true if this browser can share files natively (mobile Chrome/Safari).
- * Always do a canShare() probe — some browsers have navigator.share but not file sharing.
- */
 export const canShareFiles = (files: File[]): boolean => {
     if (typeof navigator === "undefined") return false;
-    if (!navigator.share) return false;
-    if (!navigator.canShare) return false;
-    return navigator.canShare({ files });
+    if (!navigator.share || !navigator.canShare) return false;
+    try {
+        return navigator.canShare({ files });
+    } catch {
+        return false;
+    }
 };
 
-// ─── WhatsApp text link (desktop fallback) ────────────────────────────────────
+// ─── Pre-bake (call this in background, before user taps) ────────────────────
 
-/**
- * Opens WhatsApp Web / app with a pre-filled message.
- * On mobile this deep-links into the app; on desktop it opens WhatsApp Web.
- */
-const openWhatsAppWithText = (text: string) => {
-    const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
-    window.open(url, "_blank", "noopener,noreferrer");
-};
+export const prebakeShareFile = async (
+    dataUrl: string,
+    filename: string
+): Promise<File | null> => dataUrlToFile(dataUrl, filename);
 
-// ─── Download helper ──────────────────────────────────────────────────────────
+// ─── Download fallback ────────────────────────────────────────────────────────
 
-const triggerDownload = (dataUrl: string, filename: string) => {
+const triggerDownload = (dataUrl: string, filename: string): void => {
     const a = document.createElement("a");
     a.href = dataUrl;
     a.download = filename;
     a.style.display = "none";
     document.body.appendChild(a);
     a.click();
-    setTimeout(() => {
-        if (document.body.contains(a)) document.body.removeChild(a);
-    }, 1000);
+    setTimeout(() => document.body.contains(a) && document.body.removeChild(a), 1500);
 };
 
-// ─── Main share function ──────────────────────────────────────────────────────
+// ─── Core share ───────────────────────────────────────────────────────────────
 
-export interface WhatsAppShareOptions {
-    /** PNG data URL from captureElementAsImage */
+export interface ShareOptions {
+    /** Raw PNG data URL — used as fallback if prebaked file is missing */
     dataUrl: string;
-    /** e.g. "invoice", "receipt", "order" */
     docType: string;
-    /** Used for the downloaded filename, e.g. "Proofa-invoice-123.png" */
     filename: string;
-    /** Optional custom message. Defaults to a sensible Proofa message. */
-    message?: string;
+    /**
+     * Pre-built File object from prebakeShareFile().
+     * When provided and valid, navigator.share() is called with ZERO awaits
+     * before it — preserving iOS gesture context so files actually go through.
+     */
+    prebaked?: File | null;
 }
 
 /**
- * The single entry point for all WhatsApp sharing.
+ * Attempts to share the invoice image via the native share sheet.
  *
- * Returns a ShareResult so the caller can show the right toast:
- *   "shared"     → "Sent to WhatsApp!"
- *   "downloaded" → "Image saved — attach it in WhatsApp"
- *   "aborted"    → (show nothing or a soft message)
- *   "error"      → "Something went wrong"
+ * Priority:
+ *  1. Use prebaked File → navigator.share({ files }) → image in share sheet ✅
+ *  2. No prebaked but canShareFiles → build file now → share (works Android,
+ *     may fail iOS due to gesture timeout)
+ *  3. No file share support → download image + show instruction toast
  */
-export const shareToWhatsApp = async (
-    opts: WhatsAppShareOptions
-): Promise<ShareResult> => {
-    const { dataUrl, docType, filename, message } = opts;
+const attemptShare = async (opts: ShareOptions, title: string, text: string): Promise<ShareResult> => {
+    const { dataUrl, filename, prebaked } = opts;
 
-    const defaultMessage =
-        `Here is your ${docType} from Proofa 🧾\n` +
-        `_Generated with Proofa — proofa.app_`;
-
-    const shareText = message ?? defaultMessage;
-
-    // ── Path 1: Mobile with file sharing support ──────────────────────────────
-    const file = await dataUrlToFile(dataUrl, filename);
-
-    if (file && canShareFiles([file])) {
+    // Fast path: use pre-built file with no async work (iOS-safe)
+    if (prebaked && canShareFiles([prebaked])) {
         try {
-            await navigator.share({
-                files: [file],
-                // Note: WhatsApp ignores title/text when files are present,
-                // but other apps (Telegram, Gmail) use them.
-                title: `Proofa ${docType}`,
-                text: shareText,
-            });
+            await navigator.share({ files: [prebaked], title, text });
             return "shared";
         } catch (err: any) {
             if (err.name === "AbortError") return "aborted";
-            // Share failed for another reason — fall through to download fallback
-            console.warn("[Share] navigator.share failed, falling back:", err);
+            console.warn("[Share] navigator.share with prebaked file failed:", err.message);
+            // Don't fall through to rebuild — just download
+            triggerDownload(dataUrl, filename);
+            return "downloaded";
         }
     }
 
-    // ── Path 2: Desktop / no file-share support ───────────────────────────────
-    // Download the image and open WhatsApp Web so user can attach manually.
+    // Slow path: build file now (async — may break iOS gesture)
+    const file = await dataUrlToFile(dataUrl, filename);
+    if (file && canShareFiles([file])) {
+        try {
+            await navigator.share({ files: [file], title, text });
+            return "shared";
+        } catch (err: any) {
+            if (err.name === "AbortError") return "aborted";
+            console.warn("[Share] navigator.share (slow path) failed:", err.message);
+        }
+    }
+
+    // Fallback: download only — never silently send text
     triggerDownload(dataUrl, filename);
-
-    // Small delay so the download starts before the new tab opens
-    await new Promise((r) => setTimeout(r, 300));
-
-    openWhatsAppWithText(
-        `${shareText}\n\n` +
-        `_(Your invoice image has been saved — tap the 📎 attach button in WhatsApp to send it)_`
-    );
-
     return "downloaded";
 };
 
-// ─── Generic Web Share (non-WhatsApp) ────────────────────────────────────────
+export const shareToWhatsApp = (opts: ShareOptions): Promise<ShareResult> =>
+    attemptShare(
+        opts,
+        `Proofa ${opts.docType}`,
+        `Here is your ${opts.docType} 🧾\n_Sent via Proofa — proofa.app_`
+    );
 
-export interface GenericShareOptions {
-    dataUrl: string;
-    docType: string;
-    filename: string;
-}
-
-/**
- * Uses the generic Web Share API sheet (not WhatsApp-specific).
- * User picks the app from their system share sheet.
- */
-export const shareViaWebShare = async (
-    opts: GenericShareOptions
-): Promise<ShareResult> => {
-    const { dataUrl, docType, filename } = opts;
-
-    const file = await dataUrlToFile(dataUrl, filename);
-    if (!file) return "error";
-
-    if (!canShareFiles([file])) {
-        // No Web Share support — just download
-        triggerDownload(dataUrl, filename);
-        return "downloaded";
-    }
-
-    try {
-        await navigator.share({
-            title: `Proofa ${docType}`,
-            text: `Here is your ${docType} from Proofa 🧾`,
-            files: [file],
-        });
-        return "shared";
-    } catch (err: any) {
-        if (err.name === "AbortError") return "aborted";
-        console.error("[Share] Generic share failed:", err);
-        return "error";
-    }
-};
+export const shareViaWebShare = (opts: ShareOptions): Promise<ShareResult> =>
+    attemptShare(
+        opts,
+        `Proofa ${opts.docType}`,
+        `Here is your ${opts.docType} from Proofa 🧾`
+    );

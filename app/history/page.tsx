@@ -6,22 +6,36 @@ import { SavedDocument, ReceiptData, InvoiceData, OrderData } from "@/lib/types"
 import { formatCurrency, formatDate } from "@/components/templates/TemplateUtils";
 import { PageTransition, StaggerContainer, StaggerItem } from "@/components/ui/Animations";
 import Link from "next/link";
+import { Trash2, AlertTriangle } from "lucide-react";
+import { Modal } from "@/components/ui/Modal";
+import { useToast } from "@/components/ui/Toast";
 
 export default function HistoryPage() {
     const [history, setHistory] = useState<SavedDocument[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [selectedDoc, setSelectedDoc] = useState<SavedDocument | null>(null);
+    const { showToast } = useToast();
 
     useEffect(() => {
         setHistory(getHistory());
         setIsLoading(false);
     }, []);
 
-    const handleDelete = (id: string, e: React.MouseEvent) => {
+    const openDeleteModal = (doc: SavedDocument, e: React.MouseEvent) => {
         e.preventDefault();
         e.stopPropagation();
-        if (confirm("Are you sure you want to delete this document?")) {
-            deleteDocument(id);
+        setSelectedDoc(doc);
+        setIsDeleteModalOpen(true);
+    };
+
+    const confirmDelete = () => {
+        if (selectedDoc) {
+            deleteDocument(selectedDoc.id);
             setHistory(getHistory());
+            setIsDeleteModalOpen(false);
+            showToast("Document deleted successfully", "success");
+            setSelectedDoc(null);
         }
     };
 
@@ -81,20 +95,19 @@ export default function HistoryPage() {
                                 <StaggerItem key={doc.id}>
                                     <div className="group relative bg-white border border-surface-200 rounded-[2rem] p-5 hover:border-primary-500 hover:shadow-xl hover:shadow-primary-500/5 transition-all">
                                         <div className="flex items-center gap-4">
-                                            {/* Type Icon */}
-                                            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${doc.type === "receipt" ? "bg-orange-50 text-orange-500" :
-                                                doc.type === "invoice" ? "bg-blue-50 text-blue-500" :
-                                                    "bg-purple-50 text-purple-500"
+                                            {/* Type Indicator with Letter */}
+                                            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-lg font-black shrink-0 ${doc.type === "receipt" ? "bg-orange-50 text-orange-600" :
+                                                doc.type === "invoice" ? "bg-blue-50 text-blue-600" :
+                                                    "bg-purple-50 text-purple-600"
                                                 }`}>
-                                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                                    <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
-                                                    <polyline points="14 2 14 8 20 8" />
-                                                </svg>
+                                                {doc.type === "receipt" ? "R" : doc.type === "invoice" ? "I" : "S"}
                                             </div>
 
                                             <div className="flex-1 min-w-0">
                                                 <div className="flex items-center gap-2 mb-0.5">
-                                                    <span className="text-[9px] font-black uppercase tracking-widest text-surface-300">{doc.type}</span>
+                                                    <span className="text-[9px] font-black uppercase tracking-widest text-surface-300">
+                                                        {doc.type === 'order' ? 'summary' : doc.type}
+                                                    </span>
                                                     <span className="w-1 h-1 rounded-full bg-surface-200" />
                                                     <span className="text-[9px] font-black uppercase tracking-widest text-surface-300">{formatDate(doc.createdAt)}</span>
                                                 </div>
@@ -103,15 +116,16 @@ export default function HistoryPage() {
                                                 </h3>
                                             </div>
 
-                                            <div className="text-right">
+                                            <div className="flex flex-col items-end gap-1 shrink-0">
                                                 <p className="text-sm font-black text-surface-900">
                                                     {formatCurrency(getDocAmount(doc))}
                                                 </p>
                                                 <button
-                                                    onClick={(e) => handleDelete(doc.id, e)}
-                                                    className="text-[10px] font-bold text-red-400 hover:text-red-500 mt-1 uppercase tracking-wider"
+                                                    onClick={(e) => openDeleteModal(doc, e)}
+                                                    className="w-8 h-8 rounded-full bg-red-50 text-red-500 flex items-center justify-center hover:bg-red-500 hover:text-white transition-all relative z-20"
+                                                    title="Delete Document"
                                                 >
-                                                    Delete
+                                                    <Trash2 size={14} />
                                                 </button>
                                             </div>
                                         </div>
@@ -124,6 +138,36 @@ export default function HistoryPage() {
                         </div>
                     </StaggerContainer>
                 )}
+
+                {/* Delete Confirmation Modal */}
+                <Modal
+                    isOpen={isDeleteModalOpen}
+                    onClose={() => setIsDeleteModalOpen(false)}
+                    title="Delete Document?"
+                >
+                    <div className="text-center">
+                        <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6 text-red-500">
+                            <AlertTriangle size={32} />
+                        </div>
+                        <p className="text-surface-500 text-sm font-medium leading-relaxed mb-8">
+                            Are you sure you want to delete <strong className="text-surface-900">"{selectedDoc ? getDocTitle(selectedDoc) : ""}"</strong>? This action cannot be undone.
+                        </p>
+                        <div className="flex flex-col gap-3">
+                            <button
+                                onClick={confirmDelete}
+                                className="w-full bg-red-500 text-white font-black py-5 rounded-2xl shadow-xl shadow-red-500/20 active:scale-[0.98] transition-all uppercase text-xs tracking-widest"
+                            >
+                                Yes, Delete Forever
+                            </button>
+                            <button
+                                onClick={() => setIsDeleteModalOpen(false)}
+                                className="w-full bg-white text-surface-400 font-black py-5 rounded-2xl active:scale-[0.98] transition-all uppercase text-xs tracking-widest"
+                            >
+                                Keep Document
+                            </button>
+                        </div>
+                    </div>
+                </Modal>
             </main>
         </PageTransition>
     );

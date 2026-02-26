@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { PageTransition, StaggerContainer, StaggerItem } from "@/components/ui/Animations";
 
 export default function HowItWorks() {
@@ -45,20 +46,21 @@ export default function HowItWorks() {
                     {/* Featured Image Placeholder */}
                     <StaggerItem>
                         <div className="relative aspect-video rounded-[2.5rem] overflow-hidden bg-surface-100 mb-16 shadow-2xl border border-surface-200/50 group">
-                            <div className="absolute inset-0 bg-gradient-to-br from-primary-500/20 via-transparent to-surface-900/10" />
-                            <div className="absolute inset-0 flex items-center justify-center text-primary-500/20 group-hover:scale-110 transition-transform duration-700">
-                                <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
-                                    <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
-                                    <line x1="8" y1="21" x2="16" y2="21" />
-                                    <line x1="12" y1="17" x2="12" y2="21" />
-                                </svg>
-                            </div>
-                            <div className="absolute bottom-6 left-6 right-6 p-4 glass-effect rounded-2xl border border-white/20">
+                            <Image
+                                src="/how-it-works-hero.png"
+                                alt="How Proofa Works"
+                                width={1920}
+                                height={1080}
+                                className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-[2s]"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-surface-900/40 via-transparent to-transparent" />
+
+                            <div className="absolute bottom-6 left-6 right-6 p-2 bg-gray-900/40 rounded-2xl border border-white/50">
                                 <div className="flex items-center gap-3">
                                     <div className="w-8 h-8 rounded-full bg-primary-500 flex items-center justify-center text-white font-black text-[10px]">P</div>
-                                    <div className="flex-1">
-                                        <div className="h-2 w-24 bg-surface-900/10 rounded-full mb-1" />
-                                        <div className="h-1.5 w-16 bg-surface-900/5 rounded-full" />
+                                    <div className="flex-1 text-white">
+                                        <div className="text-[10px] font-black uppercase tracking-widest leading-none mb-1">Professional Workflow</div>
+                                        <div className="text-[8px] font-bold opacity-60 uppercase tracking-tighter">Verified by Proofa</div>
                                     </div>
                                 </div>
                             </div>
@@ -141,7 +143,7 @@ export default function HowItWorks() {
                                         </div>
                                         <div className="text-2xl font-black text-surface-900">₦0</div>
                                     </div>
-                                    <ul className="flex flex-col gap-4 mb-2">
+                                    <ul className="flex flex-col gap-4">
                                         {[
                                             "3 Professional Templates",
                                             "Export to WhatsApp",
@@ -159,26 +161,25 @@ export default function HowItWorks() {
                                 </div>
 
                                 {/* Pro Plan */}
-                                <div className="bg-gradient-to-br from-primary-500 to-primary-600 p-8 rounded-[2.5rem] shadow-xl shadow-primary-500/20 relative overflow-hidden group">
-                                    <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2" />
+                                <div className="bg-primary-500 p-8 rounded-[2.5rem] shadow-xl shadow-primary-500/20 relative overflow-hidden group">
                                     <div className="flex justify-between items-start mb-6 relative z-10">
                                         <div>
-                                            <h3 className="text-xl font-black text-white tracking-tight">Proofa Pro</h3>
+                                            <h3 className="text-xl font-black text-white tracking-tight leading-tight">Proofa Pro</h3>
                                             <div className="inline-flex px-2 py-0.5 bg-white/20 text-white text-[8px] font-black uppercase tracking-widest rounded mt-1">
-                                                COMING SOON
+                                                MOST POPULAR
                                             </div>
                                         </div>
                                         <div className="text-2xl font-black text-white">₦2,500<span className="text-[10px] opacity-60">/mo</span></div>
                                     </div>
                                     <ul className="flex flex-col gap-4 relative z-10">
                                         {[
-                                            "Unlimited Document History",
-                                            "Zero Watermarks",
-                                            "Multi-item Invoice Logic",
-                                            "Advanced Business Analytics",
+                                            "Zero Watermarks + HD Export",
+                                            "Custom Brand Colors",
+                                            "Bank Account Vault",
+                                            "Naira / Dollar Toggle",
                                             "Priority Tech Support"
                                         ].map((feature) => (
-                                            <li key={feature} className="flex items-center gap-3 text-sm text-white/90 font-medium">
+                                            <li key={feature} className="flex items-center gap-3 text-sm text-white/95 font-medium">
                                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                                                     <polyline points="20 6 9 17 4 12" />
                                                 </svg>
@@ -186,11 +187,34 @@ export default function HowItWorks() {
                                             </li>
                                         ))}
                                     </ul>
-                                    <div className="mt-8 pt-6 border-t border-white/10 relative z-10">
-                                        <div className="text-[10px] text-white/60 font-black uppercase tracking-[0.2em] text-center">
-                                            Scale your business to the next level
+                                </div>
+
+                                {/* Business Plan */}
+                                <div className="bg-gray-950 p-8 rounded-[2.5rem] shadow-xl relative overflow-hidden group border border-gray-800">
+                                    <div className="flex justify-between items-start mb-6 relative z-10">
+                                        <div>
+                                            <h3 className="text-xl font-black text-white tracking-tight leading-tight">Business</h3>
+                                            <div className="inline-flex px-2 py-0.5 bg-white/10 text-white text-[8px] font-black uppercase tracking-widest rounded mt-1">
+                                                FOR TEAMS
+                                            </div>
                                         </div>
+                                        <div className="text-2xl font-black text-white">₦5,000<span className="text-[10px] opacity-60">/mo</span></div>
                                     </div>
+                                    <ul className="flex flex-col gap-4 relative z-10">
+                                        {[
+                                            "Multi-Attendant Sync",
+                                            "Business Dashboard",
+                                            "Smart VAT / Tax Assist",
+                                            "Dedicated Support manager"
+                                        ].map((feature) => (
+                                            <li key={feature} className="flex items-center gap-3 text-sm text-white/95 font-medium">
+                                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                                                    <polyline points="20 6 9 17 4 12" />
+                                                </svg>
+                                                {feature}
+                                            </li>
+                                        ))}
+                                    </ul>
                                 </div>
                             </div>
                         </section>

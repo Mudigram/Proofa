@@ -39,9 +39,6 @@ export default function MinimalistTemplate({ data, type }: TemplateProps) {
             id="document-preview"
             className="relative bg-white p-8 min-h-[550px] flex flex-col font-sans text-surface-900 border border-surface-100 overflow-hidden font-heading w-[480px]"
         >
-            <Watermark />
-
-
             {/* Header */}
             <div className="flex justify-between items-start mb-4">
                 <div>
@@ -218,7 +215,7 @@ export default function MinimalistTemplate({ data, type }: TemplateProps) {
                 </div>
             )}
 
-
+            <Watermark />
         </div>
     );
 }

@@ -31,8 +31,18 @@ export const formatDate = (dateStr: string) => {
 };
 
 export const Watermark = () => (
-    <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-[0.05] select-none rotate-10">
-        <span className="text-6xl font-black uppercase tracking-[0.5em]">PROOFA PROOFA PROOFA</span>
+    <div className="absolute inset-0 pointer-events-none select-none overflow-hidden z-[1] opacity-[0.08]">
+        <div className="absolute inset-[-50%] flex flex-col items-center justify-center gap-16 rotate-[-25deg]">
+            {[...Array(8)].map((_, i) => (
+                <div key={i} className="flex gap-16 whitespace-nowrap">
+                    {[...Array(6)].map((_, j) => (
+                        <span key={j} className="text-4xl font-black uppercase tracking-[0.3em] text-surface-900">
+                            PROOFA
+                        </span>
+                    ))}
+                </div>
+            ))}
+        </div>
     </div>
 );
 

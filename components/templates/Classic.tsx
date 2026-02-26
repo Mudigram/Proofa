@@ -30,8 +30,6 @@ export default function ClassicTemplate({ data, type }: TemplateProps) {
 
     return (
         <div className="relative bg-white min-h-[600px] flex flex-col font-mono text-zinc-800 mx-auto max-w-[480px] shadow-2xl p-8" id="document-preview">
-            <Watermark />
-
             {/* 1. MINIMAL LETTERHEAD */}
             <div className="flex flex-col items-center border-b-2 border-zinc-900 pb-4 mb-4">
                 {data.logoUrl && (
@@ -133,6 +131,8 @@ export default function ClassicTemplate({ data, type }: TemplateProps) {
                 <p>{data.terms || "Goods sold are not returnable."}</p>
                 <Branding />
             </div>
+
+            <Watermark />
         </div>
     );
 }

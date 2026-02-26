@@ -38,7 +38,12 @@ const templates: TemplateInfo[] = [
         description: "Energetic colors with modern shapes",
         component: BoldTemplate,
     },
-
+    {
+        id: "classic",
+        name: "Classic Professional",
+        description: "Timeless letterhead style with clean typography",
+        component: ClassicTemplate,
+    },
 ];
 
 export default function TemplatesPage() {

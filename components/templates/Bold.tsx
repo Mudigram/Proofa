@@ -65,8 +65,6 @@ export default function BoldTemplate({ data, type }: TemplateProps) {
             className="relative bg-white flex flex-col font-sans text-surface-900 overflow-hidden w-[560px]"
             style={{ fontFamily: "inherit" }}
         >
-            <Watermark />
-
             {/* ── SPLIT HEADER: dark left panel + white right ── */}
             <div className="flex">
 
@@ -266,6 +264,8 @@ export default function BoldTemplate({ data, type }: TemplateProps) {
                     <p className="text-[9px] font-black uppercase text-white/80 tracking-widest">Verified by Proofa</p>
                 </div>
             </div>
+
+            <Watermark />
         </div>
     );
 }
