@@ -272,17 +272,17 @@ export default function HomePage() {
         </section>
 
         {/* Footer Branding */}
-        <footer className="mt-12 text-center pb-8">
-          <div className="flex flex-col items-center justify-center gap-2 mb-6">
+        <footer className="mt-4 text-center pb-8">
+          <div className="flex flex-col items-center justify-center mb-6">
             <div className="flex items-center text-surface-900">
               <Image
                 src="/Logo/Proofa orange icon.png"
                 alt="Proofa Icon"
-                width={100}
-                height={100}
+                width={80}
+                height={80}
                 className="object-contain"
               />
-              <span className="text-xs font-bold uppercase tracking-widest">Proofa</span>
+              <span className="text-md font-bold uppercase tracking-widest">Proofa</span>
             </div>
             <a
               href="https://mudiaga-dev.vercel.app/"

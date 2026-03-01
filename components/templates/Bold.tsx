@@ -71,7 +71,7 @@ export default function BoldTemplate({ data, type }: TemplateProps) {
                 {/* LEFT: dark brand panel — narrow pill */}
                 <div className="bg-surface-900 w-[100px] flex-shrink-0 flex flex-col gap-2 p-5">
                     {/* Logo */}
-                    <div className="w-12 h-12 bg-primary-500 rounded-xl flex items-center justify-center overflow-hidden shadow-lg flex-shrink-0">
+                    <div className="flex rounded-xl items-center justify-center overflow-hidden shadow-lg flex-shrink-0">
                         {data.logoUrl ? (
                             <Image
                                 src={data.logoUrl}
@@ -82,7 +82,14 @@ export default function BoldTemplate({ data, type }: TemplateProps) {
                                 className="object-contain w-full h-full"
                             />
                         ) : (
-                            <span className="text-xl font-black text-white italic">P</span>
+                            <Image
+                                src="/Logo/Proofa orange icon.png"
+                                alt="Logo"
+                                width={48}
+                                height={48}
+                                unoptimized
+                                className="object-contain w-full h-full"
+                            />
                         )}
                     </div>
                     {/* Business info sits right under logo */}

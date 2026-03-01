@@ -61,7 +61,14 @@ export default function MinimalistTemplate({ data, type }: TemplateProps) {
                                 className="w-full h-full object-contain rounded-full"
                             />
                         ) : (
-                            "P"
+                            <Image
+                                src="/Logo/Proofa orange icon.png"
+                                alt="Logo"
+                                width={48}
+                                height={48}
+                                unoptimized
+                                className="w-full h-full object-contain rounded-full"
+                            />
                         )}
                     </div>
                     <p className="text-sm font-black tracking-tight">{isOrder ? "Proofa Store" : (isReceipt ? receipt.businessName : invoice.businessName)}</p>

@@ -40,16 +40,29 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Proofa — Fast, Professional Business Documents",
     description: "Create and share receipts, invoices, and order summaries in seconds. Optimized for mobile and WhatsApp.",
-    url: "https://proofa.app", // Placeholder
+    url: "https://proofa.app",
     siteName: "Proofa",
+    images: [
+      {
+        url: "/Logo/Proofa orange icon.png",
+        width: 1200,
+        height: 630,
+        alt: "Proofa Logo",
+      },
+    ],
     locale: "en_NG",
     type: "website",
+  },
+  icons: {
+    icon: "/Logo/Proofa orange icon.png",
+    apple: "/Logo/Proofa orange icon.png",
   },
   manifest: "/manifest.json",
   twitter: {
     card: "summary_large_image",
     title: "Proofa — Mobile Receipt & Invoice Generator",
     description: "Professionalize your business documentation instantly with Proofa.",
+    images: ["/Logo/Proofa orange icon.png"],
   },
 };
 

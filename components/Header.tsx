@@ -41,9 +41,9 @@ export default function Header() {
                                 <Image
                                     src="/Logo/Proofa orange icon.png"
                                     alt="Proofa Icon"
-                                    width={100}
-                                    height={100}
-                                    className=" object-contain"
+                                    width={80}
+                                    height={80}
+                                    className="w-18 h-18 object-contain"
                                     priority
                                 />
                             </div>
