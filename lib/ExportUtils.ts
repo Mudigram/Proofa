@@ -68,7 +68,7 @@ export const captureElementAsImage = async (elementId: string): Promise<string |
     window.scrollTo(0, 0);
     await new Promise((r) => setTimeout(r, 80));
 
-    console.log(`[Export] Capturing element: ${root.scrollWidth}x${root.scrollHeight}`);
+
 
     // Build a transform-free off-screen clone so any scale() on the
     // visual preview wrapper doesn't affect the exported image
@@ -159,7 +159,7 @@ export const downloadImage = async (dataUrl: string, filename: string): Promise<
             URL.revokeObjectURL(url);
         }, 2000);
 
-        console.log("[Export] Download triggered successfully.");
+
     } catch (e) {
         console.error("[Export] Download failed:", e);
         window.open(dataUrl, "_blank");

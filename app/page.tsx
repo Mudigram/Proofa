@@ -120,8 +120,17 @@ export default function HomePage() {
       <main className="app-container py-6">
         {/* Greeting Section */}
         <section className="mb-8 mt-2">
-          <div className="flex items-center gap-2">
-
+          <div className="flex items-center gap-4">
+            <div className="w-16 h-16 flex-shrink-0 animate-in fade-in zoom-in duration-500 relative">
+              <Image
+                src="/Logo/Proofa orange icon.png"
+                alt="Proofa Icon"
+                width={64}
+                height={64}
+                className="object-contain"
+                priority
+              />
+            </div>
             <div className="flex-1">
               <div className="flex items-center gap-2">
                 {isEditingName ? (
@@ -282,7 +291,7 @@ export default function HomePage() {
                 height={80}
                 className="object-contain"
               />
-              <span className="text-md font-bold uppercase tracking-widest">Proofa</span>
+              <span className="text-base font-bold uppercase tracking-widest">Proofa</span>
             </div>
             <a
               href="https://mudiaga-dev.vercel.app/"

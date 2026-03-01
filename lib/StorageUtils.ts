@@ -63,7 +63,6 @@ export const getHistory = (): SavedDocument[] => {
     try {
         return JSON.parse(stored);
     } catch (e) {
-        console.error("Error parsing history from storage:", e);
         return [];
     }
 };

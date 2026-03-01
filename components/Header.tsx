@@ -37,13 +37,13 @@ export default function Header() {
                         </button>
                     ) : (
                         <Link href="/" className="flex items-center">
-                            <div className="w-18 h-18 flex items-center justify-center">
+                            <div className="w-16 h-16 flex items-center justify-center">
                                 <Image
                                     src="/Logo/Proofa orange icon.png"
                                     alt="Proofa Icon"
-                                    width={80}
-                                    height={80}
-                                    className="w-18 h-18 object-contain"
+                                    width={64}
+                                    height={64}
+                                    className="w-16 h-16 object-contain"
                                     priority
                                 />
                             </div>

@@ -81,7 +81,7 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
             prebakedFile.current = file;
             setPrebakeState(file ? "ready" : "failed");
 
-            console.log("[Prebake] ✅ Share file ready:", !!file, "canShareFiles:", file ? canShareFiles([file]) : false);
+
         } catch (e) {
             if (!signal.aborted) {
                 console.warn("[Prebake] Failed:", e);
@@ -250,8 +250,8 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
                             key={t.id}
                             onClick={() => setActiveTemplate(t.id as TemplateName)}
                             className={`flex-1 min-w-[100px] whitespace-nowrap py-3 px-4 rounded-xl text-xs font-black uppercase tracking-widest transition-all relative ${activeTemplate === t.id
-                                    ? "bg-white text-primary-500 shadow-md shadow-black/5 ring-1 ring-black/5"
-                                    : "text-surface-400 hover:text-surface-600"
+                                ? "bg-white text-primary-500 shadow-md shadow-black/5 ring-1 ring-black/5"
+                                : "text-surface-400 hover:text-surface-600"
                                 }`}
                         >
                             <span className="relative z-10 flex items-center justify-center gap-1.5">
@@ -323,8 +323,8 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
 
                     {/* Ready indicator */}
                     <span className={`absolute right-4 top-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full transition-all duration-500 z-10 ${waReady ? "bg-white scale-100 shadow-[0_0_6px_2px_rgba(255,255,255,0.4)]" :
-                            waBaking ? "bg-white/30 scale-75 animate-pulse" :
-                                "bg-red-300 scale-75"   // failed state
+                        waBaking ? "bg-white/30 scale-75 animate-pulse" :
+                            "bg-red-300 scale-75"   // failed state
                         }`} />
                 </button>
 
