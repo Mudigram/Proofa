@@ -4,6 +4,7 @@ import Link from "next/link";
 import React, { useState, useEffect } from "react";
 import { getHistory, getUserName, saveUserName } from "@/lib/StorageUtils";
 import { SavedDocument } from "@/lib/types";
+import Image from "next/image";
 import { formatCurrency, formatDate } from "@/components/templates/TemplateUtils";
 import { StaggerContainer, StaggerItem, PageTransition } from "@/components/ui/Animations";
 
@@ -119,45 +120,50 @@ export default function HomePage() {
       <main className="app-container py-6">
         {/* Greeting Section */}
         <section className="mb-8 mt-2">
-          <div className="flex items-center gap-3">
-            {isEditingName ? (
-              <div className="flex items-center gap-2 animate-in fade-in slide-in-from-left-4 duration-300">
-                <input
-                  type="text"
-                  value={tempName}
-                  onChange={(e) => setTempName(e.target.value.substring(0, 5))}
-                  className="text-3xl font-extrabold text-primary-600 tracking-tight bg-primary-50 border-b-2 border-primary-500 outline-none w-[120px] pb-1"
-                  autoFocus
-                  onBlur={handleSaveName}
-                  onKeyDown={(e) => e.key === 'Enter' && handleSaveName()}
-                />
-                <button
-                  onClick={handleSaveName}
-                  className="w-10 h-10 bg-primary-500 text-white rounded-full flex items-center justify-center shadow-lg active:scale-90 transition-all"
-                >
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
-                </button>
+          <div className="flex items-center gap-2">
+
+            <div className="flex-1">
+              <div className="flex items-center gap-2">
+                {isEditingName ? (
+                  <div className="flex items-center gap-2 animate-in fade-in slide-in-from-left-4 duration-300">
+                    <input
+                      type="text"
+                      value={tempName}
+                      onChange={(e) => setTempName(e.target.value.substring(0, 10))}
+                      className="text-3xl font-extrabold text-primary-600 tracking-tight bg-primary-50 border-b-2 border-primary-500 outline-none w-[160px] pb-1"
+                      autoFocus
+                      onBlur={handleSaveName}
+                      onKeyDown={(e) => e.key === 'Enter' && handleSaveName()}
+                    />
+                    <button
+                      onClick={handleSaveName}
+                      className="w-10 h-10 bg-primary-500 text-white rounded-full flex items-center justify-center shadow-lg active:scale-90 transition-all"
+                    >
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="20 6 9 17 4 12" />
+                      </svg>
+                    </button>
+                  </div>
+                ) : (
+                  <h1 className="text-3xl font-extrabold text-surface-900 tracking-tight flex items-center gap-1.5 group">
+                    {greeting}, <span className="text-primary-600">{userName}</span>
+                    <button
+                      onClick={handleEditName}
+                      className="p-2 opacity-40 hover:opacity-100 hover:bg-surface-900 rounded-full transition-all text-surface-400"
+                    >
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                      </svg>
+                    </button>
+                  </h1>
+                )}
               </div>
-            ) : (
-              <h1 className="text-3xl font-extrabold text-surface-900 tracking-tight flex items-center gap-1.5 group">
-                {greeting}, <span className="text-primary-600">{userName}</span>
-                <button
-                  onClick={handleEditName}
-                  className="p-2 opacity-40 hover:opacity-100 hover:bg-surface-900 rounded-full transition-all text-surface-400"
-                >
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-                  </svg>
-                </button>
-              </h1>
-            )}
+              <p className="text-surface-500 text-base mt-1.5 font-medium">
+                Ready to create a new document?
+              </p>
+            </div>
           </div>
-          <p className="text-surface-500 text-base mt-1.5 font-medium">
-            Ready to create a new document?
-          </p>
         </section>
 
         {/* Main Action Cards */}
@@ -217,14 +223,17 @@ export default function HomePage() {
                   href={`/${doc.type}?id=${doc.id}`}
                   className="bg-white border border-surface-100 p-4 rounded-3xl shadow-sm flex items-center gap-4 hover:shadow-md hover:border-primary-100 transition-all active:scale-[0.98]"
                 >
-                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${doc.type === "receipt" ? "bg-orange-50 text-orange-500" :
-                    doc.type === "invoice" ? "bg-blue-50 text-blue-500" :
-                      "bg-purple-50 text-purple-500"
+                  <div className={`w-14 h-14 rounded-xl flex items-center justify-center p-2 ${doc.type === "receipt" ? "bg-orange-50" :
+                    doc.type === "invoice" ? "bg-blue-50" :
+                      "bg-purple-50"
                     }`}>
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                      <polyline points="14 2 14 8 20 8" />
-                    </svg>
+                    <Image
+                      src="/Logo/Proofa orange icon.png"
+                      alt="Proofa"
+                      width={40}
+                      height={40}
+                      className="object-contain opacity-90"
+                    />
                   </div>
                   <div className="flex-1 min-w-0">
                     <h4 className="font-bold text-surface-900 leading-none truncate">
@@ -265,12 +274,15 @@ export default function HomePage() {
         {/* Footer Branding */}
         <footer className="mt-12 text-center pb-8">
           <div className="flex flex-col items-center justify-center gap-2 mb-6">
-            <div className="flex items-center gap-2 text-surface-300">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                <polyline points="14 2 14 8 20 8" />
-              </svg>
-              <span className="text-[10px] font-bold uppercase tracking-widest">Proofa</span>
+            <div className="flex items-center text-surface-900">
+              <Image
+                src="/Logo/Proofa orange icon.png"
+                alt="Proofa Icon"
+                width={100}
+                height={100}
+                className="object-contain"
+              />
+              <span className="text-xs font-bold uppercase tracking-widest">Proofa</span>
             </div>
             <a
               href="https://mudiaga-dev.vercel.app/"

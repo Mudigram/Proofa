@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { PageTransition, StaggerContainer, StaggerItem } from "@/components/ui/Animations";
 import { getUserName } from "@/lib/StorageUtils";
 import { useToast } from "@/components/ui/Toast";
+import Image from "next/image";
 import { Crown, Zap, ShieldCheck, CreditCard as CardIcon, LogOut, ExternalLink, Users, BarChart3, Receipt, Globe, Headset } from "lucide-react";
 
 export default function ProfilePage() {
@@ -58,10 +59,15 @@ export default function ProfilePage() {
                     {/* Profile Header */}
                     <StaggerItem>
                         <div className="bg-gray-950 border border-gray-800 rounded-[2.5rem] p-8 shadow-2xl mb-8 flex items-center gap-6 relative overflow-hidden group">
-                            <div className="w-20 h-20 rounded-full bg-gray-800 border border-gray-700 flex items-center justify-center text-white shadow-xl relative z-10">
-                                <svg width="40" height="40" viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
-                                </svg>
+                            <div className="w-24 h-24 rounded-full bg-gray-800/50 border border-gray-700/50 flex items-center justify-center p-5 shadow-xl relative z-10 overflow-hidden">
+                                <Image
+                                    src="/Logo/Proofa orange icon.png"
+                                    alt="Proofa Logo"
+                                    width={80}
+                                    height={80}
+                                    className="object-contain"
+                                    priority
+                                />
                             </div>
                             <div className="relative z-10">
                                 <h3 className="text-2xl font-black text-white tracking-tight leading-tight">
@@ -137,6 +143,6 @@ export default function ProfilePage() {
                     </StaggerItem>
                 </StaggerContainer>
             </main>
-        </PageTransition>
+        </PageTransition >
     );
 }
