@@ -55,6 +55,22 @@ const buildCleanClone = (root: HTMLElement): { clone: HTMLElement; container: HT
 
 // ─── Core capture ─────────────────────────────────────────────────────────────
 
+/**
+ * Utility to wait for all images inside an element to be fully loaded.
+ * Crucial for Safari which often snapshots before the 'foreignObject' images settle.
+ */
+const waitForImages = async (element: HTMLElement) => {
+    const images = Array.from(element.getElementsByTagName("img"));
+    const promises = images.map((img) => {
+        if (img.complete) return Promise.resolve();
+        return new Promise((resolve) => {
+            img.onload = resolve;
+            img.onerror = resolve; // Continue anyway on error
+        });
+    });
+    await Promise.all(promises);
+};
+
 export const captureElementAsImage = async (elementId: string): Promise<string | null> => {
     if (typeof window === "undefined") return null;
 
@@ -66,25 +82,29 @@ export const captureElementAsImage = async (elementId: string): Promise<string |
 
     const oldScrollY = window.scrollY;
     window.scrollTo(0, 0);
-    await new Promise((r) => setTimeout(r, 80));
+    await new Promise((r) => setTimeout(r, 100)); // Slightly longer settle
 
-
-
-    // Build a transform-free off-screen clone so any scale() on the
-    // visual preview wrapper doesn't affect the exported image
+    // Build a transform-free off-screen clone
     const { clone, cleanup } = buildCleanClone(root);
 
     try {
-        // Dynamically import html-to-image (tree-shakes unused formats)
         const { toPng } = await import("html-to-image");
 
+        // 1. Wait for images in the clone to actually be ready
+        await waitForImages(clone);
+
+        // 2. Safari "Priming" — calling it once to wake up the SVG engine
+        // Many browsers (esp Safari) need a dry run for symbols/blobs to inline
+        await toPng(clone, { quality: 0.1, pixelRatio: 1 });
+        await new Promise(r => setTimeout(r, 50));
+
+        // 3. The real capture
         const dataUrl = await toPng(clone, {
             pixelRatio: 2,
             backgroundColor: "#ffffff",
-            // Skip external/cross-origin nodes that can't be inlined
+            cacheBust: true,
             filter: (node) => {
                 if (node instanceof HTMLElement) {
-                    // Don't try to inline cross-origin iframes
                     if (node.tagName === "IFRAME") return false;
                 }
                 return true;
