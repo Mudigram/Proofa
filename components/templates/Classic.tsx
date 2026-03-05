@@ -2,6 +2,7 @@
 
 import React from "react";
 import Image from "next/image";
+import { BrandLogo } from "@/components/ui/BrandLogo";
 import {
     TemplateProps,
     formatCurrency,
@@ -11,7 +12,7 @@ import {
 } from "./TemplateUtils";
 import { ReceiptData, InvoiceData, OrderData } from "@/lib/types";
 
-export default function ClassicTemplate({ data, type }: TemplateProps) {
+export default function ClassicTemplate({ data, type, isPro, currencyCode }: TemplateProps) {
     const isReceipt = type === "receipt";
     const isInvoice = type === "invoice";
     const isOrder = type === "order";
@@ -32,9 +33,16 @@ export default function ClassicTemplate({ data, type }: TemplateProps) {
         <div className="relative bg-white min-h-[600px] flex flex-col font-mono text-zinc-800 mx-auto max-w-[480px] shadow-2xl p-8" id="document-preview">
             {/* 1. MINIMAL LETTERHEAD */}
             <div className="flex flex-col items-center border-b-2 border-zinc-900 pb-4 mb-4">
-                {data.logoUrl && (
-                    <div className="w-16 h-16 mb-2 grayscale">
-                        <Image src={data.logoUrl} alt="Logo" width={64} height={64} unoptimized className="object-contain" />
+                {data.logoUrl ? (
+                    <BrandLogo
+                        src={data.logoUrl}
+                        businessName={isInvoice ? invoice.businessName : (isReceipt ? receipt.businessName : "Store")}
+                        size={64}
+                        className="mb-2 grayscale shadow-none"
+                    />
+                ) : (
+                    <div className="w-16 h-16 mb-2 border-2 border-zinc-900 rounded-full flex items-center justify-center font-black text-xl italic grayscale shadow-none">
+                        {(isInvoice ? invoice.businessName : (isReceipt ? receipt.businessName : "S")).charAt(0)}
                     </div>
                 )}
                 <h1 className="text-xl font-bold uppercase tracking-[0.2em]">
@@ -75,7 +83,7 @@ export default function ClassicTemplate({ data, type }: TemplateProps) {
                     <div className="grid grid-cols-12 text-xs">
                         <div className="col-span-1">01</div>
                         <div className="col-span-7 font-bold uppercase">{receipt.description || "General Purchase"}</div>
-                        <div className="col-span-4 text-right font-bold">{formatCurrency(receipt.amount)}</div>
+                        <div className="col-span-4 text-right font-bold">{formatCurrency(receipt.amount, currencyCode)}</div>
                     </div>
                 ) : (
                     items.map((item, idx) => (
@@ -83,9 +91,9 @@ export default function ClassicTemplate({ data, type }: TemplateProps) {
                             <div className="col-span-1 text-zinc-400">{idx + 1}</div>
                             <div className="col-span-7 flex flex-col">
                                 <span className="font-bold uppercase leading-none">{item.name}</span>
-                                <span className="text-[9px] text-zinc-500 mt-1">{item.quantity} x {formatCurrency(item.price)}</span>
+                                <span className="text-[9px] text-zinc-500 mt-1">{item.quantity} x {formatCurrency(item.price, currencyCode)}</span>
                             </div>
-                            <div className="col-span-4 text-right font-bold">{formatCurrency(item.quantity * item.price)}</div>
+                            <div className="col-span-4 text-right font-bold">{formatCurrency(item.quantity * item.price, currencyCode)}</div>
                         </div>
                     ))
                 )}
@@ -95,12 +103,12 @@ export default function ClassicTemplate({ data, type }: TemplateProps) {
             <div className="border-t border-zinc-200 pt-4 flex flex-col gap-1.5">
                 <div className="flex justify-between text-[10px] uppercase">
                     <span>Subtotal</span>
-                    <span>{formatCurrency(subtotal)}</span>
+                    <span>{formatCurrency(subtotal, currencyCode)}</span>
                 </div>
                 {isInvoice && includeVat && (
                     <div className="flex justify-between text-[10px] uppercase">
                         <span>VAT ({vatRate}%)</span>
-                        <span>{formatCurrency(tax)}</span>
+                        <span>{formatCurrency(tax, currencyCode)}</span>
                     </div>
                 )}
                 {data.deliveryInfo?.enabled && (
@@ -111,7 +119,7 @@ export default function ClassicTemplate({ data, type }: TemplateProps) {
                 )}
                 <div className="flex justify-between border-t-2 border-zinc-900 mt-2 pt-2">
                     <span className="text-sm font-black uppercase tracking-[0.2em]">Total Due</span>
-                    <span className="text-xl font-black">{formatCurrency(total)}</span>
+                    <span className="text-xl font-black">{formatCurrency(total, currencyCode)}</span>
                 </div>
             </div>
 
@@ -129,10 +137,10 @@ export default function ClassicTemplate({ data, type }: TemplateProps) {
             {/* 7. FOOTER */}
             <div className="mt-auto pt-2 flex justify-between items-center text-[8px] uppercase tracking-tighter text-zinc-400">
                 <p>{data.terms || "Goods sold are not returnable."}</p>
-                <Branding />
+                <Branding isPro={isPro} />
             </div>
 
-            <Watermark />
+            <Watermark isPro={isPro} />
         </div>
     );
 }

@@ -55,7 +55,7 @@ const buildCleanClone = (root: HTMLElement): { clone: HTMLElement; container: HT
 
 // ─── Core capture ─────────────────────────────────────────────────────────────
 
-export const captureElementAsImage = async (elementId: string): Promise<string | null> => {
+export const captureElementAsImage = async (elementId: string, isHD: boolean = false): Promise<string | null> => {
     if (typeof window === "undefined") return null;
 
     const root = document.getElementById(elementId);
@@ -79,7 +79,7 @@ export const captureElementAsImage = async (elementId: string): Promise<string |
         const { toPng } = await import("html-to-image");
 
         const dataUrl = await toPng(clone, {
-            pixelRatio: 2,
+            pixelRatio: isHD ? 4 : 2,
             backgroundColor: "#ffffff",
             // Skip external/cross-origin nodes that can't be inlined
             filter: (node) => {
@@ -104,14 +104,14 @@ export const captureElementAsImage = async (elementId: string): Promise<string |
 
 // ─── PDF export ───────────────────────────────────────────────────────────────
 
-export const downloadAsPDF = async (elementId: string, filename: string): Promise<boolean> => {
+export const downloadAsPDF = async (elementId: string, filename: string, isHD: boolean = false): Promise<boolean> => {
     if (typeof window === "undefined") return false;
 
     try {
         const jspdfModule = await import("jspdf");
         const jsPDF = jspdfModule.jsPDF || (jspdfModule as any).default;
 
-        const dataUrl = await captureElementAsImage(elementId);
+        const dataUrl = await captureElementAsImage(elementId, isHD);
         if (!dataUrl) return false;
 
         const img = new Image();

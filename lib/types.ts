@@ -99,3 +99,41 @@ export interface SavedDocument {
     createdAt: string;
     imageDataUrl?: string;
 }
+
+// ─── Pro / Auth Types ────────────────────────────────────────────────────────
+
+/** Subscription plan tiers */
+export type SubscriptionPlan = "free" | "pro" | "business";
+
+/**
+ * User profile stored in Supabase `profiles` table.
+ * Mirrors auth.users with extra business fields.
+ */
+export interface UserProfile {
+    id: string;
+    businessName?: string | null;
+    logoUrl?: string | null;
+    primaryColor?: string;     // default '#000000'
+    accentColor?: string;      // default '#2563eb'
+    defaultCurrency?: string;  // default 'NGN'
+    subscriptionPlan: SubscriptionPlan; // default 'free'
+    subscriptionStatus?: string; // default 'inactive'
+    subscriptionRenewalDate?: string | null;
+    createdAt: string;
+    updatedAt: string;
+
+    // Virtual or merged fields (for front-end convenience from auth.users)
+    email?: string;
+    name?: string;
+}
+
+/** A saved bank account in the Bank Vault (Pro feature) */
+export interface SavedBankAccount {
+    id: string;
+    userId: string;
+    bankName: string;
+    accountNumber: string;
+    accountName: string;
+    createdAt: string;
+}
+

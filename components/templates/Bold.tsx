@@ -2,6 +2,7 @@
 
 import React from "react";
 import Image from "next/image";
+import { BrandLogo } from "@/components/ui/BrandLogo";
 import {
     TemplateProps,
     formatCurrency,
@@ -10,7 +11,7 @@ import {
 } from "./TemplateUtils";
 import { ReceiptData, InvoiceData, OrderData } from "@/lib/types";
 
-export default function BoldTemplate({ data, type }: TemplateProps) {
+export default function BoldTemplate({ data, type, isPro, currencyCode }: TemplateProps) {
     const isReceipt = type === "receipt";
     const isInvoice = type === "invoice";
     const isOrder = type === "order";
@@ -71,27 +72,12 @@ export default function BoldTemplate({ data, type }: TemplateProps) {
                 {/* LEFT: dark brand panel — narrow pill */}
                 <div className="bg-surface-900 w-[100px] flex-shrink-0 flex flex-col gap-2 p-5">
                     {/* Logo */}
-                    <div className="flex rounded-xl items-center justify-center overflow-hidden shadow-lg flex-shrink-0">
-                        {data.logoUrl ? (
-                            <Image
-                                src={data.logoUrl}
-                                alt="Logo"
-                                width={48}
-                                height={48}
-                                unoptimized
-                                className="object-contain w-full h-full"
-                            />
-                        ) : (
-                            <Image
-                                src="/Logo/Proofa orange icon.png"
-                                alt="Logo"
-                                width={48}
-                                height={48}
-                                unoptimized
-                                className="object-contain w-full h-full"
-                            />
-                        )}
-                    </div>
+                    <BrandLogo
+                        src={data.logoUrl}
+                        businessName={businessName}
+                        size={48}
+                        className="shadow-lg"
+                    />
                     {/* Business info sits right under logo */}
                     <div>
                         <p className="text-white text-xs font-black uppercase tracking-tight leading-snug">
@@ -172,7 +158,7 @@ export default function BoldTemplate({ data, type }: TemplateProps) {
                                 <p className="text-[9px] font-bold text-surface-400 uppercase mt-0.5">{receipt.status}</p>
                             </div>
                         </div>
-                        <p className="text-sm font-black w-24 text-right">{formatCurrency(receipt.amount)}</p>
+                        <p className="text-sm font-black w-24 text-right">{formatCurrency(receipt.amount, currencyCode)}</p>
                     </div>
                 ) : (
                     <div className="divide-y divide-surface-50">
@@ -187,11 +173,11 @@ export default function BoldTemplate({ data, type }: TemplateProps) {
                                 </div>
                                 {/* Qty × price */}
                                 <p className="text-[10px] font-bold text-surface-400 w-20 text-center">
-                                    {item.quantity} × {formatCurrency(item.price)}
+                                    {item.quantity} × {formatCurrency(item.price, currencyCode)}
                                 </p>
                                 {/* Line total */}
                                 <p className="text-xs font-black w-24 text-right">
-                                    {formatCurrency(item.quantity * item.price)}
+                                    {formatCurrency(item.quantity * item.price, currencyCode)}
                                 </p>
                             </div>
                         ))}
@@ -205,18 +191,18 @@ export default function BoldTemplate({ data, type }: TemplateProps) {
                 <div className="bg-surface-50 px-5 py-3 space-y-1.5">
                     <div className="flex justify-between text-[10px] font-bold uppercase tracking-wide text-surface-500">
                         <span>Subtotal</span>
-                        <span>{formatCurrency(subtotal)}</span>
+                        <span>{formatCurrency(subtotal, currencyCode)}</span>
                     </div>
                     {isInvoice && includeVat && (
                         <div className="flex justify-between text-[10px] font-bold uppercase tracking-wide text-surface-500">
                             <span>Tax (VAT {vatRate}%)</span>
-                            <span>{formatCurrency(tax)}</span>
+                            <span>{formatCurrency(tax, currencyCode)}</span>
                         </div>
                     )}
                     {data.deliveryInfo?.enabled && (
                         <div className="flex justify-between text-[10px] font-bold uppercase tracking-wide text-surface-500">
                             <span>Shipping / Delivery</span>
-                            <span>{formatCurrency(deliveryCost)}</span>
+                            <span>{formatCurrency(deliveryCost, currencyCode)}</span>
                         </div>
                     )}
                 </div>
@@ -230,7 +216,7 @@ export default function BoldTemplate({ data, type }: TemplateProps) {
                         </p>
                     </div>
                     <span className="text-3xl font-black text-primary-400 tracking-tighter">
-                        {formatCurrency(total)}
+                        {formatCurrency(total, currencyCode)}
                     </span>
                 </div>
             </div>
@@ -268,11 +254,13 @@ export default function BoldTemplate({ data, type }: TemplateProps) {
                 </p>
                 <div className="flex items-center gap-1.5">
                     <div className="w-1.5 h-1.5 rounded-full bg-white/60" />
-                    <p className="text-[9px] font-black uppercase text-white/80 tracking-widest">Verified by Proofa</p>
+                    {!isPro && (
+                        <p className="text-[9px] font-black uppercase text-white/80 tracking-widest text-center">Verified by Proofa</p>
+                    )}
                 </div>
             </div>
 
-            <Watermark />
+            <Watermark isPro={isPro} />
         </div>
     );
 }

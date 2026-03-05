@@ -2,6 +2,7 @@
 
 import React from "react";
 import Image from "next/image";
+import { BrandLogo } from "@/components/ui/BrandLogo";
 import {
     TemplateProps,
     formatCurrency,
@@ -11,7 +12,7 @@ import {
 } from "./TemplateUtils";
 import { ReceiptData, InvoiceData, OrderData } from "@/lib/types";
 
-export default function MinimalistTemplate({ data, type }: TemplateProps) {
+export default function MinimalistTemplate({ data, type, isPro, currencyCode }: TemplateProps) {
     const isReceipt = type === "receipt";
     const isInvoice = type === "invoice";
     const isOrder = type === "order";
@@ -50,27 +51,11 @@ export default function MinimalistTemplate({ data, type }: TemplateProps) {
                     </p>
                 </div>
                 <div className="text-right">
-                    <div className="w-12 h-12 bg-surface-900 rounded-full flex items-center justify-center text-white ml-auto mb-2 font-black italic overflow-hidden">
-                        {logoUrl ? (
-                            <Image
-                                src={logoUrl}
-                                alt="Logo"
-                                width={48}
-                                height={48}
-                                unoptimized
-                                className="w-full h-full object-contain rounded-full"
-                            />
-                        ) : (
-                            <Image
-                                src="/Logo/Proofa orange icon.png"
-                                alt="Logo"
-                                width={48}
-                                height={48}
-                                unoptimized
-                                className="w-full h-full object-contain rounded-full"
-                            />
-                        )}
-                    </div>
+                    <BrandLogo
+                        src={logoUrl}
+                        businessName={businessName}
+                        size={48}
+                    />
                     <p className="text-sm font-black tracking-tight">{isOrder ? "Proofa Store" : (isReceipt ? receipt.businessName : invoice.businessName)}</p>
                 </div>
             </div>
@@ -113,7 +98,7 @@ export default function MinimalistTemplate({ data, type }: TemplateProps) {
                             <p className="text-xs font-bold mb-1">{receipt.description || "Payment for services"}</p>
                             <p className="text-[10px] text-surface-400 font-medium uppercase tracking-wider">{receipt.status}</p>
                         </div>
-                        <p className="text-xs font-black">{formatCurrency(receipt.amount)}</p>
+                        <p className="text-xs font-black">{formatCurrency(receipt.amount, currencyCode)}</p>
                     </div>
                 ) : (
                     <div className="flex flex-col">
@@ -121,9 +106,9 @@ export default function MinimalistTemplate({ data, type }: TemplateProps) {
                             <div key={item.id} className="flex justify-between items-start px-1">
                                 <div className="flex-1 mr-4">
                                     <p className="text-xs font-bold mb-0.5">{item.name || "Unnamed Item"}</p>
-                                    <p className="text-[10px] text-surface-400 font-medium">{item.quantity} × {formatCurrency(item.price)}</p>
+                                    <p className="text-[10px] text-surface-400 font-medium">{item.quantity} × {formatCurrency(item.price, currencyCode)}</p>
                                 </div>
-                                <p className="text-xs font-black">{formatCurrency(item.quantity * item.price)}</p>
+                                <p className="text-xs font-black">{formatCurrency(item.quantity * item.price, currencyCode)}</p>
                             </div>
                         ))}
 
@@ -133,7 +118,7 @@ export default function MinimalistTemplate({ data, type }: TemplateProps) {
                                     <p className="text-xs font-bold mb-0.5">Delivery: {data.deliveryInfo.location}</p>
                                     <p className="text-[10px] text-surface-400 font-medium uppercase">Standard Delivery</p>
                                 </div>
-                                <p className="text-xs font-black">{formatCurrency(data.deliveryInfo.cost)}</p>
+                                <p className="text-xs font-black">{formatCurrency(data.deliveryInfo.cost, currencyCode)}</p>
                             </div>
                         )}
                     </div>
@@ -146,23 +131,23 @@ export default function MinimalistTemplate({ data, type }: TemplateProps) {
                     <>
                         <div className="flex justify-between items-center text-xs">
                             <span className="text-surface-400 font-bold uppercase tracking-widest">Subtotal</span>
-                            <span className="font-bold">{formatCurrency(subtotal)}</span>
+                            <span className="font-bold">{formatCurrency(subtotal, currencyCode)}</span>
                         </div>
                         <div className="flex justify-between items-center text-xs">
                             <span className="text-surface-400 font-bold uppercase tracking-widest">VAT ({vatRate}%)</span>
-                            <span className="font-bold">{formatCurrency(tax)}</span>
+                            <span className="font-bold">{formatCurrency(tax, currencyCode)}</span>
                         </div>
                     </>
                 )}
                 {data.deliveryInfo?.enabled && (
                     <div className="flex justify-between items-center text-xs">
                         <span className="text-surface-400 font-bold uppercase tracking-widest">Delivery</span>
-                        <span className="font-bold">{formatCurrency(data.deliveryInfo.cost)}</span>
+                        <span className="font-bold">{formatCurrency(data.deliveryInfo.cost, currencyCode)}</span>
                     </div>
                 )}
                 <div className="flex justify-between items-center mt-2">
                     <span className="text-sm font-black uppercase tracking-widest">Total</span>
-                    <span className="text-xl font-black">{formatCurrency(total)}</span>
+                    <span className="text-xl font-black">{formatCurrency(total, currencyCode)}</span>
                 </div>
             </div>
 
@@ -222,7 +207,7 @@ export default function MinimalistTemplate({ data, type }: TemplateProps) {
                 </div>
             )}
 
-            <Watermark />
+            <Watermark isPro={isPro} />
         </div>
     );
 }
