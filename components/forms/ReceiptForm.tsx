@@ -5,21 +5,24 @@ import { Input, SegmentedControl, CurrencyInput, TextArea } from "@/components/u
 import LivePreview from "@/components/LivePreview";
 import { LogoUpload } from "@/components/ui/LogoUpload";
 import { BankSelector } from "@/components/ui/BankSelector";
-import { ReceiptData } from "@/lib/types";
+import { ReceiptData, LineItem } from "@/lib/types";
 import { useSearchParams } from "next/navigation";
-import { getDocumentById } from "@/lib/StorageUtils";
+import { getDocumentById, saveDocument } from "@/lib/StorageUtils";
 import { PageTransition, StaggerContainer, StaggerItem } from "@/components/ui/Animations";
 import { useAuth } from "@/context/AuthContext";
+import { useToast } from "@/components/ui/Toast";
 
 export default function ReceiptForm() {
     const searchParams = useSearchParams();
     const docId = searchParams.get("id");
+    const [currentDocId, setCurrentDocId] = useState<string | null>(docId);
     const { profile, isPro } = useAuth();
+    const { showToast } = useToast();
 
     const [formData, setFormData] = useState<ReceiptData>({
         businessName: "",
         customerName: "",
-        description: "",
+        items: [{ id: "1", name: "", quantity: 1, price: 0 }],
         amount: 0,
         status: "Paid",
         paymentMethod: "Transfer",
@@ -48,6 +51,7 @@ export default function ReceiptForm() {
                 const data = doc.data as ReceiptData;
                 setFormData({
                     ...data,
+                    items: data.items || [],
                     bankDetails: data.bankDetails || { bankName: "", accountNumber: "", accountName: "", enabled: false },
                     deliveryInfo: data.deliveryInfo || { location: "", cost: 0, enabled: false },
                 });
@@ -66,9 +70,17 @@ export default function ReceiptForm() {
     const validate = () => {
         const newErrors: Record<string, string> = {};
         if (!formData.businessName.trim()) newErrors.businessName = "Business name is required";
-        if (!formData.description.trim()) newErrors.description = "Tell us what this receipt is for";
+
+        // Validate items
+        let itemsValid = true;
+        formData.items.forEach(item => {
+            if (!item.name.trim()) itemsValid = false;
+        });
+        if (!itemsValid) newErrors.items = "Fill all item names";
+        if (formData.items.length === 0) newErrors.items = "Add at least one item";
+
         const currencySymbol = profile?.defaultCurrency === "USD" ? "$" : profile?.defaultCurrency === "GBP" ? "£" : profile?.defaultCurrency === "EUR" ? "€" : "₦";
-        if (formData.amount <= 0) newErrors.amount = `Amount must be greater than ${currencySymbol}0`;
+        if (total <= 0) newErrors.amount = `Total must be greater than ${currencySymbol}0`;
 
         if (formData.bankDetails?.enabled) {
             if (!formData.bankDetails.bankName.trim()) newErrors.bankName = "Bank name required";
@@ -90,7 +102,36 @@ export default function ReceiptForm() {
         return formData.deliveryInfo?.enabled ? formData.deliveryInfo.cost : 0;
     }, [formData.deliveryInfo]);
 
-    const total = useMemo(() => formData.amount + deliveryCost, [formData.amount, deliveryCost]);
+    const subtotal = useMemo(() => {
+        if (!formData.items || formData.items.length === 0) return formData.amount;
+        return formData.items.reduce((acc, item) => acc + (item.quantity * item.price), 0);
+    }, [formData.items, formData.amount]);
+
+    const total = useMemo(() => subtotal + deliveryCost, [subtotal, deliveryCost]);
+
+    const updateItem = (index: number, field: keyof LineItem, value: any) => {
+        const newItems = [...formData.items];
+        newItems[index] = { ...newItems[index], [field]: value };
+        setFormData(prev => ({ ...prev, items: newItems }));
+    };
+
+    const addItem = () => {
+        const newItem = {
+            id: Math.random().toString(36).substring(2, 9),
+            name: "",
+            quantity: 1,
+            price: 0,
+        };
+        setFormData((prev) => ({ ...prev, items: [...prev.items, newItem] }));
+    };
+
+    const removeItem = (id: string) => {
+        if (formData.items.length === 1) return;
+        setFormData((prev) => ({
+            ...prev,
+            items: prev.items.filter((item) => item.id !== id),
+        }));
+    };
 
     const handleChange = (field: keyof ReceiptData, value: any) => {
         setFormData((prev) => ({ ...prev, [field]: value }));
@@ -124,6 +165,14 @@ export default function ReceiptForm() {
                 return newErrors;
             });
         }
+    };
+
+    const handleSaveDraft = () => {
+        const updatedData = { ...formData, status: "Draft" as const };
+        const doc = saveDocument(updatedData, "receipt", searchParams.get("template") as any || "minimalist", undefined, currentDocId || undefined);
+        setCurrentDocId(doc.id);
+        setFormData(updatedData);
+        showToast("Draft saved successfully!", "success");
     };
 
     const handleModeSwitch = (newMode: "edit" | "preview") => {
@@ -204,47 +253,101 @@ export default function ReceiptForm() {
                             </StaggerItem>
 
                             <StaggerItem>
-                                <section className="flex flex-col gap-5 bg-white p-6 rounded-[2rem] border border-surface-100 shadow-sm">
-                                    <h3 className="text-[10px] font-black uppercase tracking-widest text-surface-400 px-1">Payment Details</h3>
-                                    <TextArea
-                                        label="ITEM / DESCRIPTION"
-                                        placeholder="What is this payment for?"
-                                        value={formData.description}
-                                        onChange={(e: any) => handleChange("description", e.target.value)}
-                                        className="min-h-[80px]"
-                                        error={errors.description}
-                                    />
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <CurrencyInput
-                                            label="AMOUNT"
-                                            value={formData.amount}
-                                            onChange={(val) => handleChange("amount", val)}
-                                            error={errors.amount}
-                                        />
-                                        <Input
-                                            label="DATE"
-                                            type="date"
-                                            value={formData.date}
-                                            onChange={(e) => handleChange("date", e.target.value)}
-                                        />
+                                <section className="flex flex-col gap-6 bg-white p-6 rounded-[2rem] border border-surface-100 shadow-sm relative overflow-hidden">
+                                    <div className="flex items-center justify-between px-1">
+                                        <h3 className="text-[10px] font-black uppercase tracking-widest text-surface-400">Items / Payment Details</h3>
+                                        <button
+                                            onClick={addItem}
+                                            className="text-primary-600 text-[10px] font-black uppercase tracking-widest bg-primary-50 px-3 py-1.5 rounded-full active:scale-95 transition-all"
+                                        >
+                                            + Add Item
+                                        </button>
                                     </div>
-                                    <div className="">
-                                        <SegmentedControl
-                                            label="STATUS"
-                                            options={["Paid", "Deposit", "Due"]}
-                                            value={formData.status}
-                                            onChange={(val) => handleChange("status", val)}
-                                        />
 
+                                    <div className="flex flex-col gap-4">
+                                        {formData.items.map((item, index) => (
+                                            <div key={item.id} className="relative bg-surface-50 p-5 rounded-3xl border border-surface-100 flex flex-col gap-4 group">
+                                                {formData.items.length > 1 && (
+                                                    <button
+                                                        onClick={() => removeItem(item.id)}
+                                                        className="absolute -top-2 -right-2 w-7 h-7 bg-white border border-surface-100 rounded-full shadow-sm flex items-center justify-center text-red-500 z-10 hover:bg-red-50 transition-colors"
+                                                    >
+                                                        &times;
+                                                    </button>
+                                                )}
+                                                <Input
+                                                    label="ITEM NAME"
+                                                    placeholder="e.g. Graphic Design Service"
+                                                    value={item.name}
+                                                    onChange={(e) => updateItem(index, "name", e.target.value)}
+                                                    className="bg-white border-none"
+                                                />
+                                                <div className="flex flex-col gap-1.5">
+                                                    <label className="text-[9px] font-black text-surface-400 tracking-widest uppercase ml-1">Category</label>
+                                                    <div className="flex gap-2">
+                                                        {["Product", "Service", "Expense"].map((cat) => (
+                                                            <button
+                                                                key={cat}
+                                                                onClick={() => updateItem(index, "category", cat as any)}
+                                                                className={`flex-1 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${item.category === cat
+                                                                    ? "bg-primary-500 text-white shadow-sm"
+                                                                    : "bg-white text-surface-400 border border-surface-100"
+                                                                    }`}
+                                                            >
+                                                                {cat}
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                                <div className="grid grid-cols-2 gap-4">
+                                                    <div className="flex flex-col gap-1.5">
+                                                        <label className="text-[9px] font-black text-surface-400 tracking-widest uppercase ml-1">QTY</label>
+                                                        <input
+                                                            type="number"
+                                                            value={item.quantity}
+                                                            onChange={(e) => updateItem(index, "quantity", parseFloat(e.target.value) || 0)}
+                                                            className="bg-white border-none rounded-xl px-4 py-3 text-sm font-bold text-surface-900 focus:ring-2 focus:ring-primary-500/20 transition-all outline-none"
+                                                        />
+                                                    </div>
+                                                    <CurrencyInput
+                                                        label="PRICE"
+                                                        value={item.price}
+                                                        onChange={(val) => updateItem(index, "price", val)}
+                                                        className="bg-white border-none"
+                                                    />
+                                                </div>
+                                            </div>
+                                        ))}
+                                        {errors.items && <p className="text-red-500 text-[10px] font-bold mt-1 px-1">{errors.items}</p>}
+
+                                        <div className="flex flex-col gap-4 pt-2 border-t border-surface-100 mt-2">
+                                            <Input
+                                                label="DATE"
+                                                type="date"
+                                                value={formData.date}
+                                                onChange={(e) => handleChange("date", e.target.value)}
+                                                className="bg-surface-50 border-none"
+                                            />
+                                        </div>
                                     </div>
-                                    <div>
-                                        <SegmentedControl
-                                            label="METHOD"
-                                            options={["Transfer", "Cash"]}
-                                            value={formData.paymentMethod}
-                                            onChange={(val) => handleChange("paymentMethod", val)}
-                                        />
-                                    </div>
+                                </section>
+                            </StaggerItem>
+
+                            <StaggerItem>
+                                <section className="flex flex-col gap-5 bg-white p-6 rounded-[2rem] border border-surface-100 shadow-sm">
+                                    <h3 className="text-[10px] font-black uppercase tracking-widest text-surface-400 px-1">Receipt Status</h3>
+                                    <SegmentedControl
+                                        label="STATUS"
+                                        options={["Paid", "Deposit", "Due"]}
+                                        value={formData.status}
+                                        onChange={(val: any) => handleChange("status", val)}
+                                    />
+                                    <SegmentedControl
+                                        label="METHOD"
+                                        options={["Transfer", "Cash", "POS", "Card"]}
+                                        value={formData.paymentMethod}
+                                        onChange={(val: any) => handleChange("paymentMethod", val)}
+                                    />
                                 </section>
                             </StaggerItem>
 
@@ -361,17 +464,19 @@ export default function ReceiptForm() {
                             data={formData}
                             type="receipt"
                             initialTemplate={searchParams.get("template") as any || "minimalist"}
+                            docId={currentDocId || undefined}
                         />
                     </div>
                 )}
 
+                {/* Footer Summary - Always visible */}
                 <StaggerContainer delayChildren={0.5}>
                     <StaggerItem>
                         <div className="bg-white p-8 rounded-[2.5rem] border border-surface-100 shadow-lg mb-6 mx-2 -mt-4 relative z-10">
                             <div className="flex flex-col gap-4">
                                 <div className="flex justify-between items-center text-sm font-medium text-surface-500 tracking-tight">
-                                    <span className="uppercase tracking-widest text-[10px] font-black opacity-50">Base Amount</span>
-                                    <span className="font-bold text-surface-900">{profile?.defaultCurrency === "USD" ? "$" : profile?.defaultCurrency === "GBP" ? "£" : profile?.defaultCurrency === "EUR" ? "€" : "₦"}{formData.amount.toLocaleString()}</span>
+                                    <span className="uppercase tracking-widest text-[10px] font-black opacity-50">Items Total</span>
+                                    <span className="font-bold text-surface-900">{profile?.defaultCurrency === "USD" ? "$" : profile?.defaultCurrency === "GBP" ? "£" : profile?.defaultCurrency === "EUR" ? "€" : "₦"}{subtotal.toLocaleString()}</span>
                                 </div>
                                 {formData.deliveryInfo?.enabled && (
                                     <div className="flex justify-between items-center text-sm font-medium text-surface-500 tracking-tight">
@@ -397,6 +502,17 @@ export default function ReceiptForm() {
                                     <line x1="10" y1="12" x2="14" y2="12" />
                                 </svg>
                                 Generate Receipt
+                            </button>
+                            <button
+                                onClick={handleSaveDraft}
+                                className="w-full bg-white border-2 border-surface-200 text-surface-600 font-bold py-4 rounded-2xl active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+                            >
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+                                    <polyline points="17 21 17 13 7 13 7 21" />
+                                    <polyline points="7 3 7 8 15 8" />
+                                </svg>
+                                Save as Draft
                             </button>
                             <p className="text-[10px] text-surface-400 font-black uppercase tracking-[0.15em] text-center">
                                 RECEIPTS ARE SAVED TO YOUR DASHBOARD

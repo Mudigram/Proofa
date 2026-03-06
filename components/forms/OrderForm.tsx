@@ -6,21 +6,25 @@ import { LogoUpload } from "@/components/ui/LogoUpload";
 import LivePreview from "@/components/LivePreview";
 import { OrderData, LineItem } from "@/lib/types";
 import { useSearchParams } from "next/navigation";
-import { getDocumentById } from "@/lib/StorageUtils";
+import { getDocumentById, saveDocument } from "@/lib/StorageUtils";
 import { PageTransition, StaggerContainer, StaggerItem } from "@/components/ui/Animations";
 import { useAuth } from "@/context/AuthContext";
 import { BankSelector } from "@/components/ui/BankSelector";
+import { useToast } from "@/components/ui/Toast";
 
 export default function OrderForm() {
     const searchParams = useSearchParams();
     const docId = searchParams.get("id");
+    const [currentDocId, setCurrentDocId] = useState<string | null>(docId);
     const { profile, isPro } = useAuth();
+    const { showToast } = useToast();
     const currencySymbol = profile?.defaultCurrency === "NGN" ? "₦" : (profile?.defaultCurrency === "USD" ? "$" : (profile?.defaultCurrency === "GBP" ? "£" : (profile?.defaultCurrency === "EUR" ? "€" : "₦")));
 
     const [formData, setFormData] = useState<OrderData>({
         customerName: "",
         items: [{ id: "1", name: "", quantity: 1, price: 0 }],
         totalAmount: 0,
+        status: "Paid",
         deliveryStatus: "Pending",
         logoUrl: undefined,
         bankDetails: {
@@ -44,11 +48,8 @@ export default function OrderForm() {
             const doc = getDocumentById(docId);
             if (doc && doc.type === "order") {
                 const data = doc.data as OrderData;
-                setFormData({
-                    ...data,
-                    bankDetails: data.bankDetails || { bankName: "", accountNumber: "", accountName: "", enabled: false },
-                    deliveryInfo: data.deliveryInfo || { location: "", cost: 0, enabled: false },
-                });
+                setFormData(data);
+                setCurrentDocId(doc.id);
                 setMode("preview");
             }
         } else if (isPro && profile) {
@@ -158,6 +159,14 @@ export default function OrderForm() {
 
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
+    };
+
+    const handleSaveDraft = () => {
+        const updatedData = { ...formData, status: "Draft" as const };
+        const doc = saveDocument(updatedData, "order", searchParams.get("template") as any || "minimalist", undefined, currentDocId || undefined);
+        setCurrentDocId(doc.id);
+        setFormData(updatedData);
+        showToast("Order Summary Draft saved!", "success");
     };
 
     const handleModeSwitch = (newMode: "edit" | "preview") => {
@@ -461,6 +470,7 @@ export default function OrderForm() {
                             data={formData}
                             type="order"
                             initialTemplate={searchParams.get("template") as any || "minimalist"}
+                            docId={currentDocId || undefined}
                         />
                     </div>
                 )}
@@ -497,6 +507,17 @@ export default function OrderForm() {
                                     <line x1="10" y1="12" x2="14" y2="12" />
                                 </svg>
                                 Generate Order Summary
+                            </button>
+                            <button
+                                onClick={handleSaveDraft}
+                                className="w-full bg-white border-2 border-surface-200 text-surface-600 font-bold py-4 rounded-2xl active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+                            >
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+                                    <polyline points="17 21 17 13 7 13 7 21" />
+                                    <polyline points="7 3 7 8 15 8" />
+                                </svg>
+                                Save as Draft
                             </button>
                             <p className="text-[10px] text-surface-400 font-black uppercase tracking-[0.15em] text-center">
                                 ORDERS ARE SAVED TO YOUR RECORD

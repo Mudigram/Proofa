@@ -33,8 +33,8 @@ Additional Nigerian-specific psychology notes:
 
 ## 💎 PRO PLAN — "Brand Authority Upgrade"
 
-**Price:** ₦2,000 / month ⭐ *(revised from ₦2,500 — see pricing psychology below)*
-**Annual:** ₦20,000 / year *(Save ₦4,000 — push this prominently)*
+**Price:** ₦2,500 / month ⭐ *(revised from ₦2,000)*
+**Annual:** ₦25,000 / year *(Save ₦5,000 — push this prominently)*
 **Target User:** Small vendors, Instagram sellers, WhatsApp merchants, freelancers.
 
 ### Framing (Copy Rules)

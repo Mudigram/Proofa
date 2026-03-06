@@ -3,7 +3,7 @@
  */
 
 /** Payment status options */
-export type PaymentStatus = "Paid" | "Deposit" | "Due";
+export type PaymentStatus = "Paid" | "Deposit" | "Due" | "Draft";
 
 /** Delivery status options */
 export type DeliveryStatus = "Pending" | "Processing" | "Delivered";
@@ -20,6 +20,7 @@ export interface LineItem {
     name: string;
     quantity: number;
     price: number;
+    category?: "Service" | "Product" | "Expense";
 }
 
 /** Payment method options */
@@ -45,8 +46,7 @@ export interface ReceiptData {
     businessName: string;
     customerName?: string;
     customerPhone?: string;
-    description: string;
-    items?: LineItem[];
+    items: LineItem[];
     amount: number;
     status: PaymentStatus;
     paymentMethod: PaymentMethod;
@@ -68,6 +68,7 @@ export interface InvoiceData {
     issueDate: string;
     dueDate?: string;
     items: LineItem[];
+    status: PaymentStatus;
     notes?: string;
     logoUrl?: string;
     includeVat: boolean;
@@ -84,6 +85,7 @@ export interface OrderData {
     customerPhone?: string;
     items: LineItem[];
     totalAmount: number;
+    status: PaymentStatus;
     deliveryStatus: DeliveryStatus;
     logoUrl?: string;
     bankDetails?: BankDetails;
@@ -98,6 +100,7 @@ export interface SavedDocument {
     template: TemplateName;
     data: ReceiptData | InvoiceData | OrderData;
     createdAt: string;
+    updatedAt?: string;
     imageDataUrl?: string;
 }
 

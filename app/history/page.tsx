@@ -17,6 +17,7 @@ export default function HistoryPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [selectedDoc, setSelectedDoc] = useState<SavedDocument | null>(null);
+    const [filter, setFilter] = useState<"all" | "saved" | "drafts">("all");
     const { showToast } = useToast();
     const { isPro } = useAuth();
 
@@ -24,6 +25,17 @@ export default function HistoryPage() {
         setHistory(getHistory());
         setIsLoading(false);
     }, []);
+
+    const filteredHistory = history.filter(doc => {
+        const data = doc.data as any;
+        const status = data.status;
+        if (filter === "all") return true;
+
+        // If status is missing, treat as "Saved"
+        if (filter === "drafts") return status === "Draft";
+        if (filter === "saved") return !status || status !== "Draft";
+        return true;
+    });
 
     const openDeleteModal = (doc: SavedDocument, e: React.MouseEvent) => {
         e.preventDefault();
@@ -44,16 +56,22 @@ export default function HistoryPage() {
 
     const getDocTitle = (doc: SavedDocument) => {
         const data = doc.data as any;
-        return data.businessName || data.customerName || "Untitled Document";
+        return data.businessName || data.customerName || data.clientName || "Untitled Document";
     };
 
     const getDocAmount = (doc: SavedDocument) => {
         const data = doc.data as any;
-        if (doc.type === "receipt") return data.amount;
-        if (doc.type === "order") return data.totalAmount;
-        if (doc.type === "invoice") {
-            const subtotal = data.items?.reduce((acc: number, item: any) => acc + (item.quantity * item.price), 0) || 0;
-            return subtotal * 1.075; // Including tax for display
+        try {
+            if (doc.type === "receipt") return data.amount || 0;
+            if (doc.type === "order") return data.totalAmount || 0;
+            if (doc.type === "invoice") {
+                const subtotal = data.items?.reduce((acc: number, item: any) => acc + (item.quantity * item.price), 0) || 0;
+                const vat = data.includeVat ? subtotal * ((data.vatRate || 0) / 100) : 0;
+                const delivery = data.deliveryInfo?.enabled ? data.deliveryInfo.cost : 0;
+                return subtotal + vat + delivery;
+            }
+        } catch (e) {
+            return 0;
         }
         return 0;
     };
@@ -116,78 +134,102 @@ export default function HistoryPage() {
                         </Link>
                     </div>
                 ) : (
-                    <StaggerContainer>
-                        {!isPro && (
-                            <StaggerItem>
-                                <div className="mb-6 overflow-hidden relative group">
-                                    <div className="absolute inset-0 bg-gradient-to-r from-primary-500 to-amber-500 opacity-[0.08]" />
-                                    <div className="relative border-2 border-primary-500/20 bg-white/50 backdrop-blur-sm rounded-[2rem] p-6 flex flex-col md:flex-row items-center gap-6 justify-between shadow-sm">
-                                        <div className="flex items-center gap-4 text-center md:text-left">
-                                            <div className="w-14 h-14 bg-primary-500 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-primary-500/20 flex-shrink-0">
-                                                <Zap size={24} />
-                                            </div>
-                                            <div>
-                                                <h3 className="text-sm font-black text-surface-900 uppercase tracking-tight">Remove the watermark</h3>
-                                                <p className="text-[11px] font-bold text-surface-400 uppercase tracking-widest leading-relaxed max-w-[200px]">Upgrade to Pro to export clean, branded documents.</p>
-                                            </div>
-                                        </div>
-                                        <Link
-                                            href="/pricing"
-                                            className="bg-surface-900 text-white text-[10px] font-black uppercase tracking-[0.2em] px-8 py-3.5 rounded-xl shadow-lg shadow-black/10 active:scale-95 transition-all whitespace-nowrap"
-                                        >
-                                            Unlock Pro Features
-                                        </Link>
-                                    </div>
-                                </div>
-                            </StaggerItem>
-                        )}
-                        <div className="grid gap-4">
-                            {history.map((doc) => (
-                                <StaggerItem key={doc.id}>
-                                    <div className="group relative bg-white border border-surface-200 rounded-[2rem] p-5 hover:border-primary-500 hover:shadow-xl hover:shadow-primary-500/5 transition-all">
-                                        <div className="flex items-center gap-4">
-                                            {/* Type Indicator with Letter */}
-                                            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-lg font-black shrink-0 ${doc.type === "receipt" ? "bg-orange-50 text-orange-600" :
-                                                doc.type === "invoice" ? "bg-blue-50 text-blue-600" :
-                                                    "bg-purple-50 text-purple-600"
-                                                }`}>
-                                                {doc.type === "receipt" ? "R" : doc.type === "invoice" ? "I" : "S"}
-                                            </div>
-
-                                            <div className="flex-1 min-w-0">
-                                                <div className="flex items-center gap-2 mb-0.5">
-                                                    <span className="text-[9px] font-black uppercase tracking-widest text-surface-300">
-                                                        {doc.type === 'order' ? 'summary' : doc.type}
-                                                    </span>
-                                                    <span className="w-1 h-1 rounded-full bg-surface-200" />
-                                                    <span className="text-[9px] font-black uppercase tracking-widest text-surface-300">{formatDate(doc.createdAt)}</span>
-                                                </div>
-                                                <h3 className="text-sm font-black text-surface-900 truncate">
-                                                    {getDocTitle(doc)}
-                                                </h3>
-                                            </div>
-
-                                            <div className="flex flex-col items-end gap-1 shrink-0">
-                                                <p className="text-sm font-black text-surface-900">
-                                                    {formatCurrency(getDocAmount(doc))}
-                                                </p>
-                                                <button
-                                                    onClick={(e) => openDeleteModal(doc, e)}
-                                                    className="w-8 h-8 rounded-full bg-red-50 text-red-500 flex items-center justify-center hover:bg-red-500 hover:text-white transition-all relative z-20"
-                                                    title="Delete Document"
-                                                >
-                                                    <Trash2 size={14} />
-                                                </button>
-                                            </div>
-                                        </div>
-
-                                        {/* Link Mask */}
-                                        <Link href={`/${doc.type}?id=${doc.id}`} className="absolute inset-0 rounded-[2rem]" />
-                                    </div>
-                                </StaggerItem>
+                    <>
+                        {/* Filter Tabs */}
+                        <div className="flex p-1 bg-surface-100 rounded-2xl border border-surface-200 mb-8 mx-auto max-w-[400px]">
+                            {(["all", "saved", "drafts"] as const).map((t) => (
+                                <button
+                                    key={t}
+                                    onClick={() => setFilter(t)}
+                                    className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${filter === t ? "bg-white text-primary-500 shadow-sm" : "text-surface-400"
+                                        }`}
+                                >
+                                    {t}
+                                </button>
                             ))}
                         </div>
-                    </StaggerContainer>
+
+                        <StaggerContainer>
+                            {!isPro && filter !== "drafts" && (
+                                <StaggerItem>
+                                    <div className="mb-6 overflow-hidden relative group">
+                                        <div className="absolute inset-0 bg-gradient-to-r from-primary-500 to-amber-500 opacity-[0.08]" />
+                                        <div className="relative border-2 border-primary-500/20 bg-white/50 backdrop-blur-sm rounded-[2rem] p-6 flex flex-col md:flex-row items-center gap-6 justify-between shadow-sm">
+                                            <div className="flex items-center gap-4 text-center md:text-left">
+                                                <div className="w-14 h-14 bg-primary-500 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-primary-500/20 flex-shrink-0">
+                                                    <Zap size={24} />
+                                                </div>
+                                                <div>
+                                                    <h3 className="text-sm font-black text-surface-900 uppercase tracking-tight">Remove the watermark</h3>
+                                                    <p className="text-[11px] font-bold text-surface-400 uppercase tracking-widest leading-relaxed max-w-[200px]">Upgrade to Pro to export clean, branded documents.</p>
+                                                </div>
+                                            </div>
+                                            <Link
+                                                href="/pricing"
+                                                className="bg-surface-900 text-white text-[10px] font-black uppercase tracking-[0.2em] px-8 py-3.5 rounded-xl shadow-lg shadow-black/10 active:scale-95 transition-all whitespace-nowrap"
+                                            >
+                                                Unlock Pro Features
+                                            </Link>
+                                        </div>
+                                    </div>
+                                </StaggerItem>
+                            )}
+                            <div className="grid gap-4">
+                                {filteredHistory.map((doc) => (
+                                    <StaggerItem key={doc.id}>
+                                        <div className="group relative bg-white border border-surface-200 rounded-[2rem] p-5 hover:border-primary-500 hover:shadow-xl hover:shadow-primary-500/5 transition-all">
+                                            <div className="flex items-center gap-4">
+                                                {/* Type Indicator with Letter */}
+                                                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-lg font-black shrink-0 ${doc.type === "receipt" ? "bg-orange-50 text-orange-600" :
+                                                    doc.type === "invoice" ? "bg-blue-50 text-blue-600" :
+                                                        "bg-purple-50 text-purple-600"
+                                                    }`}>
+                                                    {doc.type === "receipt" ? "R" : doc.type === "invoice" ? "I" : "S"}
+                                                </div>
+
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="flex items-center gap-2 mb-0.5">
+                                                        <span className="text-[9px] font-black uppercase tracking-widest text-surface-300">
+                                                            {doc.type === 'order' ? 'summary' : doc.type}
+                                                        </span>
+                                                        {(doc.data as any).status === "Draft" && (
+                                                            <span className="bg-amber-100 text-amber-700 text-[8px] font-black px-1.5 py-0.5 rounded uppercase tracking-widest">Draft</span>
+                                                        )}
+                                                        <span className="w-1 h-1 rounded-full bg-surface-200" />
+                                                        <span className="text-[9px] font-black uppercase tracking-widest text-surface-300">{formatDate(doc.createdAt)}</span>
+                                                    </div>
+                                                    <h3 className="text-sm font-black text-surface-900 truncate">
+                                                        {getDocTitle(doc)}
+                                                    </h3>
+                                                </div>
+
+                                                <div className="flex flex-col items-end gap-1 shrink-0">
+                                                    <p className="text-sm font-black text-surface-900">
+                                                        {formatCurrency(getDocAmount(doc))}
+                                                    </p>
+                                                    <button
+                                                        onClick={(e) => openDeleteModal(doc, e)}
+                                                        className="w-8 h-8 rounded-full bg-red-50 text-red-500 flex items-center justify-center hover:bg-red-500 hover:text-white transition-all relative z-20"
+                                                        title="Delete Document"
+                                                    >
+                                                        <Trash2 size={14} />
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                            {/* Link Mask */}
+                                            <Link href={`/${doc.type}?id=${doc.id}`} className="absolute inset-0 rounded-[2rem]" />
+                                        </div>
+                                    </StaggerItem>
+                                ))}
+                                {filteredHistory.length === 0 && (
+                                    <div className="text-center py-12">
+                                        <p className="text-sm text-surface-400 font-bold uppercase tracking-widest">No {filter} found.</p>
+                                    </div>
+                                )}
+                            </div>
+                        </StaggerContainer>
+                    </>
                 )}
 
                 {/* Delete Confirmation Modal */}

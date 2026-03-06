@@ -21,8 +21,10 @@ export default function ClassicTemplate({ data, type, isPro, currencyCode }: Tem
     const invoice = data as InvoiceData;
     const order = data as OrderData;
 
-    const items = isReceipt ? [] : (isInvoice ? invoice.items : order.items);
-    const subtotal = isReceipt ? receipt.amount : items.reduce((acc, item) => acc + (item.quantity * item.price), 0);
+    const items = isReceipt ? (receipt.items || []) : (isInvoice ? invoice.items : order.items);
+    const subtotal = (isReceipt && (!receipt.items || receipt.items.length === 0))
+        ? (receipt as any).amount
+        : items.reduce((acc, item) => acc + (item.quantity * item.price), 0);
     const vatRate = isInvoice ? (invoice.vatRate ?? 7.5) : 0;
     const includeVat = isInvoice ? (invoice.includeVat ?? true) : false;
     const tax = includeVat ? subtotal * (vatRate / 100) : 0;
@@ -78,22 +80,36 @@ export default function ClassicTemplate({ data, type, isPro, currencyCode }: Tem
             </div>
 
             {/* 4. ITEMS LIST */}
-            <div className="flex-1 space-y-3">
-                {isReceipt ? (
+            <div className="flex-1 space-y-4">
+                {isReceipt && (!receipt.items || receipt.items.length === 0) ? (
                     <div className="grid grid-cols-12 text-xs">
                         <div className="col-span-1">01</div>
-                        <div className="col-span-7 font-bold uppercase">{receipt.description || "General Purchase"}</div>
-                        <div className="col-span-4 text-right font-bold">{formatCurrency(receipt.amount, currencyCode)}</div>
+                        <div className="col-span-7 font-bold uppercase">{(receipt as any).description || "General Purchase"}</div>
+                        <div className="col-span-4 text-right font-bold">{formatCurrency((receipt as any).amount, currencyCode)}</div>
                     </div>
                 ) : (
-                    items.map((item, idx) => (
-                        <div key={item.id} className="grid grid-cols-12 text-xs items-baseline">
-                            <div className="col-span-1 text-zinc-400">{idx + 1}</div>
-                            <div className="col-span-7 flex flex-col">
-                                <span className="font-bold uppercase leading-none">{item.name}</span>
-                                <span className="text-[9px] text-zinc-500 mt-1">{item.quantity} x {formatCurrency(item.price, currencyCode)}</span>
-                            </div>
-                            <div className="col-span-4 text-right font-bold">{formatCurrency(item.quantity * item.price, currencyCode)}</div>
+                    Object.entries(
+                        items.reduce((acc, item) => {
+                            const cat = item.category || "General";
+                            if (!acc[cat]) acc[cat] = [];
+                            acc[cat].push(item);
+                            return acc;
+                        }, {} as Record<string, typeof items>)
+                    ).map(([category, catItems]) => (
+                        <div key={category} className="space-y-3">
+                            {Object.keys(items.reduce((acc, i) => { acc[i.category || "General"] = true; return acc; }, {} as any)).length > 1 && (
+                                <p className="text-[8px] font-black uppercase text-zinc-400 border-b border-zinc-100 pb-1">{category}</p>
+                            )}
+                            {catItems.map((item) => (
+                                <div key={item.id} className="grid grid-cols-12 text-xs items-baseline">
+                                    <div className="col-span-1 text-zinc-400">{items.indexOf(item) + 1}</div>
+                                    <div className="col-span-7 flex flex-col">
+                                        <span className="font-bold uppercase leading-none">{item.name}</span>
+                                        <span className="text-[9px] text-zinc-500 mt-1">{item.quantity} x {formatCurrency(item.price, currencyCode)}</span>
+                                    </div>
+                                    <div className="col-span-4 text-right font-bold">{formatCurrency(item.quantity * item.price, currencyCode)}</div>
+                                </div>
+                            ))}
                         </div>
                     ))
                 )}
