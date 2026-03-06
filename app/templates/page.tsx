@@ -11,7 +11,10 @@ import { ReceiptData } from "@/lib/types";
 const MOCK_DATA: ReceiptData = {
     businessName: "Proofa Coffee Bar",
     customerName: "Alex Pierce",
-    description: "2x Oat Milk Latte, 1x Butter Croissant",
+    items: [
+        { id: "1", name: "Oat Milk Latte", quantity: 2, price: 1750 },
+        { id: "2", name: "Butter Croissant", quantity: 1, price: 1000 }
+    ],
     amount: 4500,
     status: "Paid",
     paymentMethod: "Card",
