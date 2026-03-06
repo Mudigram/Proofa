@@ -28,16 +28,41 @@ export const saveDocument = (
     data: any,
     type: DocumentType,
     template: TemplateName,
-    imageDataUrl?: string
+    imageDataUrl?: string,
+    existingId?: string
 ): SavedDocument => {
     const history = getHistory();
+    const now = new Date().toISOString();
 
+    if (existingId) {
+        // Update existing document
+        const index = history.findIndex(doc => doc.id === existingId);
+        if (index !== -1) {
+            const updatedDoc: SavedDocument = {
+                ...history[index],
+                data,
+                type,
+                template,
+                imageDataUrl: imageDataUrl || history[index].imageDataUrl,
+                updatedAt: now
+            };
+            const newHistory = [...history];
+            newHistory[index] = updatedDoc;
+
+            if (typeof window !== "undefined") {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(newHistory));
+            }
+            return updatedDoc;
+        }
+    }
+
+    // Create new document
     const newDoc: SavedDocument = {
         id: Math.random().toString(36).substring(2, 11),
         type,
         template,
         data,
-        createdAt: new Date().toISOString(),
+        createdAt: now,
         imageDataUrl
     };
 

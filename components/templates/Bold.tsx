@@ -21,9 +21,9 @@ export default function BoldTemplate({ data, type, isPro, currencyCode }: Templa
 
     const order = data as OrderData;
 
-    const items = isReceipt ? [] : (isInvoice ? invoice.items : order.items);
-    const subtotal = isReceipt
-        ? receipt.amount
+    const items = isReceipt ? (receipt.items || []) : (isInvoice ? invoice.items : order.items);
+    const subtotal = (isReceipt && (!receipt.items || receipt.items.length === 0))
+        ? (receipt as any).amount
         : items.reduce((acc, item) => acc + item.quantity * item.price, 0);
 
     const vatRate = isInvoice ? (invoice.vatRate ?? 7.5) : 0;
@@ -148,38 +148,54 @@ export default function BoldTemplate({ data, type, isPro, currencyCode }: Templa
                     <p className="text-[9px] font-black uppercase tracking-widest text-surface-400 w-24 text-right">Total</p>
                 </div>
 
-                {isReceipt ? (
+                {isReceipt && (!receipt.items || receipt.items.length === 0) ? (
                     <div className="flex justify-between items-start py-4">
                         <div className="flex gap-3 items-start flex-1">
                             <span className="w-6 h-6 bg-surface-900 text-white rounded-md flex items-center justify-center text-[9px] font-black flex-shrink-0 mt-0.5">
                                 1
                             </span>
                             <div>
-                                <p className="text-sm font-black uppercase">{receipt.description || "Payment for services"}</p>
+                                <p className="text-sm font-black uppercase">{(receipt as any).description || "Payment for services"}</p>
                                 <p className="text-[9px] font-bold text-surface-400 uppercase mt-0.5">{receipt.status}</p>
                             </div>
                         </div>
-                        <p className="text-sm font-black w-24 text-right">{formatCurrency(receipt.amount, currencyCode)}</p>
+                        <p className="text-sm font-black w-24 text-right">{formatCurrency((receipt as any).amount, currencyCode)}</p>
                     </div>
                 ) : (
-                    <div className="divide-y divide-surface-50">
-                        {items.map((item, idx) => (
-                            <div key={item.id} className="flex justify-between items-center py-3">
-                                {/* Index badge + name */}
-                                <div className="flex gap-3 items-center flex-1 mr-4">
-                                    <span className="w-6 h-6 bg-surface-900 text-white rounded-md flex items-center justify-center text-[9px] font-black flex-shrink-0">
-                                        {idx + 1}
-                                    </span>
-                                    <p className="text-xs font-black uppercase leading-tight">{item.name || "Unnamed Item"}</p>
+                    <div className="flex flex-col gap-6">
+                        {Object.entries(
+                            items.reduce((acc, item) => {
+                                const cat = item.category || "General";
+                                if (!acc[cat]) acc[cat] = [];
+                                acc[cat].push(item);
+                                return acc;
+                            }, {} as Record<string, typeof items>)
+                        ).map(([category, catItems], groupIdx) => (
+                            <div key={category} className="flex flex-col gap-1">
+                                {Object.keys(items.reduce((acc, i) => { acc[i.category || "General"] = true; return acc; }, {} as any)).length > 1 && (
+                                    <h4 className="text-[9px] font-black uppercase tracking-[0.3em] text-surface-400 mb-2 px-1 border-l-4 border-surface-900 pl-3">{category}</h4>
+                                )}
+                                <div className="divide-y divide-surface-50">
+                                    {catItems.map((item, idx) => (
+                                        <div key={item.id} className="flex justify-between items-center py-3">
+                                            {/* Index badge + name */}
+                                            <div className="flex gap-3 items-center flex-1 mr-4">
+                                                <span className="w-6 h-6 bg-surface-900 text-white rounded-md flex items-center justify-center text-[9px] font-black flex-shrink-0">
+                                                    {items.indexOf(item) + 1}
+                                                </span>
+                                                <p className="text-xs font-black uppercase leading-tight">{item.name || "Unnamed Item"}</p>
+                                            </div>
+                                            {/* Qty × price */}
+                                            <p className="text-[10px] font-bold text-surface-400 w-20 text-center">
+                                                {item.quantity} × {formatCurrency(item.price, currencyCode)}
+                                            </p>
+                                            {/* Line total */}
+                                            <p className="text-xs font-black w-24 text-right">
+                                                {formatCurrency(item.quantity * item.price, currencyCode)}
+                                            </p>
+                                        </div>
+                                    ))}
                                 </div>
-                                {/* Qty × price */}
-                                <p className="text-[10px] font-bold text-surface-400 w-20 text-center">
-                                    {item.quantity} × {formatCurrency(item.price, currencyCode)}
-                                </p>
-                                {/* Line total */}
-                                <p className="text-xs font-black w-24 text-right">
-                                    {formatCurrency(item.quantity * item.price, currencyCode)}
-                                </p>
                             </div>
                         ))}
                     </div>

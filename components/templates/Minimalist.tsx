@@ -25,8 +25,10 @@ export default function MinimalistTemplate({ data, type, isPro, currencyCode }: 
     const businessName = data.businessName;
 
     // Calculate totals for multi-item documents
-    const items = isReceipt ? [] : (isInvoice ? invoice.items : order.items);
-    const subtotal = isReceipt ? receipt.amount : items.reduce((acc, item) => acc + (item.quantity * item.price), 0);
+    const items = isReceipt ? (receipt.items || []) : (isInvoice ? invoice.items : order.items);
+    const subtotal = (isReceipt && (!receipt.items || receipt.items.length === 0))
+        ? (receipt as any).amount
+        : items.reduce((acc, item) => acc + (item.quantity * item.price), 0);
 
     // Dynamic Tax Calculation
     const vatRate = isInvoice ? (invoice.vatRate ?? 7.5) : 0;
@@ -93,28 +95,42 @@ export default function MinimalistTemplate({ data, type, isPro, currencyCode }: 
                     <span className="text-[10px] font-black uppercase tracking-widest">Total</span>
                 </div>
 
-                {isReceipt ? (
+                {isReceipt && (!receipt.items || receipt.items.length === 0) ? (
                     <div className="flex justify-between items-start py-4 px-1 border-b border-surface-50">
                         <div className="flex-1 mr-4">
-                            <p className="text-xs font-bold mb-1">{receipt.description || "Payment for services"}</p>
+                            <p className="text-xs font-bold mb-1">{(receipt as any).description || "Payment for services"}</p>
                             <p className="text-[10px] text-surface-400 font-medium uppercase tracking-wider">{receipt.status}</p>
                         </div>
-                        <p className="text-xs font-black">{formatCurrency(receipt.amount, currencyCode)}</p>
+                        <p className="text-xs font-black">{formatCurrency((receipt as any).amount, currencyCode)}</p>
                     </div>
                 ) : (
-                    <div className="flex flex-col">
-                        {items.map((item) => (
-                            <div key={item.id} className="flex justify-between items-start px-1">
-                                <div className="flex-1 mr-4">
-                                    <p className="text-xs font-bold mb-0.5">{item.name || "Unnamed Item"}</p>
-                                    <p className="text-[10px] text-surface-400 font-medium">{item.quantity} × {formatCurrency(item.price, currencyCode)}</p>
-                                </div>
-                                <p className="text-xs font-black">{formatCurrency(item.quantity * item.price, currencyCode)}</p>
+                    <div className="flex flex-col gap-4">
+                        {Object.entries(
+                            items.reduce((acc, item) => {
+                                const cat = item.category || "General";
+                                if (!acc[cat]) acc[cat] = [];
+                                acc[cat].push(item);
+                                return acc;
+                            }, {} as Record<string, typeof items>)
+                        ).map(([category, catItems]) => (
+                            <div key={category} className="flex flex-col gap-1">
+                                {Object.keys(items.reduce((acc, i) => { acc[i.category || "General"] = true; return acc; }, {} as any)).length > 1 && (
+                                    <h4 className="text-[8px] font-black uppercase tracking-[0.2em] text-surface-300 mt-2 mb-1 px-1">{category}</h4>
+                                )}
+                                {catItems.map((item) => (
+                                    <div key={item.id} className="flex justify-between items-start px-1 py-1">
+                                        <div className="flex-1 mr-4">
+                                            <p className="text-xs font-bold mb-0.5">{item.name || "Unnamed Item"}</p>
+                                            <p className="text-[10px] text-surface-400 font-medium">{item.quantity} × {formatCurrency(item.price, currencyCode)}</p>
+                                        </div>
+                                        <p className="text-xs font-black">{formatCurrency(item.quantity * item.price, currencyCode)}</p>
+                                    </div>
+                                ))}
                             </div>
                         ))}
 
                         {data.deliveryInfo?.enabled && (
-                            <div className="flex justify-between items-start px-1 pt-2 border-t border-dashed border-surface-300 italic">
+                            <div className="flex justify-between items-start px-1 pt-2 border-t border-dashed border-surface-300 italic mt-2">
                                 <div className="flex-1 mr-4">
                                     <p className="text-xs font-bold mb-0.5">Delivery: {data.deliveryInfo.location}</p>
                                     <p className="text-[10px] text-surface-400 font-medium uppercase">Standard Delivery</p>

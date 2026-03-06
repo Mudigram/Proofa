@@ -7,15 +7,18 @@ import { BankSelector } from "@/components/ui/BankSelector";
 import LivePreview from "@/components/LivePreview";
 import { InvoiceData, LineItem } from "@/lib/types";
 import { useSearchParams } from "next/navigation";
-import { getDocumentById } from "@/lib/StorageUtils";
+import { getDocumentById, saveDocument } from "@/lib/StorageUtils";
 import { PageTransition, StaggerContainer, StaggerItem } from "@/components/ui/Animations";
 import { useAuth } from "@/context/AuthContext";
 import { formatCurrency, formatDate } from "@/components/templates/TemplateUtils";
+import { useToast } from "@/components/ui/Toast";
 
 export default function InvoiceForm() {
     const searchParams = useSearchParams();
     const docId = searchParams.get("id");
+    const [currentDocId, setCurrentDocId] = useState<string | null>(docId);
     const { profile, isPro } = useAuth();
+    const { showToast } = useToast();
 
     const [formData, setFormData] = useState<InvoiceData>({
         businessName: "",
@@ -25,6 +28,7 @@ export default function InvoiceForm() {
         issueDate: new Date().toISOString().split("T")[0],
         dueDate: "",
         items: [{ id: "1", name: "", quantity: 1, price: 0 }],
+        status: "Due",
         notes: "",
         logoUrl: undefined,
         includeVat: true,
@@ -64,11 +68,8 @@ export default function InvoiceForm() {
             const doc = getDocumentById(docId);
             if (doc && doc.type === "invoice") {
                 const data = doc.data as InvoiceData;
-                setFormData({
-                    ...data,
-                    bankDetails: data.bankDetails || { bankName: "", accountNumber: "", accountName: "", enabled: false },
-                    deliveryInfo: data.deliveryInfo || { location: "", cost: 0, enabled: false },
-                });
+                setFormData(data);
+                setCurrentDocId(doc.id);
                 setMode("preview");
             }
         } else if (isPro && profile) {
@@ -167,6 +168,14 @@ export default function InvoiceForm() {
 
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
+    };
+
+    const handleSaveDraft = () => {
+        const updatedData = { ...formData, status: "Draft" as const };
+        const doc = saveDocument(updatedData, "invoice", searchParams.get("template") as any || "minimalist", undefined, currentDocId || undefined);
+        setCurrentDocId(doc.id);
+        setFormData(updatedData);
+        showToast("Invoice Draft saved!", "success");
     };
 
     const handleModeSwitch = (newMode: "edit" | "preview") => {
@@ -509,6 +518,7 @@ export default function InvoiceForm() {
                             data={formData}
                             type="invoice"
                             initialTemplate={searchParams.get("template") as any || "minimalist"}
+                            docId={currentDocId || undefined}
                         />
                     </div>
                 )}
@@ -550,6 +560,17 @@ export default function InvoiceForm() {
                                     <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
                                 </svg>
                                 GENERATE INVOICE
+                            </button>
+                            <button
+                                onClick={handleSaveDraft}
+                                className="w-full bg-white border-2 border-surface-200 text-surface-600 font-bold py-4 rounded-2xl active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+                            >
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+                                    <polyline points="17 21 17 13 7 13 7 21" />
+                                    <polyline points="7 3 7 8 15 8" />
+                                </svg>
+                                Save as Draft
                             </button>
                             <p className="text-[10px] text-surface-400 font-black uppercase tracking-[0.15em] text-center">
                                 INVOICES ARE SECURELY SAVED TO HISTORY

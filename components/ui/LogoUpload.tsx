@@ -6,6 +6,7 @@ import { useProGate } from "@/hooks/useProGate";
 import { Crown } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
+import { useToast } from "./Toast";
 import { BrandLogo } from "./BrandLogo";
 
 interface LogoUploadProps {
@@ -18,6 +19,7 @@ export const LogoUpload = ({ value, onChange, label = "Business Logo" }: LogoUpl
     const fileInputRef = useRef<HTMLInputElement>(null);
     const { isPro } = useProGate();
     const { profile } = useAuth();
+    const { showToast } = useToast();
     const businessName = profile?.businessName || "Your Business";
 
     const handleClick = () => {
@@ -27,6 +29,12 @@ export const LogoUpload = ({ value, onChange, label = "Business Logo" }: LogoUpl
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
+
+        // Restrict size to 2MB
+        if (file.size > 2 * 1024 * 1024) {
+            showToast("Logo must be less than 2MB", "error");
+            return;
+        }
 
         const reader = new FileReader();
         reader.onloadend = () => {

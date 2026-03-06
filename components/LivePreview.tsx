@@ -19,9 +19,10 @@ interface LivePreviewProps {
     data: any;
     type: DocumentType;
     initialTemplate?: TemplateName;
+    docId?: string;
 }
 
-export default function LivePreview({ data, type, initialTemplate = "minimalist" }: LivePreviewProps) {
+export default function LivePreview({ data, type, initialTemplate = "minimalist", docId }: LivePreviewProps) {
     const [activeTemplate, setActiveTemplate] = useState<TemplateName>(initialTemplate);
     const [isExporting, setIsExporting] = useState(false);
     const [isPremium, setIsPremium] = useState(false);
@@ -137,7 +138,7 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
         // Gate: free users see the upgrade prompt instead of a watermarked share
         if (!gate("export")) return;
         setIsExporting(true);
-        saveDocument(data, type, activeTemplate);
+        saveDocument(data, type, activeTemplate, undefined, docId);
 
         // If bake is still running, wait for it briefly (Android is fine with this;
         // iOS ideally has prebakeState === "ready" before user taps)
@@ -176,7 +177,7 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
         if (blockIfLocked()) return;
         if (!gate("export")) return;
         setIsExporting(true);
-        saveDocument(data, type, activeTemplate);
+        saveDocument(data, type, activeTemplate, undefined, docId);
 
         const dataUrl = dataUrlCache.current ?? await getFreshDataUrl();
         if (!dataUrl) {
@@ -204,7 +205,7 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
     const handleDownloadPDF = async () => {
         if (blockIfLocked()) return;
         setIsExporting(true);
-        saveDocument(data, type, activeTemplate);
+        saveDocument(data, type, activeTemplate, undefined, docId);
         window.scrollTo(0, 0);
         await new Promise(r => setTimeout(r, 80));
 
@@ -217,7 +218,7 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
         if (blockIfLocked()) return;
         if (!gate("export")) return;
         setIsExporting(true);
-        saveDocument(data, type, activeTemplate);
+        saveDocument(data, type, activeTemplate, undefined, docId);
         const dataUrl = await getFreshDataUrl();
         if (dataUrl) {
             downloadImage(dataUrl, `Proofa-${type}-${Date.now()}.png`);
