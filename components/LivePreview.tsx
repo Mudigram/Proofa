@@ -72,7 +72,7 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
         if (signal.aborted) return;
 
         try {
-            const dataUrl = await captureElementAsImage(CAPTURE_ID, isPro);
+            const dataUrl = await captureElementAsImage(CAPTURE_ID);
             if (signal.aborted || !dataUrl) {
                 setPrebakeState("failed");
                 return;
@@ -125,7 +125,7 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
         if (dataUrlCache.current) return dataUrlCache.current;
         window.scrollTo(0, 0);
         await new Promise(r => setTimeout(r, 80));
-        const url = await captureElementAsImage(CAPTURE_ID, isPro);
+        const url = await captureElementAsImage(CAPTURE_ID);
         if (url) dataUrlCache.current = url;
         return url;
     };
@@ -164,8 +164,8 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
             prebaked: prebakedFile.current,  // null-safe inside shareToWhatsApp
         });
 
-        if (result === "shared") showToast("Sent to WhatsApp! 🟢", "success");
-        else if (result === "downloaded") showToast("Image saved 📥 — open WhatsApp → tap 📎 → attach it", "info");
+        if (result === "shared") showToast("Sent to WhatsApp!", "success");
+        else if (result === "downloaded") showToast("Image saved — open WhatsApp → tap 📎 → attach it", "info");
         else if (result === "aborted") { /* user cancelled, say nothing */ }
         else showToast("Something went wrong. Use the Image button instead.", "error");
 
@@ -194,7 +194,7 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
         });
 
         if (result === "shared") showToast("Shared!", "success");
-        else if (result === "downloaded") showToast("Image saved — attach it manually 📎", "info");
+        else if (result === "downloaded") showToast("Image saved — attach it manually", "info");
         else if (result === "aborted") { /* silent */ }
         else showToast("Share failed. Try the Image button.", "error");
 
@@ -207,6 +207,7 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
         saveDocument(data, type, activeTemplate);
         window.scrollTo(0, 0);
         await new Promise(r => setTimeout(r, 80));
+
         const ok = await downloadAsPDF(CAPTURE_ID, `Proofa-${type}-${Date.now()}.pdf`, isPro);
         showToast(ok ? "Saved as PDF! 📄" : "PDF generation failed.", ok ? "success" : "error");
         setIsExporting(false);
@@ -220,7 +221,7 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
         const dataUrl = await getFreshDataUrl();
         if (dataUrl) {
             downloadImage(dataUrl, `Proofa-${type}-${Date.now()}.png`);
-            showToast("Image saved! 🖼️", "success");
+            showToast("Image saved in gallery!", "success");
         } else {
             showToast("Failed to save image.", "error");
         }

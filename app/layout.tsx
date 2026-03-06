@@ -3,6 +3,7 @@ import { Inter, Geist_Mono, Outfit } from "next/font/google";
 import Header from "@/components/Header";
 import BottomNav from "@/components/BottomNav";
 import "./globals.css";
+import { Analytics } from "@vercel/analytics/react"
 
 const inter = Inter({
   variable: "--font-sans",
@@ -89,13 +90,16 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${inter.variable} ${outfit.variable} ${geistMono.variable} pb-20`}>
+
         <AuthProvider>
           <ToastProvider>
             <Header />
             {children}
             <BottomNav />
           </ToastProvider>
+          <Analytics />
         </AuthProvider>
+
       </body>
     </html>
   );
