@@ -24,24 +24,28 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Proofa — Professional Receipt & Invoice Generator",
+  title: "Proofa — Send Your Receipt on WhatsApp in Seconds",
   description:
-    "Generate clean, modern receipts, invoices, and order summaries instantly. Optimized for WhatsApp sharing. The #1 document generator for Nigerian SMEs and entrepreneurs.",
+    "Create sharp, professional receipts, invoices, and order summaries instantly — and share them straight to WhatsApp. Built for Nigerian entrepreneurs, traders, and small businesses.",
   keywords: [
-    "receipt generator",
-    "invoice generator",
-    "WhatsApp receipt",
-    "proof of payment",
-    "Nigerian business",
-    "payment receipt",
-    "order summary",
-    "mobile billing",
+    "receipt generator Nigeria",
+    "invoice generator Nigeria",
+    "WhatsApp receipt sender",
+    "proof of payment Nigeria",
+    "business receipt maker",
+    "Nigerian SME invoice",
+    "order summary generator",
+    "payment receipt WhatsApp",
+    "small business Nigeria",
+    "e-receipt Nigeria",
+    "online invoice maker",
+    "Lagos business tools",
   ],
   authors: [{ name: "Proofa Team" }],
   openGraph: {
     title: "Proofa — Fast, Professional Business Documents",
     description: "Create and share receipts, invoices, and order summaries in seconds. Optimized for mobile and WhatsApp.",
-    url: "https://proofa.app",
+    url: "https://proofa.ng",
     siteName: "Proofa",
     images: [
       {
@@ -76,6 +80,7 @@ export const viewport: Viewport = {
 };
 
 import { ToastProvider } from "@/components/ui/Toast";
+import { AuthProvider } from "@/context/AuthContext";
 
 export default function RootLayout({
   children,
@@ -85,13 +90,18 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${inter.variable} ${outfit.variable} ${geistMono.variable} pb-20`}>
-        <ToastProvider>
-          <Header />
-          {children}
-          <BottomNav />
-        </ToastProvider>
-        <Analytics />
+
+        <AuthProvider>
+          <ToastProvider>
+            <Header />
+            {children}
+            <BottomNav />
+          </ToastProvider>
+          <Analytics />
+        </AuthProvider>
+
       </body>
     </html>
   );
 }
+

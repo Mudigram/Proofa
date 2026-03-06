@@ -8,10 +8,14 @@ import { OrderData, LineItem } from "@/lib/types";
 import { useSearchParams } from "next/navigation";
 import { getDocumentById } from "@/lib/StorageUtils";
 import { PageTransition, StaggerContainer, StaggerItem } from "@/components/ui/Animations";
+import { useAuth } from "@/context/AuthContext";
+import { BankSelector } from "@/components/ui/BankSelector";
 
 export default function OrderForm() {
     const searchParams = useSearchParams();
     const docId = searchParams.get("id");
+    const { profile, isPro } = useAuth();
+    const currencySymbol = profile?.defaultCurrency === "NGN" ? "₦" : (profile?.defaultCurrency === "USD" ? "$" : (profile?.defaultCurrency === "GBP" ? "£" : (profile?.defaultCurrency === "EUR" ? "€" : "₦")));
 
     const [formData, setFormData] = useState<OrderData>({
         customerName: "",
@@ -47,8 +51,14 @@ export default function OrderForm() {
                 });
                 setMode("preview");
             }
+        } else if (isPro && profile) {
+            // Auto-fill brand defaults for new orders
+            setFormData(prev => ({
+                ...prev,
+                logoUrl: profile.logoUrl || prev.logoUrl,
+            }));
         }
-    }, [docId]);
+    }, [docId, isPro, profile]);
 
     const handleChange = (field: keyof OrderData, value: any) => {
         setFormData((prev) => ({ ...prev, [field]: value }));
@@ -261,6 +271,77 @@ export default function OrderForm() {
                                 </div>
                             </StaggerItem>
 
+                            <StaggerItem>
+                                <section className="flex flex-col gap-5 bg-white p-6 rounded-[2rem] border border-surface-100 shadow-sm transition-all focus-within:ring-2 focus-within:ring-primary-500/10">
+                                    <div className="flex items-center justify-between px-1">
+                                        <h3 className="text-[10px] font-black uppercase tracking-widest text-surface-400">Bank details</h3>
+                                        <button
+                                            onClick={() => handleNestedChange("bankDetails", "enabled", !formData.bankDetails?.enabled)}
+                                            className={`w-10 h-6 rounded-full transition-all relative ${formData.bankDetails?.enabled ? 'bg-primary-500' : 'bg-surface-200'}`}
+                                        >
+                                            <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${formData.bankDetails?.enabled ? 'left-5' : 'left-1'}`} />
+                                        </button>
+                                    </div>
+
+                                    {formData.bankDetails?.enabled && (
+                                        <div className="flex flex-col gap-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                                            {/* Bank Selector for Pro Users */}
+                                            <BankSelector
+                                                onSelect={(bankName, accountName, accountNumber) => {
+                                                    setFormData(prev => ({
+                                                        ...prev,
+                                                        bankDetails: {
+                                                            ...prev.bankDetails,
+                                                            enabled: true,
+                                                            bankName,
+                                                            accountName,
+                                                            accountNumber
+                                                        }
+                                                    }));
+                                                    // Clear any validation errors
+                                                    setErrors(prev => {
+                                                        const newErrors = { ...prev };
+                                                        delete newErrors.bankName;
+                                                        delete newErrors.accountName;
+                                                        delete newErrors.accountNumber;
+                                                        return newErrors;
+                                                    });
+                                                }}
+                                            />
+
+                                            <Input
+                                                label="BANK NAME"
+                                                placeholder="e.g. GTBank"
+                                                value={formData.bankDetails.bankName}
+                                                onChange={(e) => handleNestedChange("bankDetails", "bankName", e.target.value)}
+                                                error={errors.bankName}
+                                                className="bg-surface-50 border-none"
+                                            />
+                                            <Input
+                                                label="ACCT NAME"
+                                                placeholder="e.g. Mudiaga Dev"
+                                                value={formData.bankDetails.accountName}
+                                                onChange={(e) => handleNestedChange("bankDetails", "accountName", e.target.value)}
+                                                error={errors.accountName}
+                                                className="bg-surface-50 border-none"
+                                            />
+                                            <Input
+                                                label="ACCT NUMBER"
+                                                placeholder="10 Digits"
+                                                type="number"
+                                                value={formData.bankDetails.accountNumber}
+                                                onChange={(e) => {
+                                                    const val = e.target.value.slice(0, 10);
+                                                    handleNestedChange("bankDetails", "accountNumber", val);
+                                                }}
+                                                error={errors.accountNumber}
+                                                className="bg-surface-50 border-none"
+                                            />
+                                        </div>
+                                    )}
+                                </section>
+                            </StaggerItem>
+
                             {/* <StaggerItem>
                                 <section className="flex flex-col gap-5 bg-white p-6 rounded-[2rem] border border-surface-100 shadow-sm transition-all focus-within:ring-2 focus-within:ring-primary-500/10">
                                     <div className="flex items-center justify-between px-1">
@@ -390,17 +471,17 @@ export default function OrderForm() {
                             <div className="flex flex-col gap-4">
                                 <div className="flex justify-between items-center text-sm font-medium text-surface-500 tracking-tight">
                                     <span className="uppercase tracking-widest text-[10px] font-black opacity-50">Items Subtotal</span>
-                                    <span className="font-bold text-surface-900">₦{(formData.totalAmount - (formData.deliveryInfo?.enabled ? formData.deliveryInfo.cost : 0)).toLocaleString()}</span>
+                                    <span className="font-bold text-surface-900">{currencySymbol}{(formData.totalAmount - (formData.deliveryInfo?.enabled ? formData.deliveryInfo.cost : 0)).toLocaleString()}</span>
                                 </div>
                                 {formData.deliveryInfo?.enabled && (
                                     <div className="flex justify-between items-center text-sm font-medium text-surface-500 tracking-tight">
                                         <span className="uppercase tracking-widest text-[10px] font-black opacity-50">Delivery</span>
-                                        <span className="font-bold text-surface-900">₦{formData.deliveryInfo.cost.toLocaleString()}</span>
+                                        <span className="font-bold text-surface-900">{currencySymbol}{formData.deliveryInfo.cost.toLocaleString()}</span>
                                     </div>
                                 )}
                                 <div className="flex justify-between items-center mt-2 pt-4 border-t border-surface-100">
                                     <span className="text-sm font-black text-surface-900 uppercase tracking-widest italic">Total amount</span>
-                                    <span className="text-2xl font-black text-primary-500 tracking-tighter">₦{formData.totalAmount.toLocaleString()}</span>
+                                    <span className="text-2xl font-black text-primary-500 tracking-tighter">{currencySymbol}{formData.totalAmount.toLocaleString()}</span>
                                 </div>
                             </div>
                         </div>

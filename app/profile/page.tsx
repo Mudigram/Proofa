@@ -1,148 +1,216 @@
-'use client';
-import React, { useEffect, useState } from "react";
-import { PageTransition, StaggerContainer, StaggerItem } from "@/components/ui/Animations";
-import { getUserName } from "@/lib/StorageUtils";
-import { useToast } from "@/components/ui/Toast";
+"use client";
+
+import React from "react";
+import { useAuth } from "@/context/AuthContext";
+import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
+import Link from "next/link";
+import { User, LogOut, ChevronRight, Crown, Settings, WalletCards, ShieldCheck } from "lucide-react";
 import Image from "next/image";
-import { Crown, Zap, ShieldCheck, CreditCard as CardIcon, LogOut, ExternalLink, Users, BarChart3, Receipt, Globe, Headset } from "lucide-react";
 
 export default function ProfilePage() {
-    const [userName, setUserName] = useState("User");
-    const { showToast } = useToast();
+    const { user, profile, isPro, plan, signOut, isAuthenticated, isLoading } = useAuth();
+    const router = useRouter();
 
-    useEffect(() => {
-        setUserName(getUserName());
-    }, []);
-
-    const handleSubscribe = (plan: string) => {
-        showToast(`${plan} Plan is coming soon! Stay tuned.`, "info");
+    const handleSignOut = async () => {
+        await signOut();
+        router.push("/");
     };
 
-    const plans = [
-        {
-            id: "pro",
-            name: "Pro Plan",
-            tagline: "Brand Authority Upgrade",
-            price: "₦2,500",
-            period: "/ month",
-            color: "bg-primary-500",
-            textColor: "text-white",
-            features: [
-                { icon: ShieldCheck, title: "Remove Watermark + HD", desc: "Clean, professional document exports" },
-                { icon: Crown, title: "Custom Brand Colors", desc: "Match your IG/WhatsApp identity" },
-                { icon: CardIcon, title: "Bank Account Vault", desc: "Save & switch multiple bank details" },
-                { icon: Globe, title: "Naira / Dollar Toggle", desc: "For digital & cross-border sellers" },
-                { icon: Headset, title: "Priority Tech Support", desc: "Fast-track help for your needs" },
-            ]
-        },
-        {
-            id: "business",
-            name: "Business",
-            tagline: "Operational Upgrade",
-            price: "₦5,000",
-            period: "/ month",
-            color: "bg-gray-900",
-            textColor: "text-white",
-            features: [
-                { icon: Users, title: "Multi-Attendant Sync", desc: "Real-time sales tracking across team" },
-                { icon: BarChart3, title: "Business Dashboard", desc: "Track sales daily metrics & health" },
-                { icon: Receipt, title: "Smart VAT / Tax Assist", desc: "Simplified 7.5% auto-calculation" },
-                { icon: Headset, title: "Dedicated Support", desc: "24/7 priority business assistance" },
-            ]
-        }
-    ];
+    if (isLoading) {
+        return (
+            <main className="app-container min-h-screen pb-24 pt-8 flex items-center justify-center">
+                <div className="w-8 h-8 rounded-full border-4 border-primary-200 border-t-primary-500 animate-spin"></div>
+            </main>
+        );
+    }
+
+    // If not authenticated, show a prompt to sign in
+    if (!isAuthenticated) {
+        return (
+            <main className="app-container min-h-screen pb-24 pt-8">
+                <div className="h-full flex flex-col items-center justify-center pt-20 text-center">
+                    <div className="w-24 h-24 bg-gradient-to-br from-primary-100 to-primary-50 rounded-full flex items-center justify-center text-primary-500 mb-6 shadow-xl shadow-primary-500/10">
+                        <User size={40} className="opacity-80" />
+                    </div>
+                    <h1 className="text-2xl font-black text-surface-900 mb-2 tracking-tight">Your Profile</h1>
+                    <p className="text-surface-500 text-sm mb-8 px-8 leading-relaxed">
+                        Sign in to save your receipts, manage your bank details, and upgrade your branding.
+                    </p>
+                    <Link
+                        href="/auth/signup"
+                        className="bg-primary-500 text-white font-bold py-4 px-10 rounded-2xl shadow-lg shadow-primary-500/20 active:scale-95 transition-all text-sm mb-4 block w-full max-w-xs mx-auto"
+                    >
+                        Create Free Account
+                    </Link>
+                    <Link
+                        href="/auth/login"
+                        className="bg-white text-surface-700 border-2 border-surface-200 font-bold py-4 px-10 rounded-2xl active:scale-95 transition-all text-sm block w-full max-w-xs mx-auto"
+                    >
+                        Sign In
+                    </Link>
+                </div>
+            </main>
+        );
+    }
 
     return (
-        <PageTransition>
-            <main className="app-container py-6 pb-32">
-                <StaggerContainer>
-                    {/* Profile Header */}
-                    <StaggerItem>
-                        <div className="bg-gray-950 border border-gray-800 rounded-[2.5rem] p-8 shadow-2xl mb-8 flex items-center gap-6 relative overflow-hidden group">
-                            <div className="w-24 h-24 rounded-full bg-gray-800/50 border border-gray-700/50 flex items-center justify-center p-5 shadow-xl relative z-10 overflow-hidden">
-                                <Image
-                                    src="/Logo/Proofa orange icon.png"
-                                    alt="Proofa Logo"
-                                    width={80}
-                                    height={80}
-                                    className="object-contain"
-                                    priority
-                                />
-                            </div>
-                            <div className="relative z-10">
-                                <h3 className="text-2xl font-black text-white tracking-tight leading-tight">
-                                    {userName.toUpperCase()}
-                                </h3>
-                                <div className="inline-flex items-center gap-2 px-2 py-0.5 bg-gray-800 text-gray-400 text-[9px] font-black uppercase tracking-widest rounded-md mt-1 border border-gray-700">
-                                    FREE TIER
-                                </div>
-                            </div>
-                        </div>
-                    </StaggerItem>
+        <main className="app-container min-h-screen pb-32 pt-8">
+            <header className="mb-8 relative text-center">
+                <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-xl shadow-surface-200/5 border border-surface-100">
+                    <Image
+                        src="/Logo/Proofa orange icon.png"
+                        alt="Proofa Logo"
+                        width={40}
+                        height={40}
+                        className="object-contain drop-shadow-md"
+                        unoptimized
+                    />
+                </div>
+                <h1 className="text-3xl font-black text-surface-900 tracking-tight">Account</h1>
+                <p className="text-sm text-surface-500 font-medium mt-1">Manage your Proofa settings</p>
+            </header>
 
-                    {/* Pricing Tiers */}
-                    <div className="flex flex-col gap-6 mb-12">
-                        {plans.map((plan) => (
-                            <StaggerItem key={plan.id}>
-                                <div className={`${plan.color} rounded-[2.5rem] p-8 shadow-xl relative overflow-hidden group border border-white/5`}>
-                                    <div className="relative z-10">
-                                        <div className="flex justify-between items-start mb-6">
-                                            <div>
-                                                <h2 className={`text-2xl font-black ${plan.textColor} uppercase tracking-tight`}>{plan.name}</h2>
-                                                <p className={`${plan.textColor}/70 text-xs font-bold uppercase tracking-widest`}>{plan.tagline}</p>
-                                            </div>
-                                            <div className="text-right">
-                                                <div className={`text-2xl font-black ${plan.textColor}`}>{plan.price}</div>
-                                                <div className={`${plan.textColor}/50 text-[10px] font-black uppercase tracking-widest`}>{plan.period}</div>
-                                            </div>
-                                        </div>
-
-                                        <div className="grid grid-cols-1 gap-4 mb-8">
-                                            {plan.features.map((f, i) => (
-                                                <div key={i} className={`flex items-center gap-4 ${plan.id === 'pro' ? 'bg-white/10' : 'bg-white/5'} rounded-2xl p-4 border border-white/5`}>
-                                                    <div className={`w-10 h-10 rounded-xl ${plan.id === 'pro' ? 'bg-white/20' : 'bg-gray-800'} flex items-center justify-center text-white`}>
-                                                        <f.icon size={20} />
-                                                    </div>
-                                                    <div>
-                                                        <p className={`text-xs font-black ${plan.textColor} uppercase tracking-tight`}>{f.title}</p>
-                                                        <p className={`text-[10px] ${plan.textColor}/60 font-medium`}>{f.desc}</p>
-                                                    </div>
-                                                </div>
-                                            ))}
-                                        </div>
-
-                                        <button
-                                            onClick={() => handleSubscribe(plan.name)}
-                                            className={`w-full bg-white ${plan.id === 'pro' ? 'text-primary-600' : 'text-gray-900'} font-black py-5 rounded-2xl flex items-center justify-center gap-2 shadow-lg active:scale-[0.98] transition-all uppercase text-xs tracking-widest`}
-                                        >
-                                            Subscribe to {plan.name}
-                                            <Zap size={16} fill="currentColor" />
-                                        </button>
-                                    </div>
-                                </div>
-                            </StaggerItem>
-                        ))}
+            <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex flex-col gap-6"
+            >
+                {/* User Card */}
+                <div className="bg-white rounded-[2rem] p-6 shadow-xl shadow-surface-200/5 border border-surface-100 flex items-center gap-5">
+                    <div className="w-16 h-16 bg-gradient-to-br from-primary-100 to-primary-50 rounded-2xl flex items-center justify-center shadow-inner flex-shrink-0">
+                        <span className="text-2xl font-bold text-primary-600">
+                            {profile?.businessName?.[0]?.toUpperCase() || profile?.name?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || <User size={24} />}
+                        </span>
                     </div>
-
-                    {/* Footer Actions */}
-                    <StaggerItem>
-                        <div className="flex flex-col gap-4 items-center">
-                            <button className="flex items-center gap-2 px-8 py-4 text-gray-400 font-black uppercase text-[10px] tracking-[0.3em] hover:text-red-500 transition-colors">
-                                <LogOut size={14} />
-                                Sign Out
-                            </button>
-                            <a
-                                href="https://mudiaga-dev.vercel.app/"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="px-6 py-3 bg-gray-50 overflow-hidden relative rounded-full text-[10px] font-black text-primary-600 uppercase tracking-[0.2em] hover:bg-primary-500 hover:text-white transition-all transform active:scale-95 group/mudi"
-                            >
-                                <span className="relative z-10">Built with ❤️ by Mudi</span>
-                            </a>
+                    <div className="flex-1 overflow-hidden">
+                        <h2 className="text-lg font-bold text-surface-900 truncate">
+                            {profile?.businessName || profile?.name || "Business Owner"}
+                        </h2>
+                        <p className="text-sm text-surface-500 truncate">{user?.email}</p>
+                        <div className="inline-flex items-center gap-2 px-2 py-0.5 bg-surface-100 text-surface-600 text-[9px] font-black uppercase tracking-widest rounded-md mt-2">
+                            {plan === 'business' ? 'BUSINESS TIER' : isPro ? 'PRO TIER' : 'FREE TIER'}
                         </div>
-                    </StaggerItem>
-                </StaggerContainer>
-            </main>
-        </PageTransition >
+                    </div>
+                </div>
+
+                {/* Plan Status Card */}
+                <div className="bg-white rounded-[2rem] p-6 shadow-xl shadow-surface-200/5 border border-surface-100 relative overflow-hidden">
+                    {/* Background blob based on plan */}
+                    <div className={`absolute -right-10 -top-10 w-40 h-40 blur-3xl opacity-20 rounded-full ${plan === "business" ? "bg-purple-500" : isPro ? "bg-amber-500" : "bg-primary-500"
+                        }`}></div>
+
+                    <div className="relative z-10 flex items-start justify-between gap-4">
+                        <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                                <h3 className="font-bold text-surface-900 flex items-center gap-1.5">
+                                    Current Plan
+                                    {isPro && <Crown size={14} className="text-amber-500 fill-amber-500" />}
+                                </h3>
+                            </div>
+                            <div className="flex flex-col gap-1">
+                                <span className={`text-2xl font-black capitalize tracking-tight ${plan === "business" ? "text-purple-600" : isPro ? "text-amber-600" : "text-surface-500"
+                                    }`}>
+                                    {plan}
+                                </span>
+                                {!isPro && (
+                                    <span className="text-[10px] text-surface-400 font-bold uppercase tracking-widest leading-relaxed">
+                                        Upgrade to add logos, brand colors, and bank vault.
+                                    </span>
+                                )}
+                            </div>
+                        </div>
+
+                        {!isPro ? (
+                            <Link
+                                href="/pricing"
+                                className="bg-surface-900 text-white text-xs font-bold px-4 py-3 text-center rounded-xl shadow-md active:scale-95 transition-all whitespace-nowrap flex-shrink-0"
+                            >
+                                Upgrade Plan
+                            </Link>
+                        ) : (
+                            <Link
+                                href="/pricing"
+                                className="bg-white border-2 border-surface-200 text-surface-700 text-xs font-bold px-4 py-3 rounded-xl shadow-sm active:scale-95 transition-all whitespace-nowrap flex-shrink-0"
+                            >
+                                Manage
+                            </Link>
+                        )}
+                    </div>
+                </div>
+
+                {/* Settings Links */}
+                <div className="bg-white rounded-[2rem] p-3 shadow-xl shadow-surface-200/5 border border-surface-100">
+                    <div className="flex flex-col">
+                        <Link href="/profile/vault" className="flex items-center p-4 hover:bg-surface-50 rounded-2xl transition-colors group">
+                            <div className="w-10 h-10 bg-primary-50 text-primary-600 rounded-xl flex items-center justify-center mr-4 group-hover:scale-110 transition-transform">
+                                <WalletCards size={20} />
+                            </div>
+                            <div className="flex-1">
+                                <h4 className="font-bold text-surface-900 text-sm">Bank Vault</h4>
+                                <p className="text-xs text-surface-500 mt-0.5">Manage saved account details {!isPro && "(Pro)"}</p>
+                            </div>
+                            <ChevronRight size={18} className="text-surface-300" />
+                        </Link>
+
+                        <div className="h-px bg-surface-100 mx-4"></div>
+
+                        <Link href="/profile/brand" className="flex items-center p-4 hover:bg-surface-50 rounded-2xl transition-colors group">
+                            <div className="w-10 h-10 bg-purple-50 text-purple-600 rounded-xl flex items-center justify-center mr-4 group-hover:scale-110 transition-transform">
+                                <Settings size={20} />
+                            </div>
+                            <div className="flex-1">
+                                <h4 className="font-bold text-surface-900 text-sm">Brand Identity</h4>
+                                <p className="text-xs text-surface-500 mt-0.5">Colors, Logo & Currency</p>
+                            </div>
+                            <ChevronRight size={18} className="text-surface-300" />
+                        </Link>
+
+                        <div className="h-px bg-surface-100 mx-4"></div>
+
+                        <Link href="/profile/settings" className="flex items-center p-4 hover:bg-surface-50 rounded-2xl transition-colors group">
+                            <div className="w-10 h-10 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center mr-4 group-hover:scale-110 transition-transform">
+                                <User size={20} />
+                            </div>
+                            <div className="flex-1">
+                                <h4 className="font-bold text-surface-900 text-sm">Account Settings</h4>
+                                <p className="text-xs text-surface-500 mt-0.5">Edit profile and business name</p>
+                            </div>
+                            <ChevronRight size={18} className="text-surface-300" />
+                        </Link>
+
+                        <div className="flex items-center p-4 opacity-50 cursor-not-allowed">
+                            <div className="w-10 h-10 bg-surface-100 text-surface-400 rounded-xl flex items-center justify-center mr-4">
+                                <ShieldCheck size={20} />
+                            </div>
+                            <div className="flex-1">
+                                <h4 className="font-bold text-surface-600 text-sm">Data & Privacy</h4>
+                                <p className="text-xs text-surface-400 mt-0.5">Export data (Coming soon)</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Sign Out & Footer */}
+                <div className="flex flex-col gap-6 mt-4">
+                    <button
+                        onClick={handleSignOut}
+                        className="flex items-center justify-center gap-2 p-4 text-red-500 font-bold text-sm bg-white hover:bg-red-50 rounded-[1.5rem] border border-red-100 transition-colors active:scale-[0.98] shadow-sm mx-auto w-full max-w-[200px]"
+                    >
+                        <LogOut size={18} />
+                        Sign Out
+                    </button>
+
+                    <a
+                        href="https://mudiaga-dev.vercel.app/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-6 py-3 bg-white border border-surface-100 shadow-sm mx-auto overflow-hidden relative rounded-full text-[10px] font-black text-primary-500 uppercase tracking-[0.2em] hover:bg-primary-50 transition-all transform active:scale-95 group"
+                    >
+                        <span className="relative z-10">Built with ❤️ by Mudi</span>
+                    </a>
+                </div>
+            </motion.div>
+        </main>
     );
 }

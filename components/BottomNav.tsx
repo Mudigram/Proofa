@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
-import { Home, History, Plus, Info, User } from "lucide-react";
+import { Home, History, Plus, Crown, User } from "lucide-react";
 
 const navItems = [
     {
@@ -23,9 +23,9 @@ const navItems = [
         icon: Plus
     },
     {
-        label: "How-To",
-        href: "/how-it-works",
-        icon: Info
+        label: "Pro",
+        href: "/pricing",
+        icon: Crown
     },
     {
         label: "Profile",
@@ -36,6 +36,9 @@ const navItems = [
 
 export default function BottomNav() {
     const pathname = usePathname();
+
+    // Hide BottomNav on all auth pages to prevent distraction
+    if (pathname.startsWith("/auth")) return null;
 
     return (
         <nav className="fixed bottom-0 left-0 right-0 z-50 px-4 pb-6 pt-2 pointer-events-none">

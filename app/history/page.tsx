@@ -9,6 +9,8 @@ import Link from "next/link";
 import { Trash2, AlertTriangle } from "lucide-react";
 import { Modal } from "@/components/ui/Modal";
 import { useToast } from "@/components/ui/Toast";
+import { useAuth } from "@/context/AuthContext";
+import { Crown, Zap } from "lucide-react";
 
 export default function HistoryPage() {
     const [history, setHistory] = useState<SavedDocument[]>([]);
@@ -16,6 +18,7 @@ export default function HistoryPage() {
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [selectedDoc, setSelectedDoc] = useState<SavedDocument | null>(null);
     const { showToast } = useToast();
+    const { isPro } = useAuth();
 
     useEffect(() => {
         setHistory(getHistory());
@@ -56,7 +59,31 @@ export default function HistoryPage() {
     };
 
     if (isLoading) {
-        return <main className="app-container py-6">Loading history...</main>;
+        return (
+            <main className="app-container py-6 pb-24">
+                <header className="mb-8">
+                    <div className="h-8 w-48 bg-surface-200 animate-pulse rounded-lg mb-2" />
+                    <div className="h-4 w-32 bg-surface-100 animate-pulse rounded-md" />
+                </header>
+                <div className="grid gap-4">
+                    {[1, 2, 3, 4, 5].map((i) => (
+                        <div key={i} className="bg-white border border-surface-200 rounded-[2rem] p-5">
+                            <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 rounded-2xl bg-surface-100 animate-pulse shrink-0" />
+                                <div className="flex-1">
+                                    <div className="h-3 w-20 bg-surface-100 animate-pulse rounded mb-2" />
+                                    <div className="h-4 w-32 bg-surface-200 animate-pulse rounded" />
+                                </div>
+                                <div className="flex flex-col items-end gap-2">
+                                    <div className="h-4 w-16 bg-surface-200 animate-pulse rounded" />
+                                    <div className="w-8 h-8 rounded-full bg-surface-100 animate-pulse" />
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </main>
+        );
     }
 
     return (
@@ -90,6 +117,30 @@ export default function HistoryPage() {
                     </div>
                 ) : (
                     <StaggerContainer>
+                        {!isPro && (
+                            <StaggerItem>
+                                <div className="mb-6 overflow-hidden relative group">
+                                    <div className="absolute inset-0 bg-gradient-to-r from-primary-500 to-amber-500 opacity-[0.08]" />
+                                    <div className="relative border-2 border-primary-500/20 bg-white/50 backdrop-blur-sm rounded-[2rem] p-6 flex flex-col md:flex-row items-center gap-6 justify-between shadow-sm">
+                                        <div className="flex items-center gap-4 text-center md:text-left">
+                                            <div className="w-14 h-14 bg-primary-500 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-primary-500/20 flex-shrink-0">
+                                                <Zap size={24} />
+                                            </div>
+                                            <div>
+                                                <h3 className="text-sm font-black text-surface-900 uppercase tracking-tight">Remove the watermark</h3>
+                                                <p className="text-[11px] font-bold text-surface-400 uppercase tracking-widest leading-relaxed max-w-[200px]">Upgrade to Pro to export clean, branded documents.</p>
+                                            </div>
+                                        </div>
+                                        <Link
+                                            href="/pricing"
+                                            className="bg-surface-900 text-white text-[10px] font-black uppercase tracking-[0.2em] px-8 py-3.5 rounded-xl shadow-lg shadow-black/10 active:scale-95 transition-all whitespace-nowrap"
+                                        >
+                                            Unlock Pro Features
+                                        </Link>
+                                    </div>
+                                </div>
+                            </StaggerItem>
+                        )}
                         <div className="grid gap-4">
                             {history.map((doc) => (
                                 <StaggerItem key={doc.id}>

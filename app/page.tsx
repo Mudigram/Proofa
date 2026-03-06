@@ -221,7 +221,17 @@ export default function HomePage() {
           </div>
 
           <div className="flex flex-col gap-3">
-            {!isLoading && recentHistory.length === 0 ? (
+            {isLoading ? (
+              [1, 2, 3].map((i) => (
+                <div key={i} className="bg-white border border-surface-100 p-4 rounded-3xl shadow-sm flex items-center gap-4">
+                  <div className="w-14 h-14 rounded-xl bg-surface-50 animate-pulse shrink-0" />
+                  <div className="flex-1">
+                    <div className="h-4 w-32 bg-surface-200 animate-pulse rounded mb-2" />
+                    <div className="h-2 w-48 bg-surface-100 animate-pulse rounded" />
+                  </div>
+                </div>
+              ))
+            ) : recentHistory.length === 0 ? (
               <div className="bg-surface-50 border-2 border-dashed border-surface-100 rounded-[2rem] p-8 text-center">
                 <p className="text-xs font-bold text-surface-300 uppercase tracking-widest">No recent documents</p>
               </div>

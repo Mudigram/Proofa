@@ -4,14 +4,17 @@ import React, { useState, useEffect, useMemo } from "react";
 import { Input, SegmentedControl, CurrencyInput, TextArea } from "@/components/ui/FormInput";
 import LivePreview from "@/components/LivePreview";
 import { LogoUpload } from "@/components/ui/LogoUpload";
+import { BankSelector } from "@/components/ui/BankSelector";
 import { ReceiptData } from "@/lib/types";
 import { useSearchParams } from "next/navigation";
 import { getDocumentById } from "@/lib/StorageUtils";
 import { PageTransition, StaggerContainer, StaggerItem } from "@/components/ui/Animations";
+import { useAuth } from "@/context/AuthContext";
 
 export default function ReceiptForm() {
     const searchParams = useSearchParams();
     const docId = searchParams.get("id");
+    const { profile, isPro } = useAuth();
 
     const [formData, setFormData] = useState<ReceiptData>({
         businessName: "",
@@ -43,7 +46,6 @@ export default function ReceiptForm() {
             const doc = getDocumentById(docId);
             if (doc && doc.type === "receipt") {
                 const data = doc.data as ReceiptData;
-                // Ensure new fields exist for legacy docs
                 setFormData({
                     ...data,
                     bankDetails: data.bankDetails || { bankName: "", accountNumber: "", accountName: "", enabled: false },
@@ -51,14 +53,22 @@ export default function ReceiptForm() {
                 });
                 setMode("preview");
             }
+        } else if (isPro && profile) {
+            // Auto-fill brand defaults for Pro users on NEW documents
+            setFormData(prev => ({
+                ...prev,
+                businessName: prev.businessName || profile.businessName || "",
+                logoUrl: prev.logoUrl || profile.logoUrl || undefined,
+            }));
         }
-    }, [docId]);
+    }, [docId, profile, isPro]);
 
     const validate = () => {
         const newErrors: Record<string, string> = {};
         if (!formData.businessName.trim()) newErrors.businessName = "Business name is required";
         if (!formData.description.trim()) newErrors.description = "Tell us what this receipt is for";
-        if (formData.amount <= 0) newErrors.amount = "Amount must be greater than ₦0";
+        const currencySymbol = profile?.defaultCurrency === "USD" ? "$" : profile?.defaultCurrency === "GBP" ? "£" : profile?.defaultCurrency === "EUR" ? "€" : "₦";
+        if (formData.amount <= 0) newErrors.amount = `Amount must be greater than ${currencySymbol}0`;
 
         if (formData.bankDetails?.enabled) {
             if (!formData.bankDetails.bankName.trim()) newErrors.bankName = "Bank name required";
@@ -239,7 +249,7 @@ export default function ReceiptForm() {
                             </StaggerItem>
 
                             {/* Bank Details Section */}
-                            {/* <StaggerItem>
+                            <StaggerItem>
                                 <section className="flex flex-col gap-5 bg-white p-6 rounded-[2rem] border border-surface-100 shadow-sm transition-all focus-within:ring-2 focus-within:ring-primary-500/10">
                                     <div className="flex items-center justify-between px-1">
                                         <h3 className="text-[10px] font-black uppercase tracking-widest text-surface-400">Bank Details</h3>
@@ -253,6 +263,30 @@ export default function ReceiptForm() {
 
                                     {formData.bankDetails?.enabled && (
                                         <div className="flex flex-col gap-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                                            {/* Bank Selector for Pro Users */}
+                                            <BankSelector
+                                                onSelect={(bankName, accountName, accountNumber) => {
+                                                    setFormData(prev => ({
+                                                        ...prev,
+                                                        bankDetails: {
+                                                            ...prev.bankDetails,
+                                                            enabled: true,
+                                                            bankName,
+                                                            accountName,
+                                                            accountNumber
+                                                        }
+                                                    }));
+                                                    // Clear any validation errors
+                                                    setErrors(prev => {
+                                                        const newErrors = { ...prev };
+                                                        delete newErrors.bankName;
+                                                        delete newErrors.accountName;
+                                                        delete newErrors.accountNumber;
+                                                        return newErrors;
+                                                    });
+                                                }}
+                                            />
+
                                             <Input
                                                 label="BANK NAME"
                                                 placeholder="e.g. Zenith Bank"
@@ -284,7 +318,7 @@ export default function ReceiptForm() {
                                         </div>
                                     )}
                                 </section>
-                            </StaggerItem> */}
+                            </StaggerItem>
 
                             {/* Delivery Details Section */}
                             <StaggerItem>
@@ -337,17 +371,17 @@ export default function ReceiptForm() {
                             <div className="flex flex-col gap-4">
                                 <div className="flex justify-between items-center text-sm font-medium text-surface-500 tracking-tight">
                                     <span className="uppercase tracking-widest text-[10px] font-black opacity-50">Base Amount</span>
-                                    <span className="font-bold text-surface-900">₦{formData.amount.toLocaleString()}</span>
+                                    <span className="font-bold text-surface-900">{profile?.defaultCurrency === "USD" ? "$" : profile?.defaultCurrency === "GBP" ? "£" : profile?.defaultCurrency === "EUR" ? "€" : "₦"}{formData.amount.toLocaleString()}</span>
                                 </div>
                                 {formData.deliveryInfo?.enabled && (
                                     <div className="flex justify-between items-center text-sm font-medium text-surface-500 tracking-tight">
                                         <span className="uppercase tracking-widest text-[10px] font-black opacity-50">Delivery</span>
-                                        <span className="font-bold text-surface-900">₦{formData.deliveryInfo.cost.toLocaleString()}</span>
+                                        <span className="font-bold text-surface-900">{profile?.defaultCurrency === "USD" ? "$" : profile?.defaultCurrency === "GBP" ? "£" : profile?.defaultCurrency === "EUR" ? "€" : "₦"}{formData.deliveryInfo.cost.toLocaleString()}</span>
                                     </div>
                                 )}
                                 <div className="flex justify-between items-center mt-2 pt-4 border-t border-surface-100">
                                     <span className="text-sm font-black text-surface-900 uppercase tracking-widest italic">Total Paid</span>
-                                    <span className="text-2xl font-black text-primary-500 tracking-tighter">₦{total.toLocaleString()}</span>
+                                    <span className="text-2xl font-black text-primary-500 tracking-tighter">{profile?.defaultCurrency === "USD" ? "$" : profile?.defaultCurrency === "GBP" ? "£" : profile?.defaultCurrency === "EUR" ? "€" : "₦"}{total.toLocaleString()}</span>
                                 </div>
                             </div>
                         </div>

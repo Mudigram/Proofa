@@ -3,16 +3,19 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { Input, CurrencyInput, TextArea } from "@/components/ui/FormInput";
 import { LogoUpload } from "@/components/ui/LogoUpload";
+import { BankSelector } from "@/components/ui/BankSelector";
 import LivePreview from "@/components/LivePreview";
 import { InvoiceData, LineItem } from "@/lib/types";
 import { useSearchParams } from "next/navigation";
 import { getDocumentById } from "@/lib/StorageUtils";
 import { PageTransition, StaggerContainer, StaggerItem } from "@/components/ui/Animations";
+import { useAuth } from "@/context/AuthContext";
 import { formatCurrency, formatDate } from "@/components/templates/TemplateUtils";
 
 export default function InvoiceForm() {
     const searchParams = useSearchParams();
     const docId = searchParams.get("id");
+    const { profile, isPro } = useAuth();
 
     const [formData, setFormData] = useState<InvoiceData>({
         businessName: "",
@@ -68,8 +71,15 @@ export default function InvoiceForm() {
                 });
                 setMode("preview");
             }
+        } else if (isPro && profile) {
+            // Auto-fill brand defaults for Pro users
+            setFormData(prev => ({
+                ...prev,
+                businessName: prev.businessName || profile.businessName || "",
+                logoUrl: prev.logoUrl || profile.logoUrl || undefined,
+            }));
         }
-    }, [docId]);
+    }, [docId, profile, isPro]);
 
     const handleChange = (field: keyof InvoiceData, value: any) => {
         setFormData((prev) => ({ ...prev, [field]: value }));
@@ -349,6 +359,30 @@ export default function InvoiceForm() {
 
                                     {formData.bankDetails?.enabled && (
                                         <div className="flex flex-col gap-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                                            {/* Bank Selector for Pro Users */}
+                                            <BankSelector
+                                                onSelect={(bankName, accountName, accountNumber) => {
+                                                    setFormData(prev => ({
+                                                        ...prev,
+                                                        bankDetails: {
+                                                            ...prev.bankDetails,
+                                                            enabled: true,
+                                                            bankName,
+                                                            accountName,
+                                                            accountNumber
+                                                        }
+                                                    }));
+                                                    // Clear any validation errors
+                                                    setErrors(prev => {
+                                                        const newErrors = { ...prev };
+                                                        delete newErrors.bankName;
+                                                        delete newErrors.accountName;
+                                                        delete newErrors.accountNumber;
+                                                        return newErrors;
+                                                    });
+                                                }}
+                                            />
+
                                             <Input
                                                 label="BANK NAME"
                                                 placeholder="e.g. GTBank"
@@ -485,23 +519,23 @@ export default function InvoiceForm() {
                             <div className="flex flex-col gap-4">
                                 <div className="flex justify-between items-center text-sm font-medium text-surface-500 tracking-tight">
                                     <span className="uppercase tracking-widest text-[10px] font-black opacity-50">Subtotal</span>
-                                    <span className="font-bold text-surface-900">{formatCurrency(subtotal)}</span>
+                                    <span className="font-bold text-surface-900">{formatCurrency(subtotal, profile?.defaultCurrency || "NGN")}</span>
                                 </div>
                                 {formData.includeVat && (
                                     <div className="flex justify-between items-center text-sm font-medium text-surface-500 tracking-tight">
                                         <span className="uppercase tracking-widest text-[10px] font-black opacity-50">VAT ({formData.vatRate}%)</span>
-                                        <span className="font-bold text-surface-900">{formatCurrency(tax)}</span>
+                                        <span className="font-bold text-surface-900">{formatCurrency(tax, profile?.defaultCurrency || "NGN")}</span>
                                     </div>
                                 )}
                                 {formData.deliveryInfo?.enabled && (
                                     <div className="flex justify-between items-center text-sm font-medium text-surface-500 tracking-tight">
                                         <span className="uppercase tracking-widest text-[10px] font-black opacity-50">Delivery</span>
-                                        <span className="font-bold text-surface-900">{formatCurrency(deliveryCost)}</span>
+                                        <span className="font-bold text-surface-900">{formatCurrency(deliveryCost, profile?.defaultCurrency || "NGN")}</span>
                                     </div>
                                 )}
                                 <div className="flex justify-between items-center mt-2 pt-4 border-t border-surface-100">
                                     <span className="text-sm font-black text-surface-900 uppercase tracking-widest italic">Total Amount</span>
-                                    <span className="text-2xl font-black text-primary-500 tracking-tighter">{formatCurrency(total)}</span>
+                                    <span className="text-2xl font-black text-primary-500 tracking-tighter">{formatCurrency(total, profile?.defaultCurrency || "NGN")}</span>
                                 </div>
                             </div>
                         </div>
