@@ -103,7 +103,7 @@ function NotifyModal({
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-end justify-center">
+        <div className="fixed inset-0 z-[100] flex items-end justify-center px-4 pb-12 sm:pb-0 sm:items-center">
             <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
