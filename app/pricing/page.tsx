@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { Crown, Building2, Zap, Check, Bell } from "lucide-react";
+import { Crown, Building2, Zap, Check, Bell, Loader2 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -45,7 +45,7 @@ const PLANS = [
             "Remove watermark",
             "HD export",
             "Logo upload",
-            "Custom brand colors",
+            "2-color brand identity",
             "Bank account vault",
             "₦ / $ toggle",
             "Priority support",
@@ -154,9 +154,14 @@ function NotifyModal({
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="w-full bg-primary-500 text-white font-bold py-4 rounded-2xl active:scale-[0.98] transition-all disabled:opacity-60"
+                                className="w-full bg-primary-500 text-white font-bold py-4 rounded-2xl active:scale-[0.98] transition-all disabled:opacity-60 flex items-center justify-center gap-2"
                             >
-                                {loading ? "Saving…" : "Notify Me When Ready"}
+                                {loading ? (
+                                    <>
+                                        <Loader2 size={18} className="animate-spin" />
+                                        Saving…
+                                    </>
+                                ) : "Notify Me When Ready"}
                             </button>
                         </form>
                     </>
@@ -189,11 +194,11 @@ export default function PricingPage() {
                 <div className="inline-flex items-center gap-1.5 bg-primary-50 text-primary-600 text-xs font-black uppercase tracking-widest px-3 py-1.5 rounded-full mb-4">
                     <Crown size={12} /> Pro Plans
                 </div>
-                <h1 className="text-3xl font-extrabold text-surface-900 tracking-tight mb-3">
-                    Choose how professional<br />you want to look
+                <h1 className="text-4xl font-black text-surface-900 tracking-tight mb-4 leading-tight">
+                    Look professional,<br />get paid faster
                 </h1>
-                <p className="text-surface-400 text-sm font-medium max-w-xs mx-auto">
-                    Used by 120+ small businesses across Lagos, Abuja & PH
+                <p className="text-surface-500 text-sm font-medium max-w-[280px] mx-auto leading-relaxed">
+                    Trusted by 240+ freelancers and small businesses in Lagos, Abuja & PH
                 </p>
             </motion.div>
 
@@ -301,14 +306,43 @@ export default function PricingPage() {
                 ))}
             </div>
 
-            {/* Social proof */}
-            <div className="bg-surface-50 rounded-[2rem] p-6 text-center">
-                <p className="text-surface-500 text-sm font-medium mb-3">
-                    Trusted by small businesses sending professional receipts daily
+            {/* Testimonials */}
+            <div className="mb-12">
+                <h3 className="text-center text-[10px] font-black uppercase tracking-[0.2em] text-surface-400 mb-6">
+                    What users are saying
+                </h3>
+                <div className="flex flex-col gap-4">
+                    {[
+                        { name: "Tolani", city: "Lagos", text: "Finally an app that doesn't make my receipts look like a generic WhatsApp text. The Pro branding is worth every naira!", icon: "🔥" },
+                        { name: "Temitope", city: "Ibadan", text: "The bank vault saves me so much time. I just tap and my details are there. Love it.", icon: "💎" },
+                        { name: "Emeka", city: "Ife", text: "What i needed, Makes my freelance Invoicng more professional. ", icon: "🔥" }
+                    ].map((t, i) => (
+                        <div key={i} className="bg-white border border-surface-100 p-5 rounded-[1.5rem] shadow-sm flex gap-4">
+                            <div className="w-10 h-10 rounded-full bg-primary-50 flex items-center justify-center text-lg shadow-inner">
+                                {t.icon}
+                            </div>
+                            <div>
+                                <p className="text-xs font-medium text-surface-600 italic leading-relaxed mb-2">
+                                    &quot;{t.text}&quot;
+                                </p>
+                                <p className="text-[10px] font-black uppercase tracking-widest text-surface-900">
+                                    {t.name} • {t.city}
+                                </p>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            {/* City Proof */}
+            <div className="bg-surface-900 rounded-[2.5rem] p-8 text-center text-white relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-primary-500/20 blur-[60px] rounded-full -mr-16 -mt-16" />
+                <p className="text-white/60 text-xs font-medium mb-6 relative z-10">
+                    Trusted across Nigeria
                 </p>
-                <div className="flex justify-center gap-3 flex-wrap">
-                    {["Lagos", "Abuja", "Port Harcourt", "Ibadan"].map((city) => (
-                        <span key={city} className="text-[10px] font-black text-surface-400 uppercase tracking-widest bg-white border border-surface-200 px-3 py-1.5 rounded-full">
+                <div className="flex justify-center gap-2 flex-wrap relative z-10">
+                    {["Lagos", "Abuja", "PH City", "Ibadan", "Enugu", "Kano"].map((city) => (
+                        <span key={city} className="text-[9px] font-black uppercase tracking-widest bg-white/10 backdrop-blur-md px-4 py-2 rounded-full">
                             {city}
                         </span>
                     ))}

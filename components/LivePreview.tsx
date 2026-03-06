@@ -5,6 +5,7 @@ import { TemplateName, DocumentType } from "@/lib/types";
 import MinimalistTemplate from "./templates/Minimalist";
 import BoldTemplate from "./templates/Bold";
 import ClassicTemplate from "./templates/Classic";
+import { Loader2 } from "lucide-react";
 
 import { captureElementAsImage, downloadImage, downloadAsPDF } from "@/lib/ExportUtils";
 import { shareToWhatsApp, shareViaWebShare, prebakeShareFile, canShareFiles } from "@/lib/ShareUtils";
@@ -236,6 +237,8 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
 
     // ── Dynamic Branding ──
     const customBrandColor = isPro && profile?.primaryColor ? profile.primaryColor : undefined;
+    const customAccentColor = isPro && profile?.accentColor ? profile.accentColor : undefined;
+
     const dynamicStyle: React.CSSProperties = customBrandColor ? {
         // Override Tailwind's theme variables. 
         // This instantly paints all text-primary-500, bg-primary-500, etc. with the selected color!
@@ -243,6 +246,7 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
         "--color-primary-50": `${customBrandColor}15`, // 15% opacity for backgrounds
         "--color-primary-100": `${customBrandColor}30`,
         "--color-primary-600": customBrandColor, // simplified, just mapping 600 to 500 for templates
+        "--brand-accent": customAccentColor || "#2563eb",
     } as React.CSSProperties : {};
 
     // ── Render ─────────────────────────────────────────────────────────────────
@@ -357,14 +361,18 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
                         </svg>
 
                         <span className="text-xs font-black uppercase tracking-widest relative z-10">
-                            {waLabel}
+                            {isExporting ? "Processing..." : waLabel}
                         </span>
 
                         {/* Ready indicator */}
-                        <span className={`absolute right-4 top-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full transition-all duration-500 z-10 ${waReady ? "bg-white scale-100 shadow-[0_0_6px_2px_rgba(255,255,255,0.4)]" :
-                            waBaking ? "bg-white/30 scale-75 animate-pulse" :
-                                "bg-red-300 scale-75"   // failed state
-                            }`} />
+                        {isExporting ? (
+                            <Loader2 size={16} className="animate-spin relative z-10" />
+                        ) : (
+                            <span className={`absolute right-4 top-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full transition-all duration-500 z-10 ${waReady ? "bg-white scale-100 shadow-[0_0_6px_2px_rgba(255,255,255,0.4)]" :
+                                waBaking ? "bg-white/30 scale-75 animate-pulse" :
+                                    "bg-red-300 scale-75"   // failed state
+                                }`} />
+                        )}
                     </button>
 
                     {/* Hint — only on desktop where file sharing isn't supported */}
@@ -381,11 +389,15 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
                             disabled={isExporting}
                             className="flex flex-col items-center justify-center gap-1.5 bg-primary-500 text-white py-3 rounded-xl shadow-md active:scale-95 disabled:opacity-50"
                         >
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                                <circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" />
-                                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" /><line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
-                            </svg>
-                            <span className="text-[8px] font-black uppercase">Share</span>
+                            {isExporting ? (
+                                <Loader2 size={18} className="animate-spin" />
+                            ) : (
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                                    <circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" />
+                                    <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" /><line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+                                </svg>
+                            )}
+                            <span className="text-[8px] font-black uppercase">{isExporting ? "..." : "Share"}</span>
                         </button>
 
                         <button
@@ -393,10 +405,14 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
                             disabled={isExporting}
                             className="flex flex-col items-center justify-center gap-1.5 bg-white border border-surface-200 py-3 rounded-xl active:scale-95 disabled:opacity-50"
                         >
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="text-red-500">
-                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" />
-                            </svg>
-                            <span className="text-[8px] font-black uppercase text-surface-400">PDF</span>
+                            {isExporting ? (
+                                <Loader2 size={18} className="animate-spin text-red-500" />
+                            ) : (
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="text-red-500">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" />
+                                </svg>
+                            )}
+                            <span className="text-[8px] font-black uppercase text-surface-400">{isExporting ? "..." : "PDF"}</span>
                         </button>
 
                         <button
@@ -404,10 +420,14 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
                             disabled={isExporting}
                             className="flex flex-col items-center justify-center gap-1.5 bg-white border border-surface-200 py-3 rounded-xl active:scale-95 disabled:opacity-50"
                         >
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="text-primary-500">
-                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2" /><circle cx="8.5" cy="8.5" r="1.5" /><polyline points="21 15 16 10 5 21" />
-                            </svg>
-                            <span className="text-[8px] font-black uppercase text-surface-400">Image</span>
+                            {isExporting ? (
+                                <Loader2 size={18} className="animate-spin text-primary-500" />
+                            ) : (
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="text-primary-500">
+                                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2" /><circle cx="8.5" cy="8.5" r="1.5" /><polyline points="21 15 16 10 5 21" />
+                                </svg>
+                            )}
+                            <span className="text-[8px] font-black uppercase text-surface-400">{isExporting ? "..." : "Image"}</span>
                         </button>
                     </div>
                 </div>

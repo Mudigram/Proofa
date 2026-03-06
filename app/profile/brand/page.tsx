@@ -22,6 +22,7 @@ export default function BrandIdentityPage() {
     const router = useRouter();
 
     const [selectedColor, setSelectedColor] = useState(PRESET_COLORS[0].hex);
+    const [selectedAccentColor, setSelectedAccentColor] = useState(PRESET_COLORS[1].hex);
     const [logoUrl, setLogoUrl] = useState<string | undefined>(undefined);
     const [logoFile, setLogoFile] = useState<string | null>(null); // base64 for pending upload
     const [selectedCurrency, setSelectedCurrency] = useState("NGN");
@@ -34,6 +35,7 @@ export default function BrandIdentityPage() {
             router.push("/auth/login?from=/profile/brand");
         } else if (profile) {
             if (profile.primaryColor) setSelectedColor(profile.primaryColor);
+            if (profile.accentColor) setSelectedAccentColor(profile.accentColor);
             if (profile.logoUrl) setLogoUrl(profile.logoUrl);
             if (profile.defaultCurrency) setSelectedCurrency(profile.defaultCurrency);
         }
@@ -73,6 +75,7 @@ export default function BrandIdentityPage() {
             // 2. Update Profile
             const { error } = await updateProfile(user.id, {
                 primary_color: selectedColor,
+                accent_color: selectedAccentColor,
                 logo_url: finalLogoUrl === "" ? null : finalLogoUrl,
                 default_currency: selectedCurrency,
             });
@@ -94,8 +97,27 @@ export default function BrandIdentityPage() {
 
     if (authLoading) {
         return (
-            <main className="app-container min-h-screen pb-24 pt-8 flex items-center justify-center">
-                <div className="w-8 h-8 rounded-full border-4 border-primary-200 border-t-primary-500 animate-spin"></div>
+            <main className="app-container min-h-screen pb-24 pt-8">
+                <header className="mb-8 flex items-center justify-between relative">
+                    <div className="w-10 h-10 bg-surface-100 animate-pulse rounded-full" />
+                    <div className="h-6 w-32 bg-surface-200 animate-pulse rounded-lg absolute left-1/2 -translate-x-1/2" />
+                    <div className="w-10 h-10" />
+                </header>
+
+                <div className="space-y-6">
+                    {[1, 2, 3].map(i => (
+                        <div key={i} className="bg-white border-2 border-surface-100 rounded-[2rem] p-6 shadow-sm">
+                            <div className="flex items-center gap-3 mb-6">
+                                <div className="w-10 h-10 bg-surface-50 animate-pulse rounded-xl" />
+                                <div className="space-y-2">
+                                    <div className="h-4 w-32 bg-surface-200 animate-pulse rounded" />
+                                    <div className="h-2 w-48 bg-surface-100 animate-pulse rounded" />
+                                </div>
+                            </div>
+                            <div className="h-32 w-full bg-surface-50 animate-pulse rounded-2xl" />
+                        </div>
+                    ))}
+                </div>
             </main>
         );
     }
@@ -202,7 +224,7 @@ export default function BrandIdentityPage() {
                 </div>
             </div>
 
-            {/* Color Section */}
+            {/* Primary Color Section */}
             <div className="bg-white border-2 border-surface-100 rounded-[2rem] p-6 shadow-sm mb-6">
                 <div className="flex items-center gap-3 mb-6">
                     <div className="w-10 h-10 bg-primary-50 text-primary-500 rounded-xl flex items-center justify-center">
@@ -210,7 +232,7 @@ export default function BrandIdentityPage() {
                     </div>
                     <div>
                         <h2 className="font-extrabold text-black">Primary Brand Color</h2>
-                        <p className="text-[11px] font-bold text-surface-400 uppercase tracking-widest">Applied to templates instantly</p>
+                        <p className="text-[11px] font-bold text-surface-400 uppercase tracking-widest">Headings & Main Totals</p>
                     </div>
                 </div>
 
@@ -218,16 +240,44 @@ export default function BrandIdentityPage() {
                     value={selectedColor}
                     onChange={setSelectedColor}
                 />
+            </div>
+
+            {/* Accent Color Section */}
+            <div className="bg-white border-2 border-surface-100 rounded-[2rem] p-6 shadow-sm mb-6">
+                <div className="flex items-center gap-3 mb-6">
+                    <div className="w-10 h-10 bg-blue-50 text-blue-500 rounded-xl flex items-center justify-center">
+                        <Palette size={20} />
+                    </div>
+                    <div>
+                        <h2 className="font-extrabold text-black">Accent Color</h2>
+                        <p className="text-[11px] font-bold text-surface-400 uppercase tracking-widest">Icons & Secondary Details</p>
+                    </div>
+                </div>
+
+                <ColorPicker
+                    value={selectedAccentColor}
+                    onChange={setSelectedAccentColor}
+                />
 
                 {/* Live Color Preview inside the settings */}
                 <div className="mt-8 p-6 rounded-2xl border-2 border-dashed border-surface-200 flex flex-col items-center justify-center bg-surface-50">
                     <p className="text-xs font-bold text-surface-500 mb-4 uppercase tracking-widest">Preview</p>
-                    <div
-                        className="font-extrabold px-6 py-3 rounded-xl text-white shadow-lg transition-colors flex items-center gap-2"
-                        style={{ backgroundColor: selectedColor }}
-                    >
-                        <span>Total:</span>
-                        <span>{CURRENCIES.find(c => c.code === selectedCurrency)?.symbol}150,000</span>
+                    <div className="flex flex-col gap-3 items-center">
+                        <div
+                            className="font-extrabold px-6 py-3 rounded-xl text-white shadow-lg transition-colors flex items-center gap-2"
+                            style={{ backgroundColor: selectedColor }}
+                        >
+                            <span>Total:</span>
+                            <span>{CURRENCIES.find(c => c.code === selectedCurrency)?.symbol}150,000</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <div className="p-2 rounded-lg" style={{ backgroundColor: `${selectedAccentColor}20`, color: selectedAccentColor }}>
+                                <Sparkles size={16} />
+                            </div>
+                            <span className="text-[10px] font-black uppercase tracking-widest" style={{ color: selectedAccentColor }}>
+                                Accent Detail
+                            </span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -245,7 +295,7 @@ export default function BrandIdentityPage() {
 
             <button
                 onClick={handleSave}
-                disabled={isSaving || (profile?.primaryColor === selectedColor && profile?.logoUrl === logoUrl && !logoFile && profile?.defaultCurrency === selectedCurrency)}
+                disabled={isSaving || (profile?.primaryColor === selectedColor && profile?.accentColor === selectedAccentColor && profile?.logoUrl === logoUrl && !logoFile && profile?.defaultCurrency === selectedCurrency)}
                 className="w-full bg-surface-900 text-white font-black py-4 rounded-2xl shadow-xl shadow-surface-900/20 active:scale-[0.98] transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:shadow-none"
             >
                 {isSaving ? (

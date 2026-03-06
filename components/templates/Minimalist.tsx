@@ -22,6 +22,7 @@ export default function MinimalistTemplate({ data, type, isPro, currencyCode }: 
     const order = data as OrderData;
 
     const logoUrl = data.logoUrl;
+    const businessName = data.businessName;
 
     // Calculate totals for multi-item documents
     const items = isReceipt ? [] : (isInvoice ? invoice.items : order.items);
@@ -180,8 +181,8 @@ export default function MinimalistTemplate({ data, type, isPro, currencyCode }: 
 
                     {/* Section 3: Account Number (The Hero) */}
                     <div className="flex-none text-right">
-                        <p className="text-[8px] text-primary-600/70 font-bold uppercase tracking-tighter leading-none mb-1">Acct Number</p>
-                        <p className="text-sm font-black tracking-widest text-primary-600 leading-none tabular-nums">
+                        <p className="text-[8px] font-bold uppercase tracking-tighter leading-none mb-1" style={{ color: "var(--brand-accent, #2563eb)" }}>Acct Number</p>
+                        <p className="text-sm font-black tracking-widest leading-none tabular-nums" style={{ color: "var(--brand-accent, #2563eb)" }}>
                             {data.bankDetails.accountNumber}
                         </p>
                     </div>
@@ -189,9 +190,9 @@ export default function MinimalistTemplate({ data, type, isPro, currencyCode }: 
             )}
 
             {data.terms && (
-                <div className="mt-2">
+                <div className="mt-2 text-primary-600" style={{ color: "var(--brand-accent, #2563eb)" }}>
                     <p className="text-[10px] font-black text-surface-300 uppercase tracking-widest mb-1.5">Important Notes</p>
-                    <p className="text-[10px] text-primary-600 font-bold leading-relaxed bg-primary-50 p-3 rounded-lg border-l-4 border-primary-500">
+                    <p className="text-[10px] font-bold leading-relaxed p-3 rounded-lg border-l-4" style={{ backgroundColor: "var(--color-primary-50)", borderLeftColor: "var(--brand-accent, #2563eb)" }}>
                         {data.terms}
                     </p>
                 </div>
@@ -201,7 +202,7 @@ export default function MinimalistTemplate({ data, type, isPro, currencyCode }: 
             {/* Status Badge for Order/Receipt */}
             {(isOrder || isReceipt) && (
                 <div className="mt-8 flex justify-center">
-                    <div className="px-4 py-1.5 border border-surface-900 text-[10px] font-black uppercase tracking-[0.2em]">
+                    <div className="px-4 py-1.5 border text-[10px] font-black uppercase tracking-[0.2em]" style={{ borderColor: total > 0 ? "var(--color-primary-500)" : "var(--brand-accent, #2563eb)", color: total > 0 ? "var(--color-primary-500)" : "var(--brand-accent, #2563eb)" }}>
                         {isReceipt ? receipt.status : order.deliveryStatus}
                     </div>
                 </div>

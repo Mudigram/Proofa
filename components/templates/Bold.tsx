@@ -96,7 +96,7 @@ export default function BoldTemplate({ data, type, isPro, currencyCode }: Templa
                         <h2 className="text-2xl font-black uppercase italic tracking-tighter leading-none text-surface-900">
                             {type}
                         </h2>
-                        <div className="bg-primary-500 px-2.5 py-1 rounded-full flex-shrink-0 mt-1">
+                        <div className="px-2.5 py-1 rounded-full flex-shrink-0 mt-1" style={{ backgroundColor: "var(--brand-accent, #2563eb)" }}>
                             <p className="text-white text-[9px] font-black uppercase tracking-widest">
                                 {isInvoice ? `#${invoice.invoiceNumber}` : isReceipt ? `REF-${Math.floor(Math.random() * 90000) + 10000}` : "ORDER"}
                             </p>
@@ -122,7 +122,7 @@ export default function BoldTemplate({ data, type, isPro, currencyCode }: Templa
 
             {/* ── DELIVERY BANNER (only if enabled) ── */}
             {data.deliveryInfo?.enabled && (
-                <div className="bg-primary-500 px-6 py-2 flex items-center justify-between">
+                <div className="px-6 py-2 flex items-center justify-between" style={{ backgroundColor: "var(--brand-accent, #2563eb)" }}>
                     <div className="flex items-center gap-2">
                         {/* Pin icon */}
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="white" className="flex-shrink-0">
@@ -215,7 +215,7 @@ export default function BoldTemplate({ data, type, isPro, currencyCode }: Templa
                             {items.length} item{items.length !== 1 ? "s" : ""}
                         </p>
                     </div>
-                    <span className="text-3xl font-black text-primary-400 tracking-tighter">
+                    <span className="text-3xl font-black tracking-tighter" style={{ color: "var(--brand-accent, #2563eb)" }}>
                         {formatCurrency(total, currencyCode)}
                     </span>
                 </div>
@@ -223,8 +223,8 @@ export default function BoldTemplate({ data, type, isPro, currencyCode }: Templa
 
             {/* ── NOTES ── */}
             {isInvoice && invoice.notes && (
-                <div className="mx-6 mb-4 px-4 py-3 border-l-4 border-primary-500 bg-primary-50 rounded-r-xl">
-                    <p className="text-[9px] font-black uppercase text-primary-500 tracking-widest mb-1">Notes</p>
+                <div className="mx-6 mb-4 px-4 py-3 rounded-xl border-l-4" style={{ backgroundColor: "var(--color-primary-50)", borderLeftColor: "var(--brand-accent, #2563eb)" }}>
+                    <p className="text-[9px] font-black uppercase tracking-widest mb-1" style={{ color: "var(--brand-accent, #2563eb)" }}>Notes</p>
                     <p className="text-[10px] font-medium text-surface-600 leading-relaxed italic">{invoice.notes}</p>
                 </div>
             )}
@@ -233,13 +233,13 @@ export default function BoldTemplate({ data, type, isPro, currencyCode }: Templa
             {data.bankDetails?.enabled && (
                 <div className="mx-6 mb-5 p-4 bg-surface-900 rounded-2xl flex items-center justify-between gap-4">
                     <div className="flex-[2] border-r border-white/10 pr-4">
-                        <p className="text-[7px] font-black uppercase text-primary-400 tracking-widest">Bank & Payee</p>
+                        <p className="text-[7px] font-black uppercase tracking-widest" style={{ color: "var(--brand-accent, #2563eb)" }}>Bank & Payee</p>
                         <p className="text-[11px] font-black text-white uppercase mt-0.5 whitespace-normal leading-snug">
                             {data.bankDetails.bankName} • {data.bankDetails.accountName}
                         </p>
                     </div>
                     <div className="text-right flex-1">
-                        <p className="text-[7px] font-black uppercase text-primary-400 tracking-widest">Account Number</p>
+                        <p className="text-[7px] font-black uppercase tracking-widest" style={{ color: "var(--brand-accent, #2563eb)" }}>Account Number</p>
                         <p className="text-sm font-black text-white tracking-widest tabular-nums mt-0.5">
                             {data.bankDetails.accountNumber}
                         </p>
@@ -248,14 +248,14 @@ export default function BoldTemplate({ data, type, isPro, currencyCode }: Templa
             )}
 
             {/* ── FOOTER STRIPE ── */}
-            <div className="bg-primary-500 px-6 py-3 flex justify-between items-center">
+            <div className="px-6 py-3 flex justify-between items-center" style={{ backgroundColor: "var(--color-primary-500)" }}>
                 <p className="text-[9px] font-black uppercase text-white tracking-widest truncate max-w-[60%]">
                     {data.terms || "Thank you for your business!"}
                 </p>
-                <div className="flex items-center gap-1.5">
-                    <div className="w-1.5 h-1.5 rounded-full bg-white/60" />
+                <div className="flex items-center gap-1.5" style={{ color: "var(--brand-accent, #2563eb)" }}>
+                    <div className="w-1.5 h-1.5 rounded-full bg-current opacity-60" />
                     {!isPro && (
-                        <p className="text-[9px] font-black uppercase text-white/80 tracking-widest text-center">Verified by Proofa</p>
+                        <p className="text-[9px] font-black uppercase tracking-widest text-center opacity-80">Verified by Proofa</p>
                     )}
                 </div>
             </div>

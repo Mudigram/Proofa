@@ -48,8 +48,26 @@ export default function AccountSettingsPage() {
 
     if (authLoading) {
         return (
-            <main className="app-container min-h-screen pb-24 pt-8 flex items-center justify-center">
-                <Loader2 size={32} className="animate-spin text-primary-500" />
+            <main className="app-container min-h-screen pb-24 pt-8">
+                <header className="mb-8 flex items-center justify-between relative">
+                    <div className="w-10 h-10 bg-surface-100 animate-pulse rounded-full" />
+                    <div className="h-6 w-40 bg-surface-200 animate-pulse rounded-lg absolute left-1/2 -translate-x-1/2" />
+                    <div className="w-10 h-10" />
+                </header>
+
+                <div className="bg-white border-2 border-surface-100 rounded-[2rem] p-6 shadow-sm">
+                    <div className="mb-8 flex justify-center">
+                        <div className="w-24 h-24 bg-surface-100 animate-pulse rounded-full" />
+                    </div>
+                    <div className="space-y-6">
+                        {[1, 2].map(i => (
+                            <div key={i} className="space-y-2">
+                                <div className="h-3 w-24 bg-surface-100 animate-pulse rounded" />
+                                <div className="h-14 w-full bg-surface-50 animate-pulse rounded-xl" />
+                            </div>
+                        ))}
+                    </div>
+                </div>
             </main>
         );
     }

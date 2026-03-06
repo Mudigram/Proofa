@@ -156,8 +156,20 @@ export default function BankVaultPage() {
             )}
 
             {isLoading ? (
-                <div className="py-20 flex justify-center">
-                    <Loader2 size={32} className="animate-spin text-primary-500" />
+                <div className="flex flex-col gap-4">
+                    {[1, 2, 3].map((i) => (
+                        <div key={i} className="bg-white border-2 border-surface-100 rounded-[1.5rem] p-5 shadow-sm flex items-center justify-between">
+                            <div className="flex-1">
+                                <div className="h-5 w-32 bg-surface-200 animate-pulse rounded mb-2" />
+                                <div className="flex items-center gap-2">
+                                    <div className="h-4 w-24 bg-surface-100 animate-pulse rounded" />
+                                    <div className="w-1 h-1 bg-surface-200 rounded-full" />
+                                    <div className="h-3 w-32 bg-surface-50 animate-pulse rounded" />
+                                </div>
+                            </div>
+                            <div className="w-10 h-10 rounded-full bg-surface-100 animate-pulse shrink-0" />
+                        </div>
+                    ))}
                 </div>
             ) : (
                 <div className="flex flex-col gap-4">
