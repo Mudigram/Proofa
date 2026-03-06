@@ -4,7 +4,7 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 // Support both the legacy publishable key name and the standard anon key name
 const supabaseAnonKey =
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY!;
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT!;
 
 if (!supabaseUrl || !supabaseAnonKey) {
     throw new Error(
