@@ -46,6 +46,7 @@ export interface ReceiptData {
     customerName?: string;
     customerPhone?: string;
     description: string;
+    items?: LineItem[];
     amount: number;
     status: PaymentStatus;
     paymentMethod: PaymentMethod;

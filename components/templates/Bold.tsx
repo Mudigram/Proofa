@@ -18,6 +18,7 @@ export default function BoldTemplate({ data, type, isPro, currencyCode }: Templa
 
     const receipt = data as ReceiptData;
     const invoice = data as InvoiceData;
+
     const order = data as OrderData;
 
     const items = isReceipt ? [] : (isInvoice ? invoice.items : order.items);
