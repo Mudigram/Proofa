@@ -37,11 +37,11 @@ export default function SignupPage() {
         }
 
         setSuccess(true);
-        // Give Supabase a moment to confirm, then redirect
+        // Instant confirm for auto-confirmed users, then redirect after showing message
         setTimeout(() => {
             const redirect = new URLSearchParams(window.location.search).get("from") || "/";
             router.push(redirect);
-        }, 1500);
+        }, 2000);
     };
 
     const handleGoogleSignIn = async () => {
@@ -88,14 +88,14 @@ export default function SignupPage() {
                     <motion.div
                         initial={{ opacity: 0, scale: 0.9 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        className="bg-green-50 border border-green-100 rounded-2xl p-8 text-center"
+                        className="bg-green-50 border border-green-100 rounded-[2rem] p-8 text-center"
                     >
-                        <div className="w-14 h-14 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <Check size={28} className="text-white" />
+                        <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg shadow-green-500/20">
+                            <Check size={32} className="text-white" strokeWidth={3} />
                         </div>
-                        <h2 className="text-xl font-bold text-surface-900 mb-2">Account created!</h2>
-                        <p className="text-surface-500 text-sm">
-                            Check your email to confirm, then we&apos;ll get you set up.
+                        <h2 className="text-2xl font-black text-surface-900 mb-2">Welcome to Proofa!</h2>
+                        <p className="text-surface-500 text-sm font-bold leading-relaxed">
+                            Your account is ready. Redirecting you to the homepage shortly...
                         </p>
                     </motion.div>
                 ) : (
