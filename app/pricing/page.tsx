@@ -3,8 +3,11 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { Crown, Building2, Zap, Check, Bell, Loader2 } from "lucide-react";
+import { Crown, Building2, Zap, Check, Bell, Loader2, Info } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import { usePaystack } from "@/hooks/usePaystack";
+import { useRouter } from "next/navigation";
+import { useToast } from "@/components/ui/Toast";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Plan Data
@@ -18,7 +21,8 @@ const PLANS = [
         monthlyPrice: 5000,
         annualPrice: 50000,
         annualSave: 10000,
-        badge: null,
+        badge: "🚀 Coming Soon",
+        comingSoon: true,
         color: "bg-surface-900 text-white",
         borderColor: "border-surface-900",
         ctaClass: "bg-surface-900 text-white hover:bg-black",
@@ -176,12 +180,69 @@ function NotifyModal({
 // ─────────────────────────────────────────────────────────────────────────────
 
 export default function PricingPage() {
-    const { profile, isAuthenticated } = useAuth();
+    const { profile, isAuthenticated, refreshProfile } = useAuth();
+    const { initializePayment, loading: paystackLoading } = usePaystack();
+    const { showToast } = useToast();
+    const router = useRouter();
     const [billing, setBilling] = useState<"monthly" | "annual">("annual");
     const [notifyPlan, setNotifyPlan] = useState<string | null>(null);
+    const [verifying, setVerifying] = useState(false);
 
     const price = (plan: typeof PLANS[0]) =>
         billing === "annual" ? plan.annualPrice : plan.monthlyPrice;
+
+    const handlePayment = async (plan: typeof PLANS[0]) => {
+        if (!isAuthenticated) {
+            router.push(`/auth/login?redirect=/pricing`);
+            return;
+        }
+
+        if (!profile?.email) {
+            // toast.error("User email not found. Please log in again.");
+            return;
+        }
+
+        await initializePayment({
+            email: profile.email,
+            amount: price(plan),
+            metadata: {
+                userId: profile.id,
+                plan: plan.id,
+            },
+            onSuccess: async (reference) => {
+                setVerifying(true);
+                try {
+                    const res = await fetch("/api/paystack/verify", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            reference,
+                            plan: plan.id,
+                            userId: profile.id,
+                        }),
+                    });
+
+                    const data = await res.json();
+
+                    if (data.success) {
+                        await refreshProfile();
+                        showToast(`Successfully upgraded to ${plan.name}!`, "success");
+                        router.push("/profile?upgrade=success");
+                    } else {
+                        showToast(`Verification failed: ${data.error || "Please contact support."}`, "error");
+                    }
+                } catch (err) {
+                    console.error("[Pricing] Verification error:", err);
+                    showToast("Something went wrong during verification.", "error");
+                } finally {
+                    setVerifying(false);
+                }
+            },
+            onClose: () => {
+                console.log("[Pricing] Checkout closed");
+            },
+        });
+    };
 
     return (
         <main className="app-container py-8 pb-24">
@@ -292,13 +353,31 @@ export default function PricingPage() {
                                 <div className="w-full bg-green-50 text-green-600 font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 text-sm">
                                     <Check size={16} strokeWidth={3} /> Current Plan
                                 </div>
-                            ) : (
+                            ) : (plan as any).comingSoon ? (
                                 <button
                                     onClick={() => setNotifyPlan(plan.name)}
-                                    className={`w-full ${plan.id === "pro" ? "bg-primary-500 text-white" : "bg-surface-900 text-white"} font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 text-sm active:scale-[0.98] transition-all`}
+                                    className="w-full bg-surface-900 text-white font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 text-sm active:scale-[0.98] transition-all"
                                 >
                                     <Bell size={15} />
-                                    Get Notified When Ready
+                                    Get Notified
+                                </button>
+                            ) : (
+                                <button
+                                    onClick={() => handlePayment(plan)}
+                                    disabled={paystackLoading || verifying}
+                                    className={`w-full ${plan.id === "pro" ? "bg-primary-500 text-white" : "bg-surface-900 text-white"} font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 text-sm active:scale-[0.98] transition-all disabled:opacity-70`}
+                                >
+                                    {paystackLoading || verifying ? (
+                                        <>
+                                            <Loader2 size={16} className="animate-spin" />
+                                            {verifying ? "Verifying..." : "Loading..."}
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Crown size={15} />
+                                            Upgrade to {plan.name}
+                                        </>
+                                    )}
                                 </button>
                             )}
                         </div>

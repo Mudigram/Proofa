@@ -39,8 +39,7 @@ export default function SignupPage() {
         setSuccess(true);
         // Instant confirm for auto-confirmed users, then redirect after showing message
         setTimeout(() => {
-            const redirect = new URLSearchParams(window.location.search).get("from") || "/";
-            router.push(redirect);
+            router.push("/auth/welcome");
         }, 2000);
     };
 

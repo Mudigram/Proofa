@@ -5,6 +5,7 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey =
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT!;
+const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE!;
 
 if (!supabaseUrl || !supabaseAnonKey) {
     throw new Error(
@@ -21,5 +22,16 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
         persistSession: true,
         autoRefreshToken: true,
         detectSessionInUrl: true,
+    },
+});
+
+/**
+ * Admin Supabase client for server-side use only.
+ * Bypasses RLS - use with caution!
+ */
+export const supabaseAdmin = createClient(supabaseUrl, supabaseServiceRoleKey || supabaseAnonKey, {
+    auth: {
+        autoRefreshToken: false,
+        persistSession: false,
     },
 });
