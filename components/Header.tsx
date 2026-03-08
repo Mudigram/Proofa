@@ -3,11 +3,15 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
+import { Crown } from "lucide-react";
 
 export default function Header() {
     const pathname = usePathname();
     const router = useRouter();
+    const { isPro } = useAuth();
     const isHome = pathname === "/";
+    const isPricing = pathname === "/pricing";
 
     // Map paths to human-readable titles
     const getPageTitle = () => {
@@ -54,6 +58,17 @@ export default function Header() {
                         {isHome ? "PROOFA" : getPageTitle().toUpperCase()}
                     </h2>
                 </div>
+
+                {/* Right side - Upgrade CTA for Free Users */}
+                {!isPro && !isPricing && (
+                    <Link
+                        href="/pricing"
+                        className="flex items-center gap-2 bg-primary-50 text-primary-600 px-3 py-1.5 rounded-full hover:bg-primary-100 active:scale-95 transition-all group"
+                    >
+                        <Crown size={14} className="group-hover:rotate-12 transition-transform" />
+                        <span className="text-[10px] font-black uppercase tracking-widest hidden sm:inline">Go Pro</span>
+                    </Link>
+                )}
 
                 {/* Right side - Profile/Settings Placeholder */}
                 {/* <div className="flex items-center gap-3">
