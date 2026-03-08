@@ -2,8 +2,7 @@
 
 import { useState, useCallback } from "react";
 
-const PAYSTACK_PUBLIC_KEY = process.env.PAYSTACK_PUBLIC;
-
+const PAYSTACK_PUBLIC_KEY = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY;
 interface PaystackConfig {
     email: string;
     amount: number;
