@@ -25,8 +25,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Proofa — Send Your Receipt on WhatsApp in Seconds",
-  description:
-    "Create sharp, professional receipts, invoices, and order summaries instantly — and share them straight to WhatsApp. Built for Nigerian entrepreneurs, traders, and small businesses.",
+  description: "Create professional receipts & invoices in seconds. Share directly to WhatsApp. Built for Nigerian small businesses. Free to start.",
   keywords: [
     "receipt generator Nigeria",
     "invoice generator Nigeria",
@@ -63,10 +62,13 @@ export const metadata: Metadata = {
     apple: "/Logo/Proofa orange icon.png",
   },
   manifest: "/manifest.json",
+  alternates: {
+    canonical: "https://www.proofa.ng/",
+  },
   twitter: {
     card: "summary_large_image",
     title: "Proofa — Mobile Receipt & Invoice Generator",
-    description: "Professionalize your business documentation instantly with Proofa.",
+    description: "Create professional receipts & invoices in seconds. Share directly to WhatsApp. Built for Nigerian small businesses. Free to start.",
     images: ["/Logo/Proofa orange icon.png"],
   },
 };
