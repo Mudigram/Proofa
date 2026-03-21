@@ -36,7 +36,7 @@ export default function MinimalistTemplate({ data, type, isPro, currencyCode }: 
     const tax = includeVat ? subtotal * (vatRate / 100) : 0;
 
     const deliveryCost = data.deliveryInfo?.enabled ? (data.deliveryInfo.cost ?? 0) : 0;
-    const total = (isReceipt ? receipt.amount : (isOrder ? order.totalAmount : subtotal + tax)) + deliveryCost;
+    const total = (isReceipt ? subtotal : (isOrder ? order.totalAmount : subtotal + tax)) + deliveryCost;
 
     return (
         <div
