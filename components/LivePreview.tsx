@@ -6,7 +6,7 @@ import MinimalistTemplate from "./templates/Minimalist";
 import BoldTemplate from "./templates/Bold";
 import ClassicTemplate from "./templates/Classic";
 import { Loader2 } from "lucide-react";
-
+import { FaWhatsapp } from "react-icons/fa";
 import { captureElementAsImage, downloadImage, downloadAsPDF } from "@/lib/ExportUtils";
 import { shareToWhatsApp, shareViaWebShare, prebakeShareFile, canShareFiles } from "@/lib/ShareUtils";
 import { saveDocument } from "@/lib/StorageUtils";
@@ -357,11 +357,7 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
                         {waBaking && (
                             <span className="absolute inset-0 bg-white/10 animate-pulse rounded-2xl" />
                         )}
-
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" className="flex-shrink-0 relative z-10">
-                            <path d="M17.472 14.382c-.301-.15-1.767-.872-2.04-.971-.272-.1-.47-.15-.67.15-.198.301-.769.971-.941 1.171-.173.2-.347.225-.648.075-.301-.15-1.272-.469-2.422-1.496-.893-.797-1.496-1.782-1.671-2.083-.173-.301-.018-.464.133-.613.136-.134.301-.351.452-.527.151-.176.202-.301.302-.502.101-.2.051-.376-.026-.527-.076-.15-.67-1.615-.918-2.214-.242-.587-.487-.508-.67-.518-.172-.01-.37-.01-.568-.01-.198 0-.521.074-.794.301-.273.227-1.042.871-1.042 2.126 0 1.255.914 2.47 1.04 2.621.127.15 1.796 2.744 4.35 3.847.608.262 1.082.418 1.452.535.61.194 1.166.166 1.603.101.488-.072 1.49-.607 1.701-1.195.21-.588.21-1.091.147-1.195-.064-.104-.233-.151-.534-.301zM12 2C6.477 2 2 6.477 2 12c0 1.891.526 3.66 1.439 5.167L2 22l4.981-1.309A9.954 9.954 0 0 0 12 22c5.523 0 10-4.477 10-10S17.523 2 12 2z" />
-                        </svg>
-
+                        <FaWhatsapp className="text-xl" />
                         <span className="text-xs font-black uppercase tracking-widest relative z-10">
                             {isExporting ? "Processing..." : waLabel}
                         </span>
