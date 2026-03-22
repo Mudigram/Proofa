@@ -29,7 +29,7 @@ export default function ClassicTemplate({ data, type, isPro, currencyCode }: Tem
     const includeVat = isInvoice ? (invoice.includeVat ?? true) : false;
     const tax = includeVat ? subtotal * (vatRate / 100) : 0;
     const deliveryCost = data.deliveryInfo?.enabled ? (data.deliveryInfo.cost ?? 0) : 0;
-    const total = (isReceipt ? receipt.amount : (isOrder ? order.totalAmount : subtotal + tax)) + deliveryCost;
+    const total = (isReceipt ? subtotal : (isOrder ? order.totalAmount : subtotal + tax)) + deliveryCost;
 
     return (
         <div className="relative bg-white min-h-[600px] flex flex-col font-mono text-zinc-800 mx-auto max-w-[480px] shadow-2xl p-8" id="document-preview">

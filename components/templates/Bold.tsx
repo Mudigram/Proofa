@@ -32,7 +32,7 @@ export default function BoldTemplate({ data, type, isPro, currencyCode }: Templa
 
     const deliveryCost = data.deliveryInfo?.enabled ? (data.deliveryInfo.cost ?? 0) : 0;
     const total =
-        (isReceipt ? receipt.amount : isOrder ? order.totalAmount : subtotal + tax) +
+        (isReceipt ? subtotal : isOrder ? order.totalAmount : subtotal + tax) +
         deliveryCost;
 
     const businessName = isInvoice
