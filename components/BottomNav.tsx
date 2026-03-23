@@ -23,9 +23,9 @@ export default function BottomNav() {
         { label: "History", href: "/history", icon: History },
         { label: "Create", href: "/#create", icon: Plus, isFAB: true },
         // Business users → Dashboard, everyone else → Pro/Pricing
-        isBusiness
+        isPro || isBusiness
             ? { label: "Dashboard", href: "/dashboard", icon: BarChart2 }
-            : { label: isPro ? "Pro" : "Upgrade", href: "/pricing", icon: Crown },
+            : { label: "Upgrade", href: "/pricing", icon: Crown },
         { label: "Profile", href: "/profile", icon: User },
     ];
 

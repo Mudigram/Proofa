@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useMemo, useEffect } from "react";
-import { Input, CurrencyInput, TextArea } from "@/components/ui/FormInput";
+import { Input, CurrencyInput, TextArea, PasteButton } from "@/components/ui/FormInput";
 import { LogoUpload } from "@/components/ui/LogoUpload";
 import { BankSelector } from "@/components/ui/BankSelector";
 import LivePreview from "@/components/LivePreview";
@@ -170,9 +170,9 @@ export default function InvoiceForm() {
         return Object.keys(newErrors).length === 0;
     };
 
-    const handleSaveDraft = () => {
+    const handleSaveDraft = async () => {
         const updatedData = { ...formData, status: "Draft" as const };
-        const doc = saveDocument(updatedData, "invoice", searchParams.get("template") as any || "minimalist", undefined, currentDocId || undefined);
+        const doc = await saveDocument(updatedData, "invoice", searchParams.get("template") as any || "minimalist", undefined, currentDocId || undefined);
         setCurrentDocId(doc.id);
         setFormData(updatedData);
         showToast("Invoice Draft saved!", "success");
@@ -249,12 +249,14 @@ export default function InvoiceForm() {
                                             value={formData.clientName}
                                             onChange={(e) => handleChange("clientName", e.target.value)}
                                             error={errors.clientName}
+                                            rightElement={<PasteButton onPaste={(text) => handleChange("clientName", text)} />}
                                         />
                                         <Input
                                             label="CLIENT PHONE (OPTIONAL)"
                                             placeholder="e.g. 09012345678"
                                             value={formData.clientPhone || ""}
                                             onChange={(e) => handleChange("clientPhone", e.target.value)}
+                                            rightElement={<PasteButton onPaste={(text) => handleChange("clientPhone", text)} />}
                                         />
                                     </div>
                                     <div className="grid grid-cols-2 gap-4">
@@ -399,6 +401,7 @@ export default function InvoiceForm() {
                                                 onChange={(e) => handleNestedChange("bankDetails", "bankName", e.target.value)}
                                                 error={errors.bankName}
                                                 className="bg-surface-50 border-none"
+                                                rightElement={<PasteButton onPaste={(text) => handleNestedChange("bankDetails", "bankName", text)} />}
                                             />
                                             <Input
                                                 label="ACCT NAME"
@@ -407,6 +410,7 @@ export default function InvoiceForm() {
                                                 onChange={(e) => handleNestedChange("bankDetails", "accountName", e.target.value)}
                                                 error={errors.accountName}
                                                 className="bg-surface-50 border-none"
+                                                rightElement={<PasteButton onPaste={(text) => handleNestedChange("bankDetails", "accountName", text)} />}
                                             />
                                             <Input
                                                 label="ACCT NUMBER"
@@ -419,6 +423,7 @@ export default function InvoiceForm() {
                                                 }}
                                                 error={errors.accountNumber}
                                                 className="bg-surface-50 border-none"
+                                                rightElement={<PasteButton onPaste={(text) => handleNestedChange("bankDetails", "accountNumber", text.slice(0, 10))} />}
                                             />
                                         </div>
                                     )}
@@ -446,6 +451,7 @@ export default function InvoiceForm() {
                                                 onChange={(e) => handleNestedChange("deliveryInfo", "location", e.target.value)}
                                                 error={errors.deliveryLocation}
                                                 className="bg-surface-50 border-none"
+                                                rightElement={<PasteButton onPaste={(text) => handleNestedChange("deliveryInfo", "location", text)} />}
                                             />
                                             <CurrencyInput
                                                 label="DELIVERY COST"

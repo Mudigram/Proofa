@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Input, SegmentedControl, CurrencyInput, TextArea } from "@/components/ui/FormInput";
+import { Input, SegmentedControl, CurrencyInput, TextArea, PasteButton } from "@/components/ui/FormInput";
 import { LogoUpload } from "@/components/ui/LogoUpload";
 import LivePreview from "@/components/LivePreview";
 import { OrderData, LineItem } from "@/lib/types";
@@ -161,9 +161,9 @@ export default function OrderForm() {
         return Object.keys(newErrors).length === 0;
     };
 
-    const handleSaveDraft = () => {
+    const handleSaveDraft = async () => {
         const updatedData = { ...formData, status: "Draft" as const };
-        const doc = saveDocument(updatedData, "order", searchParams.get("template") as any || "minimalist", undefined, currentDocId || undefined);
+        const doc = await saveDocument(updatedData, "order", searchParams.get("template") as any || "minimalist", undefined, currentDocId || undefined);
         setCurrentDocId(doc.id);
         setFormData(updatedData);
         showToast("Order Summary Draft saved!", "success");
@@ -219,6 +219,7 @@ export default function OrderForm() {
                                         onChange={(e) => handleChange("customerName", e.target.value)}
                                         className="bg-white border-surface-200"
                                         error={errors.customerName}
+                                        rightElement={<PasteButton onPaste={(text) => handleChange("customerName", text)} />}
                                     />
                                     <Input
                                         label="CUSTOMER PHONE (OPTIONAL)"
@@ -226,6 +227,7 @@ export default function OrderForm() {
                                         value={formData.customerPhone || ""}
                                         onChange={(e) => handleChange("customerPhone", e.target.value)}
                                         className="bg-white border-surface-200"
+                                        rightElement={<PasteButton onPaste={(text) => handleChange("customerPhone", text)} />}
                                     />
                                 </div>
                             </StaggerItem>
@@ -325,6 +327,7 @@ export default function OrderForm() {
                                                 onChange={(e) => handleNestedChange("bankDetails", "bankName", e.target.value)}
                                                 error={errors.bankName}
                                                 className="bg-surface-50 border-none"
+                                                rightElement={<PasteButton onPaste={(text) => handleNestedChange("bankDetails", "bankName", text)} />}
                                             />
                                             <Input
                                                 label="ACCT NAME"
@@ -333,6 +336,7 @@ export default function OrderForm() {
                                                 onChange={(e) => handleNestedChange("bankDetails", "accountName", e.target.value)}
                                                 error={errors.accountName}
                                                 className="bg-surface-50 border-none"
+                                                rightElement={<PasteButton onPaste={(text) => handleNestedChange("bankDetails", "accountName", text)} />}
                                             />
                                             <Input
                                                 label="ACCT NUMBER"
@@ -345,6 +349,7 @@ export default function OrderForm() {
                                                 }}
                                                 error={errors.accountNumber}
                                                 className="bg-surface-50 border-none"
+                                                rightElement={<PasteButton onPaste={(text) => handleNestedChange("bankDetails", "accountNumber", text.slice(0, 10))} />}
                                             />
                                         </div>
                                     )}
@@ -426,6 +431,7 @@ export default function OrderForm() {
                                                 onChange={(e) => handleNestedChange("deliveryInfo", "location", e.target.value)}
                                                 error={errors.deliveryLocation}
                                                 className="bg-surface-50 border-none"
+                                                rightElement={<PasteButton onPaste={(text) => handleNestedChange("deliveryInfo", "location", text)} />}
                                             />
                                             <CurrencyInput
                                                 label="DELIVERY COST"

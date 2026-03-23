@@ -1,12 +1,9 @@
 /**
  * lib/dashboard.ts
  *
- * All Supabase queries for the Business Plan dashboard.
- * Uses the client-side supabase singleton — called from useDashboard hook.
- *
- * Views used (created in migration):
- *   - v_daily_revenue  → chart data
- *   - v_activity_log   → activity feed
+ * All Supabase queries for the Business/Pro dashboard.
+ * activityLimit param controls how many activity items to fetch
+ * (10 for Pro, 20 for Business).
  */
 import { supabase } from "@/lib/supabase";
 import {
@@ -21,8 +18,8 @@ import {
 // ─── Date range helpers ───────────────────────────────────────────────────────
 
 export interface DateRange {
-    from: string; // ISO
-    to: string;   // ISO
+    from: string;
+    to: string;
     label: string;
 }
 
@@ -32,14 +29,11 @@ export function getDateRange(period: DashboardPeriod): DateRange {
 
     switch (period) {
         case "today": {
-            const from = new Date(now);
-            from.setHours(0, 0, 0, 0);
+            const from = new Date(now); from.setHours(0, 0, 0, 0);
             return { from: pad(from), to: pad(now), label: "Today" };
         }
         case "week": {
-            const from = new Date(now);
-            from.setDate(now.getDate() - 6);
-            from.setHours(0, 0, 0, 0);
+            const from = new Date(now); from.setDate(now.getDate() - 6); from.setHours(0, 0, 0, 0);
             return { from: pad(from), to: pad(now), label: "Last 7 days" };
         }
         case "month": {
@@ -53,7 +47,6 @@ export function getDateRange(period: DashboardPeriod): DateRange {
     }
 }
 
-/** Previous period range for comparison (same duration, shifted back) */
 function getPreviousRange(period: DashboardPeriod): DateRange {
     const now = new Date();
     const pad = (d: Date) => d.toISOString();
@@ -89,15 +82,12 @@ const pct = (curr: number, prev: number): number | null => {
 
 // ─── Queries ──────────────────────────────────────────────────────────────────
 
-/** Fetch aggregated metrics for current + previous period */
 async function fetchMetrics(
     ownerId: string,
     range: DateRange,
     prevRange: DateRange,
     currency: string
 ): Promise<DashboardMetrics> {
-
-    // Current period
     const { data: curr } = await supabase
         .from("documents")
         .select("amount, type")
@@ -107,7 +97,6 @@ async function fetchMetrics(
         .gte("created_at", range.from)
         .lte("created_at", range.to);
 
-    // Previous period (for % change)
     const { data: prev } = await supabase
         .from("documents")
         .select("amount")
@@ -119,18 +108,18 @@ async function fetchMetrics(
 
     const currDocs = curr ?? [];
     const prevDocs = prev ?? [];
-
     const totalRevenue = currDocs.reduce((s, d) => s + Number(d.amount), 0);
     const prevRevenue = prevDocs.reduce((s, d) => s + Number(d.amount), 0);
     const totalDocs = currDocs.length;
     const prevDocCount = prevDocs.length;
 
-    // Top doc type by count
     const typeCounts = currDocs.reduce<Record<string, number>>((acc, d) => {
         acc[d.type] = (acc[d.type] ?? 0) + 1;
         return acc;
     }, {});
-    const topDocType = Object.entries(typeCounts).sort((a, b) => b[1] - a[1])[0]?.[0] as DocumentType | null;
+    const topDocType = (
+        Object.entries(typeCounts).sort((a, b) => b[1] - a[1])[0]?.[0] ?? null
+    ) as DocumentType | null;
 
     return {
         totalRevenue,
@@ -144,7 +133,6 @@ async function fetchMetrics(
     };
 }
 
-/** Fetch daily revenue data for chart */
 async function fetchChartData(
     ownerId: string,
     range: DateRange,
@@ -170,10 +158,9 @@ async function fetchChartData(
     }));
 }
 
-/** Fetch recent activity (last 20 docs) */
 async function fetchActivity(
     ownerId: string,
-    limit = 20
+    limit: number
 ): Promise<ActivityItem[]> {
     const { data, error } = await supabase
         .from("v_activity_log")
@@ -198,11 +185,12 @@ async function fetchActivity(
     }));
 }
 
-/** Master fetch — called by useDashboard */
+/** Master fetch — activityLimit: 10 for Pro, 20 for Business */
 export async function fetchDashboardData(
     ownerId: string,
     period: DashboardPeriod,
-    currency = "NGN"
+    currency = "NGN",
+    activityLimit = 20
 ): Promise<DashboardData> {
     const range = getDateRange(period);
     const prevRange = getPreviousRange(period);
@@ -210,13 +198,13 @@ export async function fetchDashboardData(
     const [metrics, chart, activity] = await Promise.all([
         fetchMetrics(ownerId, range, prevRange, currency),
         fetchChartData(ownerId, range, currency),
-        fetchActivity(ownerId),
+        fetchActivity(ownerId, activityLimit),
     ]);
 
     return { metrics, chart, activity };
 }
 
-/** Save a document to Supabase (called after generating) */
+/** Called by StorageUtils after every export for Pro + Business users */
 export async function saveDocumentToCloud(params: {
     ownerId: string;
     createdBy: string;
@@ -226,8 +214,8 @@ export async function saveDocumentToCloud(params: {
     currency: string;
     customerName?: string;
     customerPhone?: string;
-    data: Record<string, unknown>;
-}) {
+    data: unknown;
+}): Promise<boolean> {
     const { error } = await supabase.from("documents").insert({
         owner_id: params.ownerId,
         created_by: params.createdBy,
@@ -240,6 +228,6 @@ export async function saveDocumentToCloud(params: {
         data: params.data,
     });
 
-    if (error) console.error("[Dashboard] Failed to save document:", error);
+    if (error) console.error("[Dashboard] Cloud save failed:", error);
     return !error;
 }
