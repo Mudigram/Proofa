@@ -92,9 +92,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }, [fetchProfile]);
 
     // ── Derived state ────────────────────────────────────────────────────────
-    const plan: SubscriptionPlan = profile?.subscriptionPlan ?? "free";
+    const isBusiness = profile?.isBusiness || profile?.subscriptionPlan === "business";
+    const plan: SubscriptionPlan = isBusiness ? "business" : (profile?.subscriptionPlan ?? "free");
     const isPro = plan === "pro" || plan === "business";
-    const isBusiness = plan === "business";
 
     // ── Actions ──────────────────────────────────────────────────────────────
     const refreshProfile = useCallback(async () => {
