@@ -118,13 +118,17 @@ export interface UserProfile {
     businessName?: string | null;
     logoUrl?: string | null;
     primaryColor?: string;     // default '#000000'
-    accentColor?: string;      // default '#2563eb'
+    accentColor?: string;      // default '#eb8525'
     defaultCurrency?: string;  // default 'NGN'
     subscriptionPlan: SubscriptionPlan; // default 'free'
     subscriptionStatus?: string; // default 'inactive'
     subscriptionRenewalDate?: string | null;
     createdAt: string;
     updatedAt: string;
+
+    role?: UserRole;
+    teamOwnerId?: string | null;
+    isBusiness?: boolean;
 
     // Virtual or merged fields (for front-end convenience from auth.users)
     email?: string;
@@ -141,3 +145,122 @@ export interface SavedBankAccount {
     createdAt: string;
 }
 
+// ─── Profile extensions ───────────────────────────────────────────────────────
+export type UserRole = "owner" | "staff";
+
+/** Extends UserProfile with Business Plan fields */
+export interface BusinessProfile {
+    role: UserRole;
+    teamOwnerId: string | null; // null = owner, uuid = staff
+    isBusiness: boolean;
+}
+
+// ─── Brand settings ───────────────────────────────────────────────────────────
+
+export interface BrandSettings {
+    ownerId: string;
+    logoUrl: string | null;
+    brandColor: string;
+    bankAccounts: VaultBankAccount[];
+    termsDefault: string | null;
+    defaultNote: string | null;
+    updatedAt: string;
+}
+
+export interface VaultBankAccount {
+    id: string;
+    bankName: string;
+    accountName: string;
+    accountNumber: string;
+    isDefault: boolean;
+}
+
+// ─── Documents ───────────────────────────────────────────────────────────────
+
+/** A document row as stored in Supabase */
+export interface DocumentRecord {
+    id: string;
+    ownerId: string;
+    createdBy: string;
+    type: DocumentType;
+    template: TemplateName;
+    amount: number;
+    currency: string;
+    customerName: string | null;
+    customerPhone: string | null;
+    data: Record<string, unknown>;
+    deletedAt: string | null;
+    createdAt: string;
+}
+
+// ─── Team ────────────────────────────────────────────────────────────────────
+
+export type TeamMemberStatus = "pending" | "active" | "removed";
+
+export interface TeamMember {
+    id: string;
+    ownerId: string;
+    memberId: string | null;
+    inviteEmail: string;
+    status: TeamMemberStatus;
+    invitedAt: string;
+    joinedAt: string | null;
+    // Joined from profiles
+    memberName?: string | null;
+}
+
+// ─── Customers ───────────────────────────────────────────────────────────────
+
+export interface Customer {
+    id: string;
+    ownerId: string;
+    name: string;
+    phone: string | null;
+    email: string | null;
+    docCount: number;
+    createdAt: string;
+    updatedAt: string;
+}
+
+// ─── Dashboard ───────────────────────────────────────────────────────────────
+
+export type DashboardPeriod = "today" | "week" | "month" | "year";
+
+export interface DailyRevenue {
+    day: string;          // ISO date string
+    currency: string;
+    docCount: number;
+    totalAmount: number;
+    type: DocumentType;
+}
+
+export interface DashboardMetrics {
+    totalRevenue: number;
+    totalDocs: number;
+    avgDocValue: number;
+    topDocType: DocumentType | null;
+    periodLabel: string;
+    currency: string;
+    // vs previous period
+    revenueChange: number | null;  // percentage
+    docCountChange: number | null; // percentage
+}
+
+export interface ActivityItem {
+    id: string;
+    ownerId: string;
+    createdBy: string;
+    creatorName: string | null;
+    type: DocumentType;
+    amount: number;
+    currency: string;
+    customerName: string | null;
+    template: TemplateName;
+    createdAt: string;
+}
+
+export interface DashboardData {
+    metrics: DashboardMetrics;
+    chart: DailyRevenue[];
+    activity: ActivityItem[];
+}

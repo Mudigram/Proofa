@@ -101,6 +101,9 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
         subscriptionRenewalDate: data.subscription_renewal_date ?? null,
         createdAt: data.created_at,
         updatedAt: data.updated_at,
+        role: data.role ?? "owner",
+        teamOwnerId: data.team_owner_id ?? null,
+        isBusiness: data.is_business ?? false,
     };
 }
 

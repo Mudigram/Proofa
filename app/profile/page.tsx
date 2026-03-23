@@ -179,15 +179,16 @@ export default function ProfilePage() {
                             <ChevronRight size={18} className="text-surface-300" />
                         </Link>
 
-                        <div className="flex items-center p-4 opacity-50 cursor-not-allowed">
-                            <div className="w-10 h-10 bg-surface-100 text-surface-400 rounded-xl flex items-center justify-center mr-4">
+                        <Link href="/profile/privacy" className="flex items-center p-4 hover:bg-surface-50 rounded-2xl transition-colors group">
+                            <div className="w-10 h-10 bg-surface-100 text-surface-600 rounded-xl flex items-center justify-center mr-4 group-hover:scale-110 transition-transform">
                                 <ShieldCheck size={20} />
                             </div>
                             <div className="flex-1">
-                                <h4 className="font-bold text-surface-600 text-sm">Data & Privacy</h4>
-                                <p className="text-xs text-surface-400 mt-0.5">Export data (Coming soon)</p>
+                                <h4 className="font-bold text-surface-900 text-sm">Data & Privacy</h4>
+                                <p className="text-xs text-surface-500 mt-0.5">Manage data and privacy policies</p>
                             </div>
-                        </div>
+                            <ChevronRight size={18} className="text-surface-300" />
+                        </Link>
                     </div>
                 </div>
 
