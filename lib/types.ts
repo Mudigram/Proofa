@@ -188,7 +188,7 @@ export interface DocumentRecord {
     currency: string;
     customerName: string | null;
     customerPhone: string | null;
-    data: Record<string, unknown>;
+    data: ReceiptData | InvoiceData | OrderData;
     deletedAt: string | null;
     createdAt: string;
 }

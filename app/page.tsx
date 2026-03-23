@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import React, { useState, useEffect } from "react";
-import { getHistory, getUserName, saveUserName } from "@/lib/StorageUtils";
+import { useState, useEffect } from "react";
+import { getHistory, deleteDocument, getUserName, saveUserName } from "@/lib/StorageUtils";
+
 import { SavedDocument } from "@/lib/types";
 import Image from "next/image";
 import { formatCurrency, formatDate } from "@/components/templates/TemplateUtils";
@@ -321,7 +322,7 @@ export default function HomePage() {
               </p>
             </div>
             <div className="bg-white border border-surface-100 p-5 rounded-3xl shadow-sm flex items-start gap-4">
-                <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-500 shrink-0">
+              <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-500 shrink-0">
                 <span className="text-lg">⚡</span>
               </div>
               <p className="text-sm text-surface-600 font-medium leading-relaxed pt-1">
@@ -330,7 +331,7 @@ export default function HomePage() {
               </p>
             </div>
             <div className="bg-white border border-surface-100 p-5 rounded-3xl shadow-sm flex items-start gap-4">
-                <div className="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center text-purple-500 shrink-0">
+              <div className="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center text-purple-500 shrink-0">
                 <span className="text-lg">🧾</span>
               </div>
               <p className="text-sm text-surface-600 font-medium leading-relaxed pt-1">
@@ -339,7 +340,7 @@ export default function HomePage() {
               </p>
             </div>
             <div className="bg-white border border-surface-100 p-5 rounded-3xl shadow-sm flex items-start gap-4">
-                <div className="w-10 h-10 rounded-xl bg-green-50 flex items-center justify-center text-green-500 shrink-0">
+              <div className="w-10 h-10 rounded-xl bg-green-50 flex items-center justify-center text-green-500 shrink-0">
                 <span className="text-lg">🇳🇬</span>
               </div>
               <p className="text-sm text-surface-600 font-medium leading-relaxed pt-1">
@@ -415,9 +416,9 @@ export default function HomePage() {
         {/* How It Works Section */}
         <section className="mb-12">
           <div className="flex items-center gap-3 mb-6 px-1">
-              <h3 className="text-xl font-bold text-surface-900">
-                How to Send a Receipt in 3 Steps
-              </h3>
+            <h3 className="text-xl font-bold text-surface-900">
+              How to Send a Receipt in 3 Steps
+            </h3>
           </div>
           <div className="flex flex-col gap-4">
             <div className="flex items-start gap-4 bg-white border border-surface-100 p-5 rounded-3xl shadow-sm">
@@ -479,15 +480,15 @@ export default function HomePage() {
 
         {/* Trust Signals Section */}
         <section className="mb-10 px-1">
-            <h3 className="text-lg font-bold text-surface-900 mb-4 text-center">
-              Trusted by Nigerian Entrepreneurs
-            </h3>
-            <div className="flex flex-wrap justify-center gap-2">
-              <span className="bg-surface-100 text-surface-600 text-[11px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full">Fashion Vendors</span>
-              <span className="bg-surface-100 text-surface-600 text-[11px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full">Food Delivery</span>
-              <span className="bg-surface-100 text-surface-600 text-[11px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full">Freelancers</span>
-              <span className="bg-surface-100 text-surface-600 text-[11px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full">Online Traders</span>
-            </div>
+          <h3 className="text-lg font-bold text-surface-900 mb-4 text-center">
+            Trusted by Nigerian Entrepreneurs
+          </h3>
+          <div className="flex flex-wrap justify-center gap-2">
+            <span className="bg-surface-100 text-surface-600 text-[11px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full">Fashion Vendors</span>
+            <span className="bg-surface-100 text-surface-600 text-[11px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full">Food Delivery</span>
+            <span className="bg-surface-100 text-surface-600 text-[11px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full">Freelancers</span>
+            <span className="bg-surface-100 text-surface-600 text-[11px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full">Online Traders</span>
+          </div>
         </section>
 
         {/* CTA Section - Briefly mirrored from How it Works for conversion */}

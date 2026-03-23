@@ -27,7 +27,10 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
     const [isExporting, setIsExporting] = useState(false);
     const [isPremium, setIsPremium] = useState(false);
     const { isPro, gate, activeVariant, closePrompt } = useProGate();
-    const { profile } = useAuth();
+    const { user, profile, isPro: authIsPro } = useAuth();
+
+    // Resolve ownerId: staff members use teamOwnerId, owners use their own id
+    const ownerId = (profile?.teamOwnerId ?? user?.id) ?? null;
 
     // "idle" | "baking" | "ready" | "failed"
     const [prebakeState, setPrebakeState] = useState<"idle" | "baking" | "ready" | "failed">("idle");
@@ -111,6 +114,15 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
         };
     }, [runPrebake]);
 
+    // ── Persist helper — saves locally + cloud for Pro/Business users ─────────
+    const persistDocument = useCallback(() => {
+        const currency = profile?.defaultCurrency ?? "NGN";
+        // fire-and-forget; errors are caught inside saveDocument
+        saveDocument(data, type, activeTemplate, user?.id ?? null, ownerId, authIsPro, currency).catch(
+            (e) => console.error("[LivePreview] persistDocument failed:", e)
+        );
+    }, [data, type, activeTemplate, user, ownerId, authIsPro, profile]);
+
     // ── Helpers ────────────────────────────────────────────────────────────────
 
     const blockIfLocked = () => {
@@ -138,7 +150,7 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
         // Gate: free users see the upgrade prompt instead of a watermarked share
         if (!gate("export")) return;
         setIsExporting(true);
-        saveDocument(data, type, activeTemplate, undefined, docId);
+        persistDocument();
 
         // If bake is still running, wait for it briefly (Android is fine with this;
         // iOS ideally has prebakeState === "ready" before user taps)
@@ -177,7 +189,7 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
         if (blockIfLocked()) return;
         if (!gate("export")) return;
         setIsExporting(true);
-        saveDocument(data, type, activeTemplate, undefined, docId);
+        persistDocument();
 
         const dataUrl = dataUrlCache.current ?? await getFreshDataUrl();
         if (!dataUrl) {
@@ -205,7 +217,7 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
     const handleDownloadPDF = async () => {
         if (blockIfLocked()) return;
         setIsExporting(true);
-        saveDocument(data, type, activeTemplate, undefined, docId);
+        persistDocument();
         window.scrollTo(0, 0);
         await new Promise(r => setTimeout(r, 80));
 
@@ -218,7 +230,7 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
         if (blockIfLocked()) return;
         if (!gate("export")) return;
         setIsExporting(true);
-        saveDocument(data, type, activeTemplate, undefined, docId);
+        persistDocument();
         const dataUrl = await getFreshDataUrl();
         if (dataUrl) {
             downloadImage(dataUrl, `Proofa-${type}-${Date.now()}.png`);

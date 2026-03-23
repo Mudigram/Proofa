@@ -1,14 +1,36 @@
 "use client";
 
 import React from "react";
+import { ClipboardPaste } from "lucide-react";
+
+export const PasteButton = ({ onPaste }: { onPaste: (text: string) => void }) => {
+    return (
+        <button
+            type="button"
+            onClick={async () => {
+                try {
+                    const text = await navigator.clipboard.readText();
+                    if (text) onPaste(text);
+                } catch (err) {
+                    console.error("Failed to read clipboard text: ", err);
+                }
+            }}
+            className="p-1.5 text-surface-400 hover:text-primary-500 bg-surface-50 hover:bg-primary-50 rounded-xl transition-all active:scale-95 border border-surface-200 hover:border-primary-100"
+            title="Paste"
+        >
+            <ClipboardPaste size={16} strokeWidth={2.5} />
+        </button>
+    );
+};
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
     label: string;
     error?: string;
     icon?: React.ReactNode;
+    rightElement?: React.ReactNode;
 }
 
-export const Input = ({ label, error, icon, className = "", ...props }: InputProps) => {
+export const Input = ({ label, error, icon, rightElement, className = "", ...props }: InputProps) => {
     return (
         <div className="flex flex-col gap-1.5 w-full">
             <label className="text-sm font-bold text-surface-700 tracking-tight px-1 uppercase tracking-widest text-[10px]">
@@ -22,9 +44,14 @@ export const Input = ({ label, error, icon, className = "", ...props }: InputPro
                 )}
                 <input
                     className={`w-full bg-white border border-surface-200 rounded-2xl py-3.5 ${icon ? "pl-11" : "px-4"
-                        } pr-4 text-surface-900 placeholder:text-surface-300 focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 transition-all outline-none font-medium shadow-sm active:scale-[0.99] ${className}`}
+                        } ${rightElement ? "pr-12" : "pr-4"} text-surface-900 placeholder:text-surface-300 focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 transition-all outline-none font-medium shadow-sm active:scale-[0.99] ${className}`}
                     {...props}
                 />
+                {rightElement && (
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center">
+                        {rightElement}
+                    </div>
+                )}
             </div>
             {error && <p className="text-xs text-red-500 font-bold px-1">{error}</p>}
         </div>

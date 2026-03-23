@@ -1,8 +1,10 @@
 /**
  * app/dashboard/page.tsx
  *
- * Business Plan dashboard — gated behind isBusiness.
- * Mobile-first, full data from useDashboard hook.
+ * Revenue dashboard for Pro + Business users.
+ *
+ * Pro  — full metrics + chart + activity (10 items) + locked summary share
+ * Business — everything unlocked + all periods + 20 activity items
  */
 "use client";
 
@@ -13,7 +15,7 @@ import RevenueChart from "@/components/dashboard/RevenueChart";
 import ActivityFeed from "@/components/dashboard/ActivityFeed";
 import DailySummaryCard from "@/components/dashboard/DailySummaryCard";
 import { DashboardPeriod } from "@/lib/types";
-import { RefreshCw, Lock, Loader2 } from "lucide-react";
+import { RefreshCw, Lock, Crown, Loader2 } from "lucide-react";
 import Link from "next/link";
 
 const PERIODS: { value: DashboardPeriod; label: string }[] = [
@@ -23,7 +25,7 @@ const PERIODS: { value: DashboardPeriod; label: string }[] = [
     { value: "year", label: "Year" },
 ];
 
-// ─── Gate: not a Business user ───────────────────────────────────────────────
+// ─── Upgrade gate (free users) ────────────────────────────────────────────────
 
 function UpgradeGate() {
     return (
@@ -32,24 +34,43 @@ function UpgradeGate() {
                 <Lock size={28} className="text-surface-400" />
             </div>
             <div>
-                <h2 className="text-xl font-black uppercase tracking-tight">
-                    Business Dashboard
-                </h2>
+                <h2 className="text-xl font-black uppercase tracking-tight">Revenue Dashboard</h2>
                 <p className="text-sm text-surface-400 font-medium mt-2 leading-relaxed max-w-xs">
-                    Track your revenue, monitor your team, and share daily summaries to WhatsApp.
+                    See your revenue, track your documents, and share daily summaries straight to WhatsApp.
                 </p>
             </div>
             <Link
                 href="/pricing"
                 className="px-6 py-3 bg-surface-900 text-white rounded-2xl text-xs font-black uppercase tracking-widest"
             >
-                Upgrade to Business
+                Upgrade to Pro
             </Link>
         </div>
     );
 }
 
-// ─── Loading skeleton ─────────────────────────────────────────────────────────
+// ─── Business upgrade nudge (shown to Pro users on locked features) ───────────
+
+function BusinessNudge({ feature }: { feature: string }) {
+    return (
+        <div className="flex items-center justify-between bg-surface-50 border border-surface-100 rounded-2xl px-4 py-3">
+            <div className="flex items-center gap-2">
+                <Crown size={14} className="text-amber-500" />
+                <p className="text-xs font-black text-surface-600">
+                    {feature} — Business only
+                </p>
+            </div>
+            <Link
+                href="/pricing"
+                className="text-[10px] font-black uppercase tracking-widest text-primary-500"
+            >
+                Upgrade →
+            </Link>
+        </div>
+    );
+}
+
+// ─── Skeleton ─────────────────────────────────────────────────────────────────
 
 function Skeleton({ className }: { className?: string }) {
     return <div className={`bg-surface-100 rounded-xl animate-pulse ${className}`} />;
@@ -59,10 +80,7 @@ function DashboardSkeleton() {
     return (
         <div className="px-4 py-6 flex flex-col gap-6">
             <div className="grid grid-cols-2 gap-3">
-                <Skeleton className="h-24" />
-                <Skeleton className="h-24" />
-                <Skeleton className="h-24" />
-                <Skeleton className="h-24" />
+                {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-24" />)}
             </div>
             <Skeleton className="h-[200px]" />
             <Skeleton className="h-40" />
@@ -73,7 +91,7 @@ function DashboardSkeleton() {
 // ─── Main page ────────────────────────────────────────────────────────────────
 
 export default function DashboardPage() {
-    const { isBusiness, isLoading: authLoading, profile } = useAuth();
+    const { isPro, isBusiness, isLoading: authLoading, profile } = useAuth();
     const {
         data,
         isLoading,
@@ -82,13 +100,13 @@ export default function DashboardPage() {
         setPeriod,
         refresh,
         currency,
+        canChangePeriod,
+        canShareSummary,
+        activityLimit,
     } = useDashboard();
 
-    // Auth still loading
     if (authLoading) return <DashboardSkeleton />;
-
-    // Not a Business user
-    if (!isBusiness) return <UpgradeGate />;
+    if (!isPro) return <UpgradeGate />;
 
     return (
         <main className="px-4 py-6 flex flex-col gap-6 max-w-md mx-auto">
@@ -97,7 +115,7 @@ export default function DashboardPage() {
             <div className="flex items-start justify-between">
                 <div>
                     <p className="text-[10px] font-black uppercase tracking-widest text-surface-400">
-                        Business Dashboard
+                        {isBusiness ? "Business Dashboard" : "Pro Dashboard"}
                     </p>
                     <h1 className="text-2xl font-black uppercase tracking-tight leading-none mt-1">
                         {profile?.businessName ?? "My Business"}
@@ -116,19 +134,31 @@ export default function DashboardPage() {
             </div>
 
             {/* Period selector */}
-            <div className="flex gap-2 bg-surface-100 p-1.5 rounded-2xl">
-                {PERIODS.map((p) => (
-                    <button
-                        key={p.value}
-                        onClick={() => setPeriod(p.value)}
-                        className={`flex-1 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${period === p.value
-                            ? "bg-white text-primary-500 shadow-sm"
-                            : "text-surface-400"
-                            }`}
-                    >
-                        {p.label}
-                    </button>
-                ))}
+            <div className="relative">
+                <div className={`flex gap-2 bg-surface-100 p-1.5 rounded-2xl ${!canChangePeriod ? "opacity-60" : ""}`}>
+                    {PERIODS.map((p) => (
+                        <button
+                            key={p.value}
+                            onClick={() => setPeriod(p.value)}
+                            disabled={!canChangePeriod}
+                            className={`flex-1 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${period === p.value
+                                    ? "bg-white text-primary-500 shadow-sm"
+                                    : "text-surface-400"
+                                } disabled:cursor-not-allowed`}
+                        >
+                            {p.label}
+                        </button>
+                    ))}
+                </div>
+                {/* Pro lock label on period selector */}
+                {!canChangePeriod && (
+                    <div className="flex items-center justify-end gap-1 mt-1.5 pr-1">
+                        <Crown size={10} className="text-amber-500" />
+                        <p className="text-[9px] font-black text-surface-400 uppercase tracking-widest">
+                            All periods — Business only
+                        </p>
+                    </div>
+                )}
             </div>
 
             {/* Error */}
@@ -138,12 +168,12 @@ export default function DashboardPage() {
                 </div>
             )}
 
-            {/* Loading */}
+            {/* Content */}
             {isLoading && !data ? (
                 <DashboardSkeleton />
             ) : data ? (
                 <>
-                    {/* Metric cards */}
+                    {/* Metric cards — same for Pro and Business */}
                     <MetricCards metrics={data.metrics} />
 
                     {/* Revenue chart */}
@@ -161,14 +191,43 @@ export default function DashboardPage() {
                             period={period}
                             currency={currency}
                         />
+                        {/* Pro label under chart */}
+                        {!isBusiness && (
+                            <p className="text-[9px] text-surface-300 font-medium text-center mt-3">
+                                Showing this month only — upgrade to Business for all periods
+                            </p>
+                        )}
                     </div>
 
-                    {/* Daily summary share card */}
+                    {/* Daily summary share — locked for Pro */}
                     <div className="flex flex-col gap-2">
                         <p className="text-[10px] font-black uppercase tracking-widest text-surface-400">
-                            Share today's summary
+                            Daily summary
                         </p>
-                        <DailySummaryCard metrics={data.metrics} />
+                        {canShareSummary ? (
+                            <DailySummaryCard metrics={data.metrics} />
+                        ) : (
+                            <>
+                                {/* Blurred preview of what it looks like */}
+                                <div className="relative rounded-2xl overflow-hidden">
+                                    <div className="pointer-events-none select-none blur-sm opacity-60">
+                                        <DailySummaryCard metrics={data.metrics} />
+                                    </div>
+                                    <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-surface-900/60 rounded-2xl">
+                                        <Crown size={24} className="text-amber-400" />
+                                        <p className="text-white text-xs font-black uppercase tracking-widest text-center px-6">
+                                            Share daily summaries to WhatsApp
+                                        </p>
+                                        <Link
+                                            href="/pricing"
+                                            className="px-5 py-2 bg-primary-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest"
+                                        >
+                                            Upgrade to Business
+                                        </Link>
+                                    </div>
+                                </div>
+                            </>
+                        )}
                     </div>
 
                     {/* Activity feed */}
@@ -178,13 +237,19 @@ export default function DashboardPage() {
                                 Recent activity
                             </p>
                             <span className="text-[10px] text-surface-300 font-medium">
-                                Last 20 docs
+                                Last {activityLimit} docs
+                                {!isBusiness && " · Pro limit"}
                             </span>
                         </div>
                         <div className="bg-white border border-surface-100 rounded-2xl px-4">
                             <ActivityFeed items={data.activity} />
                         </div>
+                        {/* Upgrade nudge under feed for Pro users */}
+                        {!isBusiness && data.activity.length >= activityLimit && (
+                            <BusinessNudge feature="Full activity log (20 docs)" />
+                        )}
                     </div>
+
                 </>
             ) : null}
 
