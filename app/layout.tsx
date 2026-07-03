@@ -71,14 +71,23 @@ export const metadata: Metadata = {
     description: "Create professional receipts & invoices in seconds. Share directly to WhatsApp. Built for Nigerian small businesses. Free to start.",
     images: ["/Logo/Proofa orange icon.png"],
   },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default", // Options: "default", "black", "black-translucent"
+    title: "Proofa",
+  },
+  formatDetection: {
+    telephone: false, // Prevents iOS from aggressively highlighting account numbers as phone links
+  },
 };
 
 export const viewport: Viewport = {
+  themeColor: "#e8590c",
+  viewportFit: "cover",
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
-  themeColor: "#e8590c",
 };
 
 import { ToastProvider } from "@/components/ui/Toast";

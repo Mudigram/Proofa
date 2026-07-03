@@ -266,7 +266,7 @@ export default function HomePage() {
         {/* SEO Hero Section */}
         <section className="mb-10 text-center sm:text-left animate-in fade-in slide-in-from-bottom-4 duration-700 delay-150">
           <p className="text-surface-600 font-medium leading-relaxed max-w-2xl text-[15px]">
-            <strong className="text-surface-900 font-bold">Proofa is Nigeria's fastest WhatsApp receipt generator.</strong> Create professional receipts, invoices, and order summaries in under 30 seconds — then share them directly to any WhatsApp contact. Over 10,000 Nigerian traders, market vendors, and small business owners use Proofa daily to look professional and get paid faster.
+            <strong className="text-surface-900 font-bold">Proofa is Nigeria&apos;s fastest WhatsApp receipt generator.</strong> Create professional receipts, invoices, and order summaries in under 30 seconds — then share them directly to any WhatsApp contact. Over 10,000 Nigerian traders, market vendors, and small business owners use Proofa daily to look professional and get paid faster.
           </p>
         </section>
 
@@ -284,7 +284,7 @@ export default function HomePage() {
                     <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
                   )}
 
-                  <div className={`flex-shrink-0 w-16 h-16 rounded-2xl ${action.iconBg} flex items-center justify-center`}>
+                  <div className={`shrink-0 w-16 h-16 rounded-2xl ${action.iconBg} flex items-center justify-center`}>
                     {action.icon}
                   </div>
                   <div className="flex-1">
@@ -493,7 +493,7 @@ export default function HomePage() {
 
         {/* CTA Section - Briefly mirrored from How it Works for conversion */}
         <section className="mt-12">
-          <div className="bg-gradient-to-br from-secondary-900 to-secondary-950 p-7 rounded-[32px] text-center shadow-lg relative overflow-hidden">
+          <div className="bg-linear-to-br from-secondary-900 to-secondary-950 p-7 rounded-[32px] text-center shadow-lg relative overflow-hidden">
             <div className="absolute top-0 right-0 w-24 h-24 bg-primary-500/10 rounded-full blur-2xl" />
             <h2 className="text-xl font-bold text-white mb-3">
               Ready to boost productivity?
