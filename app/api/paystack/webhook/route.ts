@@ -30,7 +30,6 @@ export async function POST(req: Request) {
         switch (event.event) {
             case "charge.success":
                 // Handle successful charge (usually for subscriptions)
-                const customer = event.data.customer;
                 const metadata = event.data.metadata; // If we sent metadata during checkout
 
                 // If we have userId in metadata, update profile
