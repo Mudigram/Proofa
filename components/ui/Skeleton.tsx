@@ -8,18 +8,15 @@ interface SkeletonProps {
 }
 
 export function Skeleton({ className = "", variant = "rect" }: SkeletonProps) {
-    const baseClasses = "animate-pulse bg-surface-200";
+  const baseClass = "animate-pulse bg-slate-200 dark:bg-slate-800";
 
-    const variantClasses = {
-        rect: "rounded-xl",
-        circle: "rounded-full",
-        text: "rounded-md h-4 w-full",
-    };
+  const variants = {
+    rect: "rounded-md",
+    circle: "rounded-full",
+    text: "rounded-md h-4"
+  };
 
-    return (
-        <div
-            className={`${baseClasses} ${variantClasses[variant]} ${className}`}
-            aria-hidden="true"
-        />
-    );
+  return (
+    <div className={`${baseClass} ${variants[variant]} ${className}`} />
+  );
 }
