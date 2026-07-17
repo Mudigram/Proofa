@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { verifyPaystackTransaction } from "@/lib/paystack";
 import { supabaseAdmin } from "@/lib/supabase";
+import { createServerClient } from "@/lib/supabase/server";
 
 export async function POST(req: Request) {
     try {
@@ -8,6 +9,13 @@ export async function POST(req: Request) {
 
         if (!reference || !userId) {
             return NextResponse.json({ error: "Missing reference or userId" }, { status: 400 });
+        }
+
+        const supabase = await createServerClient();
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+        if (authError || !user || user.id !== userId) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
         // 1. Verify with Paystack
