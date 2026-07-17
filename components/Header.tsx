@@ -27,6 +27,16 @@ export default function Header() {
 
     return (
         <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-lg border-b border-surface-100">
+            {isHome && (
+                <div className="bg-gradient-to-r from-primary-500 to-primary-600 text-white text-center py-2 px-4 text-xs font-bold w-full relative z-50 overflow-hidden">
+                    <div className="absolute inset-0 bg-[url('/noise.png')] opacity-10 mix-blend-overlay"></div>
+                    <Link href="/pricing?promo=POPUP" className="flex items-center justify-center gap-2 relative z-10 hover:underline">
+                        <Crown size={14} />
+                        Pop-up Special: Get 1 Month Pro Free!
+                        <span className="bg-white text-primary-600 px-1.5 py-0.5 rounded-[4px] text-[10px] font-black uppercase tracking-widest ml-1">Claim</span>
+                    </Link>
+                </div>
+            )}
             <div className="app-container flex items-center justify-between h-16">
                 <div className="flex items-center">
                     {!isHome ? (

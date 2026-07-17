@@ -12,6 +12,7 @@ import { shareToWhatsApp, shareViaWebShare, prebakeShareFile, canShareFiles } fr
 import { saveDocument } from "@/lib/StorageUtils";
 import { useToast } from "@/components/ui/Toast";
 import { useProGate } from "@/hooks/useProGate";
+import { GamificationModal } from "@/components/ui/GamificationModal";
 import { useAuth } from "@/context/AuthContext";
 import { UpgradePrompt } from "@/components/ui/UpgradePrompt";
 
@@ -25,6 +26,9 @@ interface LivePreviewProps {
 export default function LivePreview({ data, type, initialTemplate = "minimalist", docId }: LivePreviewProps) {
     const [activeTemplate, setActiveTemplate] = useState<TemplateName>(initialTemplate);
     const [isExporting, setIsExporting] = useState(false);
+    const [showGamification, setShowGamification] = useState(false);
+    const [pendingExportAction, setPendingExportAction] = useState<(() => void) | null>(null);
+    const [hasSharedForFreeExport, setHasSharedForFreeExport] = useState(false);
     const [isPremium, setIsPremium] = useState(false);
     const { isPro, gate, activeVariant, closePrompt } = useProGate();
     const { user, profile, isPro: authIsPro } = useAuth();
@@ -147,8 +151,18 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
 
     const handleWhatsApp = async () => {
         if (blockIfLocked()) return;
-        // Gate: free users see the upgrade prompt instead of a watermarked share
-        if (!gate("export")) return;
+        if (!isPro && !hasSharedForFreeExport) {
+            setPendingExportAction(() => async () => {
+                setShowGamification(false);
+                await perform_handleWhatsApp();
+            });
+            setShowGamification(true);
+            return;
+        }
+        await perform_handleWhatsApp();
+    };
+    const perform_handleWhatsApp = async () => {
+
         setIsExporting(true);
         persistDocument();
 
@@ -187,7 +201,18 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
 
     const handleShare = async () => {
         if (blockIfLocked()) return;
-        if (!gate("export")) return;
+        if (!isPro && !hasSharedForFreeExport) {
+            setPendingExportAction(() => async () => {
+                setShowGamification(false);
+                await perform_handleShare();
+            });
+            setShowGamification(true);
+            return;
+        }
+        await perform_handleShare();
+    };
+    const perform_handleShare = async () => {
+
         setIsExporting(true);
         persistDocument();
 
@@ -216,7 +241,18 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
 
     const handleDownloadPDF = async () => {
         if (blockIfLocked()) return;
-        setIsExporting(true);
+        if (!isPro && !hasSharedForFreeExport) {
+            setPendingExportAction(() => async () => {
+                setShowGamification(false);
+                await perform_handleDownloadPDF();
+            });
+            setShowGamification(true);
+            return;
+        }
+        await perform_handleDownloadPDF();
+    };
+    const perform_handleDownloadPDF = async () => {
+setIsExporting(true);
         persistDocument();
         window.scrollTo(0, 0);
         await new Promise(r => setTimeout(r, 80));
@@ -228,7 +264,18 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
 
     const handleDownload = async () => {
         if (blockIfLocked()) return;
-        if (!gate("export")) return;
+        if (!isPro && !hasSharedForFreeExport) {
+            setPendingExportAction(() => async () => {
+                setShowGamification(false);
+                await perform_handleDownload();
+            });
+            setShowGamification(true);
+            return;
+        }
+        await perform_handleDownload();
+    };
+    const perform_handleDownload = async () => {
+
         setIsExporting(true);
         persistDocument();
         const dataUrl = await getFreshDataUrl();
@@ -276,7 +323,7 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
                     style={{ left: "-9999px", top: 0, transform: "none", zIndex: -1, ...dynamicStyle }}
                 >
                     {renderTemplate()}
-                    {!isPro && (
+                    {(!isPro && !hasSharedForFreeExport) && (
                         <div
                             style={{
                                 position: "absolute",
@@ -445,6 +492,19 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
 
             {/* Upgrade Prompt — mounts as sibling, overlays everything */}
             <UpgradePrompt variant={activeVariant} onClose={closePrompt} />
+            <GamificationModal
+                isOpen={showGamification}
+                onClose={() => setShowGamification(false)}
+                onSupportUs={() => {
+                    if (pendingExportAction) pendingExportAction();
+                }}
+                onShare={() => {
+                    setHasSharedForFreeExport(true);
+                    // trigger a share intent or twitter intent here
+                    window.open('https://twitter.com/intent/tweet?text=I%20just%20created%20a%20professional%20receipt%20using%20Proofa!%20%23proofa%20https://proofa.ng', '_blank');
+                    if (pendingExportAction) pendingExportAction();
+                }}
+            />
         </>
     );
 }
