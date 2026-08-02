@@ -155,21 +155,6 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
 
     const handleWhatsApp = async () => {
         if (blockIfLocked()) return;
-<<<<<<< HEAD
-=======
-        if (!isPro && !hasSharedForFreeExport) {
-            setPendingExportAction(() => async () => {
-                setShowGamification(false);
-                await perform_handleWhatsApp();
-            });
-            setShowGamification(true);
-            return;
-        }
-        await perform_handleWhatsApp();
-    };
-    const perform_handleWhatsApp = async () => {
-
->>>>>>> 4c1ff339285031118611ad4d9b8a183636f24908
         setIsExporting(true);
         persistDocument();
 
@@ -208,21 +193,6 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
 
     const handleShare = async () => {
         if (blockIfLocked()) return;
-<<<<<<< HEAD
-=======
-        if (!isPro && !hasSharedForFreeExport) {
-            setPendingExportAction(() => async () => {
-                setShowGamification(false);
-                await perform_handleShare();
-            });
-            setShowGamification(true);
-            return;
-        }
-        await perform_handleShare();
-    };
-    const perform_handleShare = async () => {
-
->>>>>>> 4c1ff339285031118611ad4d9b8a183636f24908
         setIsExporting(true);
         persistDocument();
 
@@ -251,18 +221,7 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
 
     const handleDownloadPDF = async () => {
         if (blockIfLocked()) return;
-        if (!isPro && !hasSharedForFreeExport) {
-            setPendingExportAction(() => async () => {
-                setShowGamification(false);
-                await perform_handleDownloadPDF();
-            });
-            setShowGamification(true);
-            return;
-        }
-        await perform_handleDownloadPDF();
-    };
-    const perform_handleDownloadPDF = async () => {
-setIsExporting(true);
+        setIsExporting(true);
         persistDocument();
         window.scrollTo(0, 0);
         await new Promise(r => setTimeout(r, 80));
@@ -274,21 +233,6 @@ setIsExporting(true);
 
     const handleDownload = async () => {
         if (blockIfLocked()) return;
-<<<<<<< HEAD
-=======
-        if (!isPro && !hasSharedForFreeExport) {
-            setPendingExportAction(() => async () => {
-                setShowGamification(false);
-                await perform_handleDownload();
-            });
-            setShowGamification(true);
-            return;
-        }
-        await perform_handleDownload();
-    };
-    const perform_handleDownload = async () => {
-
->>>>>>> 4c1ff339285031118611ad4d9b8a183636f24908
         setIsExporting(true);
         persistDocument();
         const dataUrl = await getFreshDataUrl();
