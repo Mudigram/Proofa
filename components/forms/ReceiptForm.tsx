@@ -214,17 +214,17 @@ export default function ReceiptForm() {
         <PageTransition>
             <div className="flex flex-col gap-6 pb-20">
                 {/* Mobile Tab Switcher */}
-                <div className="flex p-1 bg-surface-100 rounded-2xl border border-surface-200">
+                <div className="flex p-1 bg-surface-100 dark:bg-surface-900 rounded-2xl border border-surface-200 dark:border-surface-800">
                     <button
                         onClick={() => handleModeSwitch("edit")}
-                        className={`flex-1 py-3.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${mode === "edit" ? "bg-white text-primary-500 shadow-sm" : "text-surface-400"
+                        className={`flex-1 py-3.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${mode === "edit" ? "bg-white dark:bg-surface-800 text-primary-500 shadow-sm" : "text-surface-400 dark:text-surface-400"
                             }`}
                     >
                         1. Edit Form
                     </button>
                     <button
                         onClick={() => handleModeSwitch("preview")}
-                        className={`flex-1 py-3.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${mode === "preview" ? "bg-white text-primary-500 shadow-sm" : "text-surface-400"
+                        className={`flex-1 py-3.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${mode === "preview" ? "bg-white dark:bg-surface-800 text-primary-500 shadow-sm" : "text-surface-400 dark:text-surface-400"
                             }`}
                     >
                         2. Live Preview
@@ -242,7 +242,7 @@ export default function ReceiptForm() {
                             </StaggerItem>
 
                             <StaggerItem>
-                                <section className="flex flex-col gap-5 bg-white p-6 rounded-[2rem] border border-surface-100 shadow-sm">
+                                <section className="flex flex-col gap-5 bg-white dark:bg-surface-900 p-6 rounded-[2rem] border border-surface-100 dark:border-surface-800 shadow-sm">
                                     <h3 className="text-[10px] font-black uppercase tracking-widest text-surface-400 px-1">Business Details</h3>
                                     <Input
                                         label="BUSINESS NAME"
@@ -360,7 +360,7 @@ export default function ReceiptForm() {
                             </StaggerItem>
 
                             <StaggerItem>
-                                <section className="flex flex-col gap-5 bg-white p-6 rounded-[2rem] border border-surface-100 shadow-sm">
+                                <section className="flex flex-col gap-5 bg-white dark:bg-surface-900 p-6 rounded-[2rem] border border-surface-100 dark:border-surface-800 shadow-sm">
                                     <h3 className="text-[10px] font-black uppercase tracking-widest text-surface-400 px-1">Receipt Status</h3>
                                     <SegmentedControl
                                         label="STATUS"

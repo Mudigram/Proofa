@@ -47,6 +47,24 @@ import { useToast } from "@/components/ui/Toast";
 
 const PLANS = [
   {
+    id: "business",
+    name: "Business",
+    icon: Building2,
+    monthlyPrice: 5000,
+    annualPrice: 50000,
+    annualSave: 10000,
+    badge: "Coming Soon",
+    comingSoon: true,
+    headline: "Built for teams.",
+    features: [
+      "Everything in Pro",
+      "Multi-device sync",
+      "Business dashboard",
+      "Smart VAT / tax assist",
+      "Dedicated account manager",
+    ],
+  },
+  {
     id: "pro",
     name: "Pro",
     icon: Crown,
@@ -82,24 +100,6 @@ const PLANS = [
       "WhatsApp sharing",
       "Basic PNG export",
       '"Made with Proofa" watermark',
-    ],
-  },
-  {
-    id: "business",
-    name: "Business",
-    icon: Building2,
-    monthlyPrice: 5000,
-    annualPrice: 50000,
-    annualSave: 10000,
-    badge: "Coming Soon",
-    comingSoon: true,
-    headline: "Built for teams.",
-    features: [
-      "Everything in Pro",
-      "Multi-device sync",
-      "Business dashboard",
-      "Smart VAT / tax assist",
-      "Dedicated account manager",
     ],
   },
 ] as const;

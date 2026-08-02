@@ -5,10 +5,11 @@ import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { User, LogOut, ChevronRight, Crown, Settings, WalletCards, ShieldCheck, HelpCircle, MessageCircle, CheckCircle2, Copy, Check } from "lucide-react";
+import { User, LogOut, ChevronRight, Crown, Settings, WalletCards, ShieldCheck, HelpCircle, MessageCircle, CheckCircle2, Copy, Check, Moon } from "lucide-react";
 import Image from "next/image";
 import { Modal } from "@/components/ui/Modal";
 import { useToast } from "@/components/ui/Toast";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
 
 import { SavedBankAccount } from "@/lib/types";
 import { getBankAccounts } from "@/lib/bank";
@@ -272,6 +273,22 @@ export default function ProfilePage() {
                             </div>
                             <ChevronRight size={16} className="text-surface-300" aria-hidden="true" />
                         </Link>
+
+                        <div className="h-px bg-surface-100 mx-3" />
+
+                        {/* Appearance / Dark Mode */}
+                        <div className="flex items-center justify-between p-3.5 hover:bg-surface-50 rounded-xl transition-colors">
+                            <div className="flex items-center min-w-0">
+                                <div className="w-9 h-9 bg-surface-100 text-surface-700 rounded-lg flex items-center justify-center mr-3.5 shrink-0">
+                                    <Moon size={18} aria-hidden="true" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <h4 className="font-semibold text-surface-900 text-sm">Appearance</h4>
+                                    <p className="text-xs text-surface-500 mt-0.5 truncate">Light / Dark Theme</p>
+                                </div>
+                            </div>
+                            <ThemeToggle />
+                        </div>
 
                         <div className="h-px bg-surface-100 mx-3" />
 

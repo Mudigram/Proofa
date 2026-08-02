@@ -33,18 +33,18 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
 export const Input = ({ label, error, icon, rightElement, className = "", ...props }: InputProps) => {
     return (
         <div className="flex flex-col gap-1.5 w-full">
-            <label className="text-sm font-bold text-surface-700 tracking-tight px-1 uppercase tracking-widest text-[10px]">
+            <label className="text-sm font-bold text-surface-700 dark:text-surface-300 tracking-tight px-1 uppercase tracking-widest text-[10px]">
                 {label}
             </label>
             <div className="relative group">
                 {icon && (
-                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-surface-400 group-focus-within:text-primary-500 transition-colors">
+                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-surface-400 dark:text-surface-500 group-focus-within:text-primary-500 transition-colors">
                         {icon}
                     </div>
                 )}
                 <input
-                    className={`w-full bg-white border border-surface-200 rounded-2xl py-3.5 ${icon ? "pl-11" : "px-4"
-                        } ${rightElement ? "pr-12" : "pr-4"} text-surface-900 placeholder:text-surface-300 focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 transition-all outline-none font-medium shadow-sm active:scale-[0.99] ${className}`}
+                    className={`w-full bg-white dark:bg-surface-900 border border-surface-200 dark:border-surface-800 rounded-2xl py-3.5 ${icon ? "pl-11" : "px-4"
+                        } ${rightElement ? "pr-12" : "pr-4"} text-surface-900 dark:text-surface-50 placeholder:text-surface-400 dark:placeholder:text-surface-600 focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 transition-all outline-none font-medium shadow-sm active:scale-[0.99] ${className}`}
                     {...props}
                 />
                 {rightElement && (
@@ -68,10 +68,10 @@ interface SegmentedControlProps {
 export const SegmentedControl = ({ label, options, value, onChange }: SegmentedControlProps) => {
     return (
         <div className="flex flex-col gap-1.5 w-full">
-            <label className="text-sm font-bold text-surface-700 tracking-tight px-1 uppercase tracking-widest text-[10px]">
+            <label className="text-sm font-bold text-surface-700 dark:text-surface-300 tracking-tight px-1 uppercase tracking-widest text-[10px]">
                 {label}
             </label>
-            <div className="bg-white border border-surface-200 p-1 rounded-2xl flex gap-1 shadow-sm">
+            <div className="bg-white dark:bg-surface-900 border border-surface-200 dark:border-surface-800 p-1 rounded-2xl flex gap-1 shadow-sm">
                 {options.map((option) => {
                     const isActive = value === option;
                     return (
@@ -81,7 +81,7 @@ export const SegmentedControl = ({ label, options, value, onChange }: SegmentedC
                             onClick={() => onChange(option)}
                             className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all uppercase tracking-wider ${isActive
                                     ? "bg-primary-500 text-white shadow-md shadow-primary-500/20"
-                                    : "text-surface-400 hover:text-surface-600 hover:bg-surface-50"
+                                    : "text-surface-400 dark:text-surface-400 hover:text-surface-600 dark:hover:text-surface-200 hover:bg-surface-50 dark:hover:bg-surface-800"
                                 }`}
                         >
                             {option}
@@ -126,11 +126,11 @@ export const CurrencyInput = ({ label, value, onChange, ...props }: CurrencyInpu
 export const TextArea = ({ label, error, className = "", ...props }: any) => {
     return (
         <div className="flex flex-col gap-1.5 w-full">
-            <label className="text-sm font-bold text-surface-700 tracking-tight px-1 uppercase tracking-widest text-[10px]">
+            <label className="text-sm font-bold text-surface-700 dark:text-surface-300 tracking-tight px-1 uppercase tracking-widest text-[10px]">
                 {label}
             </label>
             <textarea
-                className={`w-full bg-white border border-surface-200 rounded-2xl p-4 text-surface-900 placeholder:text-surface-300 focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 transition-all outline-none font-medium shadow-sm min-h-[100px] resize-none active:scale-[0.99] ${className}`}
+                className={`w-full bg-white dark:bg-surface-900 border border-surface-200 dark:border-surface-800 rounded-2xl p-4 text-surface-900 dark:text-surface-50 placeholder:text-surface-400 dark:placeholder:text-surface-600 focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 transition-all outline-none font-medium shadow-sm min-h-[100px] resize-none active:scale-[0.99] ${className}`}
                 {...props}
             />
             {error && <p className="text-xs text-red-500 font-bold px-1">{error}</p>}

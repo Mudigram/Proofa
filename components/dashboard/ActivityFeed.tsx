@@ -40,10 +40,10 @@ export default function ActivityFeed({ items }: ActivityFeedProps) {
     if (!items.length) {
         return (
             <div className="py-8 text-center">
-                <p className="text-sm text-surface-400 font-medium">
+                <p className="text-sm text-surface-600 font-bold">
                     No documents generated yet
                 </p>
-                <p className="text-xs text-surface-300 mt-1">
+                <p className="text-xs text-surface-500 font-medium mt-1">
                     Documents your team generates will appear here
                 </p>
             </div>
@@ -51,7 +51,7 @@ export default function ActivityFeed({ items }: ActivityFeedProps) {
     }
 
     return (
-        <div className="flex flex-col divide-y divide-surface-50">
+        <div className="flex flex-col divide-y divide-surface-100">
             {items.map((item) => {
                 const cfg = TYPE_CONFIG[item.type];
                 const Icon = cfg.icon;
@@ -73,7 +73,7 @@ export default function ActivityFeed({ items }: ActivityFeedProps) {
                                     {cfg.label}
                                 </span>
                             </div>
-                            <p className="text-[10px] text-surface-400 font-medium mt-0.5 truncate">
+                            <p className="text-[10px] text-surface-600 font-bold mt-0.5 truncate">
                                 {item.creatorName
                                     ? `by ${item.creatorName}`
                                     : "by you"

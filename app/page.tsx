@@ -148,11 +148,11 @@ const mainActions = [
       </svg>
     ),
     variant: "white",
-    bgClass: "bg-white border border-surface-200 text-surface-900",
-    cardBg: "bg-white",
-    iconBg: "bg-surface-100 text-surface-500",
-    textColor: "text-surface-900",
-    subColor: "text-surface-600",
+    bgClass: "bg-white dark:bg-surface-900 border border-surface-200 dark:border-surface-800 text-surface-900 dark:text-surface-50",
+    cardBg: "bg-white dark:bg-surface-900",
+    iconBg: "bg-surface-100 dark:bg-surface-800 text-surface-500 dark:text-surface-300",
+    textColor: "text-surface-900 dark:text-surface-50",
+    subColor: "text-surface-600 dark:text-surface-400",
   },
 ];
 
@@ -230,8 +230,8 @@ export default function HomePage() {
 
         {/* Greeting Section */}
         <section className="mb-6 mt-2">
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 flex-shrink-0 relative">
+          <div className="flex items-center gap-8">
+            {/* <div className="w-14 h-14 flex-shrink-0 relative">
               <Image
                 src="/Logo/Proofa orange icon.png"
                 alt="Proofa Icon"
@@ -240,7 +240,7 @@ export default function HomePage() {
                 className="object-contain"
                 priority
               />
-            </div>
+            </div> */}
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
                 {isEditingName ? (
@@ -275,13 +275,13 @@ export default function HomePage() {
                 ) : (
                   <div>
                     <h1 className="sr-only">WhatsApp Receipt Generator for Nigerian Businesses</h1>
-                    <h2 className="text-2xl font-bold text-surface-900 tracking-tight flex items-center gap-1.5 group">
-                      {greeting}, <span className="text-primary-600">{userName}</span>
+                    <h2 className="text-2xl font-bold text-surface-900 dark:text-surface-50 tracking-tight flex items-center gap-1.5 group">
+                      {greeting}, <span className="text-primary-600 dark:text-primary-400">{userName}</span>
                       <button
                         onClick={handleEditName}
                         aria-label="Edit display name"
                         title="Edit name"
-                        className="p-1.5 opacity-60 hover:opacity-100 hover:bg-surface-100 rounded-full transition-all text-surface-600 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                        className="p-1.5 opacity-60 hover:opacity-100 hover:bg-surface-100 dark:hover:bg-surface-800 rounded-full transition-all text-surface-600 dark:text-surface-400 focus:outline-none focus:ring-2 focus:ring-primary-500"
                       >
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                           <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
@@ -292,7 +292,7 @@ export default function HomePage() {
                   </div>
                 )}
               </div>
-              <p className="text-surface-500 text-xs mt-0.5 font-medium">
+              <p className="text-surface-500 dark:text-surface-400 text-xs mt-0.5 font-medium">
                 Create &amp; share receipts in 30 seconds.
               </p>
             </div>
@@ -345,10 +345,10 @@ export default function HomePage() {
         {/* Recent Documents Section (Primary App Workspace Anchor) */}
         <section className="mb-8">
           <div className="flex items-center justify-between mb-3 px-1">
-            <h3 className="text-base font-bold text-surface-900">
+            <h3 className="text-base font-bold text-surface-900 dark:text-surface-50">
               Recent Activity
             </h3>
-            <Link href="/history" className="text-primary-600 text-xs font-bold uppercase tracking-wider hover:text-primary-700 transition-colors">
+            <Link href="/history" className="text-primary-600 dark:text-primary-400 text-xs font-bold uppercase tracking-wider hover:text-primary-700 transition-colors">
               See All
             </Link>
           </div>
@@ -356,28 +356,28 @@ export default function HomePage() {
           <div className="flex flex-col gap-2.5">
             {isLoading ? (
               [1, 2, 3].map((i) => (
-                <div key={i} className="bg-white border border-surface-200/60 p-3.5 rounded-2xl shadow-sm flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-xl bg-surface-100 animate-pulse shrink-0" />
+                <div key={i} className="bg-white dark:bg-surface-900 border border-surface-200/60 dark:border-surface-800 p-3.5 rounded-2xl shadow-sm flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-xl bg-surface-100 dark:bg-surface-800 animate-pulse shrink-0" />
                   <div className="flex-1">
-                    <div className="h-4 w-32 bg-surface-200 animate-pulse rounded mb-1.5" />
-                    <div className="h-2 w-48 bg-surface-100 animate-pulse rounded" />
+                    <div className="h-4 w-32 bg-surface-200 dark:bg-surface-700 animate-pulse rounded mb-1.5" />
+                    <div className="h-2 w-48 bg-surface-100 dark:bg-surface-800 animate-pulse rounded" />
                   </div>
                 </div>
               ))
             ) : recentHistory.length === 0 ? (
-              <div className="bg-surface-50 border-2 border-dashed border-surface-200 rounded-2xl p-6 text-center" aria-live="polite">
-                <p className="text-xs font-bold text-surface-500 uppercase tracking-wider">No recent documents</p>
+              <div className="bg-surface-50 dark:bg-surface-900 border-2 border-dashed border-surface-200 dark:border-surface-800 rounded-2xl p-6 text-center" aria-live="polite">
+                <p className="text-xs font-bold text-surface-500 dark:text-surface-400 uppercase tracking-wider">No recent documents</p>
               </div>
             ) : (
               recentHistory.map((doc) => (
                 <Link
                   key={doc.id}
                   href={`/${doc.type}?id=${doc.id}`}
-                  className="bg-white border border-surface-200/60 p-3.5 rounded-2xl shadow-sm flex items-center gap-3.5 hover:shadow-md hover:border-primary-200 transition-all active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+                  className="bg-white dark:bg-surface-900 border border-surface-200/60 dark:border-surface-800 p-3.5 rounded-2xl shadow-sm flex items-center gap-3.5 hover:shadow-md hover:border-primary-200 dark:hover:border-primary-800 transition-all active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
                 >
-                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center p-2 shrink-0 ${doc.type === "receipt" ? "bg-primary-50 text-primary-600" :
+                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center p-2 shrink-0 ${doc.type === "receipt" ? "bg-primary-50 dark:bg-primary-950/60 text-primary-600 dark:text-primary-400" :
                     doc.type === "invoice" ? "bg-secondary-900 text-white" :
-                      "bg-surface-100 text-surface-900"
+                      "bg-surface-100 dark:bg-surface-800 text-surface-900 dark:text-surface-50"
                     }`}>
                     <Image
                       src="/Logo/Proofa orange icon.png"
@@ -388,14 +388,14 @@ export default function HomePage() {
                     />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h4 className="font-bold text-surface-900 text-sm leading-none truncate">
+                    <h4 className="font-bold text-surface-900 dark:text-surface-50 text-sm leading-none truncate">
                       {getDocTitle(doc)}
                     </h4>
-                    <p className="text-surface-500 text-xs font-bold uppercase tracking-wider mt-1.5 flex items-center gap-1.5 font-mono tabular-nums">
+                    <p className="text-surface-500 dark:text-surface-400 text-xs font-bold uppercase tracking-wider mt-1.5 flex items-center gap-1.5 font-mono tabular-nums">
                       {formatCurrency(getDocAmount(doc))} &middot; {formatDate(doc.createdAt)}
                     </p>
                   </div>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-surface-300 shrink-0" aria-hidden="true">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-surface-300 dark:text-surface-600 shrink-0" aria-hidden="true">
                     <polyline points="9 18 15 12 9 6" />
                   </svg>
                 </Link>

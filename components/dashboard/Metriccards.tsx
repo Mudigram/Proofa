@@ -41,21 +41,21 @@ export default function MetricCards({ metrics }: MetricCardsProps) {
             label: "Documents",
             value: metrics.totalDocs.toLocaleString(),
             sub: <ChangeBadge pct={metrics.docCountChange} />,
-            icon: <FileText size={16} className="text-surface-400" />,
+            icon: <FileText size={16} className="text-surface-600" />,
         },
         {
             label: "Avg value",
             value: formatAmount(metrics.avgDocValue, metrics.currency),
-            sub: <span className="text-[10px] text-surface-400">per document</span>,
-            icon: <FileText size={16} className="text-surface-400" />,
+            sub: <span className="text-[10px] text-surface-600 font-bold">per document</span>,
+            icon: <FileText size={16} className="text-surface-600" />,
         },
         {
             label: "Top type",
             value: metrics.topDocType
                 ? metrics.topDocType.charAt(0).toUpperCase() + metrics.topDocType.slice(1)
                 : "—",
-            sub: <span className="text-[10px] text-surface-400">most generated</span>,
-            icon: <FileText size={16} className="text-surface-400" />,
+            sub: <span className="text-[10px] text-surface-600 font-bold">most generated</span>,
+            icon: <FileText size={16} className="text-surface-600" />,
         },
     ];
 
@@ -65,12 +65,12 @@ export default function MetricCards({ metrics }: MetricCardsProps) {
                 <div
                     key={card.label}
                     className={`rounded-2xl p-4 flex flex-col gap-2 ${card.accent
-                            ? "bg-primary-500 text-white"
-                            : "bg-surface-50 border border-surface-100"
+                            ? "bg-primary-500 text-white shadow-md shadow-primary-500/20"
+                            : "bg-surface-50 border border-surface-200/80 shadow-sm"
                         }`}
                 >
                     <div className="flex items-center justify-between">
-                        <p className={`text-[10px] font-black uppercase tracking-widest ${card.accent ? "text-white/70" : "text-surface-400"
+                        <p className={`text-[10px] font-black uppercase tracking-widest ${card.accent ? "text-white/90" : "text-surface-600"
                             }`}>
                             {card.label}
                         </p>

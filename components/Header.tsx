@@ -5,11 +5,15 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { Crown } from "lucide-react";
+// import { ThemeToggle } from "@/components/ui/ThemeToggle";
 
 export default function Header() {
     const pathname = usePathname();
     const router = useRouter();
     const { isPro } = useAuth();
+
+    if (pathname.startsWith("/auth")) return null;
+
     const isHome = pathname === "/";
     const isPricing = pathname === "/pricing";
 
@@ -30,14 +34,14 @@ export default function Header() {
     };
 
     return (
-        <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-lg border-b border-surface-100">
+        <header className="sticky top-0 z-50 bg-white/80 dark:bg-surface-950/80 backdrop-blur-lg border-b border-surface-100 dark:border-surface-800 transition-colors duration-200">
             {isHome && (
-                <div className="bg-gradient-to-r from-primary-500 to-primary-600 text-white text-center py-2 px-4 text-xs font-bold w-full relative z-50 overflow-hidden">
+                <div className="bg-linear-to-r from-primary-500 to-primary-600 text-white text-center py-2 px-4 text-xs font-bold w-full relative z-50 overflow-hidden">
                     <div className="absolute inset-0 bg-[url('/noise.png')] opacity-10 mix-blend-overlay"></div>
                     <Link href="/pricing?promo=POPUP" className="flex items-center justify-center gap-2 relative z-10 hover:underline">
                         <Crown size={14} />
                         Pop-up Special: Get 1 Month Pro Free!
-                        <span className="bg-white text-primary-600 px-1.5 py-0.5 rounded-[4px] text-[10px] font-black uppercase tracking-widest ml-1">Claim</span>
+                        <span className="bg-white text-primary-600 px-1.5 py-0.5 rounded-xs text-[10px] font-black uppercase tracking-widest ml-1">Claim</span>
                     </Link>
                 </div>
             )}
@@ -46,7 +50,7 @@ export default function Header() {
                     {!isHome ? (
                         <button
                             onClick={() => router.back()}
-                            className="w-10 h-10 -ml-2 rounded-full flex items-center justify-center text-surface-900 active:bg-surface-100 transition-colors"
+                            className="w-10 h-10 -ml-2 rounded-full flex items-center justify-center text-surface-900 dark:text-surface-100 active:bg-surface-100 dark:active:bg-surface-800 transition-colors"
                         >
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                                 <line x1="19" y1="12" x2="5" y2="12" />
@@ -68,21 +72,25 @@ export default function Header() {
                         </Link>
                     )}
 
-                    <h2 className={`font-black tracking-tight font-heading ${!isHome ? 'text-lg text-surface-900' : 'text-xl bg-gradient-to-r from-surface-900 to-surface-700 bg-clip-text text-transparent'}`}>
+                    <h2 className={`font-black tracking-tight font-heading text-surface-900 dark:text-white ${!isHome ? 'text-lg' : 'text-xl'}`}>
                         {isHome ? "PROOFA" : getPageTitle().toUpperCase()}
                     </h2>
                 </div>
 
-                {/* Right side - Upgrade CTA for Free Users */}
-                {!isPro && !isPricing && (
-                    <Link
-                        href="/pricing"
-                        className="flex items-center gap-2 bg-primary-50 text-primary-600 px-3 py-1.5 rounded-full hover:bg-primary-100 active:scale-95 transition-all group"
-                    >
-                        <Crown size={14} className="group-hover:rotate-12 transition-transform" />
-                        <span className="text-[10px] font-black uppercase tracking-widest hidden sm:inline">Go Pro</span>
-                    </Link>
-                )}
+                {/* Right side controls - Dark Mode Toggle + Go Pro */}
+                <div className="flex items-center gap-2.5">
+                    
+
+                    {!isPro && !isPricing && (
+                        <Link
+                            href="/pricing"
+                            className="flex items-center gap-2 bg-primary-50 dark:bg-primary-950/50 text-primary-600 dark:text-primary-400 border border-primary-200/50 dark:border-primary-800/50 px-3 py-1.5 rounded-full hover:bg-primary-100 dark:hover:bg-primary-900/50 active:scale-95 transition-all group"
+                        >
+                            <Crown size={14} className="group-hover:rotate-12 transition-transform" />
+                            <span className="text-[10px] font-black uppercase tracking-widest hidden sm:inline">Go Pro</span>
+                        </Link>
+                    )}
+                </div>
 
                 {/* Right side - Profile/Settings Placeholder */}
                 {/* <div className="flex items-center gap-3">

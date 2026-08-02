@@ -12,6 +12,7 @@ import { Trash2, AlertTriangle } from "lucide-react";
 import { Modal } from "@/components/ui/Modal";
 import { useToast } from "@/components/ui/Toast";
 import { useAuth } from "@/context/AuthContext";
+import { fetchCloudHistory } from "@/lib/dashboard";
 import { Crown, Zap } from "lucide-react";
 
 export default function HistoryPage() {
@@ -21,16 +22,41 @@ export default function HistoryPage() {
     const [selectedDoc, setSelectedDoc] = useState<SavedDocument | null>(null);
     const [filter, setFilter] = useState<"all" | "saved" | "drafts">("all");
     const { showToast } = useToast();
-    const { isPro } = useAuth();
+    const { user, isPro } = useAuth();
+
+    const loadHistory = useCallback(async () => {
+        const localDocs = getHistory();
+        if (!user?.id) {
+            setHistory(localDocs);
+            setIsLoading(false);
+            return;
+        }
+
+        try {
+            const cloudDocs = await fetchCloudHistory(user.id);
+            // Merge local and cloud documents, avoiding duplicates
+            const map = new Map<string, SavedDocument>();
+            localDocs.forEach(d => map.set(d.id, d));
+            cloudDocs.forEach(d => map.set(d.id, d as SavedDocument));
+
+            const merged = Array.from(map.values()).sort(
+                (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+            );
+            setHistory(merged);
+        } catch (_) {
+            setHistory(localDocs);
+        } finally {
+            setIsLoading(false);
+        }
+    }, [user]);
 
     useEffect(() => {
-        setHistory(getHistory());
-        setIsLoading(false);
-    }, []);
+        loadHistory();
+    }, [loadHistory]);
 
     const handleRefresh = useCallback(() => {
-        setHistory(getHistory());
-    }, []);
+        loadHistory();
+    }, [loadHistory]);
 
     const { isPulling, pullDistance, isRefreshing } = usePullToRefresh(handleRefresh);
 

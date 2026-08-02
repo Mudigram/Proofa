@@ -17,12 +17,13 @@ interface LogoUploadProps {
 
 export const LogoUpload = ({ value, onChange, label = "Business Logo" }: LogoUploadProps) => {
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const { isPro } = useProGate();
+    const { isPro, gate } = useProGate();
     const { profile } = useAuth();
     const { showToast } = useToast();
     const businessName = profile?.businessName || "Your Business";
 
     const handleClick = () => {
+        if (!gate("logo")) return;
         fileInputRef.current?.click();
     };
 

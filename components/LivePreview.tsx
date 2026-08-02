@@ -146,7 +146,7 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
         if (dataUrlCache.current) return dataUrlCache.current;
         window.scrollTo(0, 0);
         await new Promise(r => setTimeout(r, 80));
-        const url = await captureElementAsImage(CAPTURE_ID);
+        const url = await captureElementAsImage(CAPTURE_ID, isPro);
         if (url) dataUrlCache.current = url;
         return url;
     };
@@ -155,11 +155,11 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
 
     const handleWhatsApp = async () => {
         if (blockIfLocked()) return;
+        if (!gate("export")) return;
         setIsExporting(true);
         persistDocument();
 
-        // If bake is still running, wait for it briefly (Android is fine with this;
-        // iOS ideally has prebakeState === "ready" before user taps)
+        // If bake is still running, wait for it briefly
         if (prebakeState === "baking") {
             showToast("Almost ready... ⏳", "info");
             await new Promise(r => setTimeout(r, 1200));
@@ -193,6 +193,7 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
 
     const handleShare = async () => {
         if (blockIfLocked()) return;
+        if (!gate("export")) return;
         setIsExporting(true);
         persistDocument();
 
@@ -221,6 +222,7 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
 
     const handleDownloadPDF = async () => {
         if (blockIfLocked()) return;
+        if (!gate("export")) return;
         setIsExporting(true);
         persistDocument();
         window.scrollTo(0, 0);
@@ -233,6 +235,7 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
 
     const handleDownload = async () => {
         if (blockIfLocked()) return;
+        if (!gate("export")) return;
         setIsExporting(true);
         persistDocument();
         const dataUrl = await getFreshDataUrl();

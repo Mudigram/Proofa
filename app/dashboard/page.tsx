@@ -114,36 +114,36 @@ export default function DashboardPage() {
             {/* Header */}
             <div className="flex items-start justify-between">
                 <div>
-                    <p className="text-[10px] font-black uppercase tracking-widest text-surface-400">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-surface-600">
                         {isBusiness ? "Business Dashboard" : "Pro Dashboard"}
                     </p>
-                    <h1 className="text-2xl font-black uppercase tracking-tight leading-none mt-1">
+                    <h1 className="text-2xl font-black uppercase tracking-tight leading-none mt-1 text-surface-900">
                         {profile?.businessName ?? "My Business"}
                     </h1>
                 </div>
                 <button
                     onClick={refresh}
                     disabled={isLoading}
-                    className="w-9 h-9 bg-surface-100 rounded-xl flex items-center justify-center active:scale-95 transition-transform disabled:opacity-50"
+                    className="w-9 h-9 bg-surface-100 border border-surface-200 rounded-xl flex items-center justify-center active:scale-95 transition-transform disabled:opacity-50"
                 >
                     <RefreshCw
                         size={16}
-                        className={`text-surface-400 ${isLoading ? "animate-spin" : ""}`}
+                        className={`text-surface-600 ${isLoading ? "animate-spin" : ""}`}
                     />
                 </button>
             </div>
 
             {/* Period selector */}
             <div className="relative">
-                <div className={`flex gap-2 bg-surface-100 p-1.5 rounded-2xl ${!canChangePeriod ? "opacity-60" : ""}`}>
+                <div className={`flex gap-2 bg-surface-100 p-1.5 rounded-2xl border border-surface-200/80 ${!canChangePeriod ? "opacity-75" : ""}`}>
                     {PERIODS.map((p) => (
                         <button
                             key={p.value}
                             onClick={() => setPeriod(p.value)}
                             disabled={!canChangePeriod}
                             className={`flex-1 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${period === p.value
-                                    ? "bg-white text-primary-500 shadow-sm"
-                                    : "text-surface-400"
+                                    ? "bg-white text-primary-600 shadow-sm"
+                                    : "text-surface-600 hover:text-surface-900"
                                 } disabled:cursor-not-allowed`}
                         >
                             {p.label}
@@ -154,7 +154,7 @@ export default function DashboardPage() {
                 {!canChangePeriod && (
                     <div className="flex items-center justify-end gap-1 mt-1.5 pr-1">
                         <Crown size={10} className="text-amber-500" />
-                        <p className="text-[9px] font-black text-surface-400 uppercase tracking-widest">
+                        <p className="text-[9px] font-black text-surface-600 uppercase tracking-widest">
                             All periods — Business only
                         </p>
                     </div>
@@ -177,12 +177,12 @@ export default function DashboardPage() {
                     <MetricCards metrics={data.metrics} />
 
                     {/* Revenue chart */}
-                    <div className="bg-surface-50 border border-surface-100 rounded-2xl p-4">
+                    <div className="bg-surface-50 border border-surface-200/80 rounded-2xl p-4">
                         <div className="flex items-center justify-between mb-4">
-                            <p className="text-[10px] font-black uppercase tracking-widest text-surface-400">
+                            <p className="text-[10px] font-black uppercase tracking-widest text-surface-600">
                                 Revenue — {data.metrics.periodLabel}
                             </p>
-                            <span className="text-[10px] font-black text-surface-300 uppercase">
+                            <span className="text-[10px] font-black text-surface-600 uppercase bg-surface-200/50 px-2 py-0.5 rounded">
                                 {currency}
                             </span>
                         </div>
@@ -193,7 +193,7 @@ export default function DashboardPage() {
                         />
                         {/* Pro label under chart */}
                         {!isBusiness && (
-                            <p className="text-[9px] text-surface-300 font-medium text-center mt-3">
+                            <p className="text-[10px] text-surface-600 font-semibold text-center mt-3">
                                 Showing this month only — upgrade to Business for all periods
                             </p>
                         )}
@@ -201,7 +201,7 @@ export default function DashboardPage() {
 
                     {/* Daily summary share — locked for Pro */}
                     <div className="flex flex-col gap-2">
-                        <p className="text-[10px] font-black uppercase tracking-widest text-surface-400">
+                        <p className="text-[10px] font-black uppercase tracking-widest text-surface-600">
                             Daily summary
                         </p>
                         {canShareSummary ? (
@@ -209,18 +209,18 @@ export default function DashboardPage() {
                         ) : (
                             <>
                                 {/* Blurred preview of what it looks like */}
-                                <div className="relative rounded-2xl overflow-hidden">
+                                <div className="relative rounded-2xl overflow-hidden border border-surface-200">
                                     <div className="pointer-events-none select-none blur-sm opacity-60">
                                         <DailySummaryCard metrics={data.metrics} />
                                     </div>
-                                    <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-surface-900/60 rounded-2xl">
+                                    <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-surface-950/70 backdrop-blur-xs rounded-2xl">
                                         <Crown size={24} className="text-amber-400" />
                                         <p className="text-white text-xs font-black uppercase tracking-widest text-center px-6">
                                             Share daily summaries to WhatsApp
                                         </p>
                                         <Link
                                             href="/pricing"
-                                            className="px-5 py-2 bg-primary-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest"
+                                            className="px-5 py-2 bg-primary-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-primary-600 transition-colors shadow-md"
                                         >
                                             Upgrade to Business
                                         </Link>
@@ -233,15 +233,15 @@ export default function DashboardPage() {
                     {/* Activity feed */}
                     <div className="flex flex-col gap-2">
                         <div className="flex items-center justify-between">
-                            <p className="text-[10px] font-black uppercase tracking-widest text-surface-400">
+                            <p className="text-[10px] font-black uppercase tracking-widest text-surface-600">
                                 Recent activity
                             </p>
-                            <span className="text-[10px] text-surface-300 font-medium">
+                            <span className="text-[10px] text-surface-600 font-bold">
                                 Last {activityLimit} docs
                                 {!isBusiness && " · Pro limit"}
                             </span>
                         </div>
-                        <div className="bg-white border border-surface-100 rounded-2xl px-4">
+                        <div className="bg-white border border-surface-200/80 rounded-2xl px-4">
                             <ActivityFeed items={data.activity} />
                         </div>
                         {/* Upgrade nudge under feed for Pro users */}

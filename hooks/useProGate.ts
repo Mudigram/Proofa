@@ -41,7 +41,7 @@ export function useProGate(): ProGateResult {
             // Respect session-level dismissals (don't re-prompt same session)
             const dismissKey = `proofa_upgrade_dismissed_${variant}`;
             const wasDismissed = sessionStorage.getItem(dismissKey) === "1";
-            if (wasDismissed) return false;
+            if (wasDismissed) return true;
 
             setActiveVariant(variant);
             return false;

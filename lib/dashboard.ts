@@ -231,3 +231,24 @@ export async function saveDocumentToCloud(params: {
     if (error) console.error("[Dashboard] Cloud save failed:", error);
     return !error;
 }
+
+/** Fetches cloud documents for logged in users to sync history across devices */
+export async function fetchCloudHistory(ownerId: string) {
+    const { data, error } = await supabase
+        .from("documents")
+        .select("*")
+        .eq("owner_id", ownerId)
+        .is("deleted_at", null)
+        .order("created_at", { ascending: false });
+
+    if (error || !data) return [];
+
+    return data.map((doc: any) => ({
+        id: doc.id,
+        type: doc.type,
+        template: doc.template,
+        createdAt: doc.created_at,
+        updatedAt: doc.updated_at || doc.created_at,
+        data: doc.data || {},
+    }));
+}

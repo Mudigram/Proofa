@@ -92,6 +92,7 @@ export const viewport: Viewport = {
 
 import { ToastProvider } from "@/components/ui/Toast";
 import { AuthProvider } from "@/context/AuthContext";
+import { ThemeProvider } from "@/context/ThemeContext";
 import NetworkToast from "@/components/NetworkToast";
 import ServiceWorkerRegister from "@/components/ServiceWorkerRegister";
 import InstallPwaBanner from "@/components/InstallPwaBanner";
@@ -102,20 +103,22 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={`${inter.variable} ${outfit.variable} ${geistMono.variable} pb-20`}>
+    <html lang="en" suppressHydrationWarning>
+      <body className={`${inter.variable} ${outfit.variable} ${geistMono.variable} pb-20 bg-white dark:bg-surface-950 text-surface-900 dark:text-surface-50 transition-colors duration-200`}>
 
-        <AuthProvider>
-          <ToastProvider>
-            <ServiceWorkerRegister />
-            <NetworkToast />
-            <InstallPwaBanner />
-            <Header />
-            {children}
-            <BottomNav />
-          </ToastProvider>
-          <Analytics />
-        </AuthProvider>
+        <ThemeProvider>
+          <AuthProvider>
+            <ToastProvider>
+              <ServiceWorkerRegister />
+              <NetworkToast />
+              <InstallPwaBanner />
+              <Header />
+              {children}
+              <BottomNav />
+            </ToastProvider>
+            <Analytics />
+          </AuthProvider>
+        </ThemeProvider>
 
       </body>
     </html>

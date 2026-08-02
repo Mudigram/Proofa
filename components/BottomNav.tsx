@@ -38,7 +38,7 @@ export default function BottomNav() {
         <>
             <nav className="fixed bottom-0 left-0 right-0 z-50 px-4 pb-6 pt-2 pointer-events-none">
                 <div className="max-w-md mx-auto relative h-16 pointer-events-auto">
-                    <div className="absolute inset-0 bg-white/80 backdrop-blur-xl border border-surface-200/50 rounded-[2rem] shadow-2xl shadow-surface-900/5" />
+                    <div className="absolute inset-0 bg-white/80 dark:bg-surface-900/80 backdrop-blur-xl border border-surface-200/50 dark:border-surface-800/80 rounded-[2rem] shadow-2xl shadow-surface-900/5 dark:shadow-black/40 transition-colors duration-200" />
 
                     <div className="relative flex items-center justify-around h-full px-2">
                         {navItems.map((item) => {
@@ -59,7 +59,7 @@ export default function BottomNav() {
                                         <motion.div
                                             animate={{ rotate: isCreateOpen ? 45 : 0 }}
                                             transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                                            className="w-14 h-14 bg-primary-500 rounded-2xl flex items-center justify-center text-white shadow-xl shadow-primary-500/40 ring-4 ring-white"
+                                            className="w-14 h-14 bg-primary-500 rounded-2xl flex items-center justify-center text-white shadow-xl shadow-primary-500/40 ring-4 ring-white dark:ring-surface-950"
                                         >
                                             <Icon size={28} strokeWidth={3} />
                                         </motion.div>

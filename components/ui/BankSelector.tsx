@@ -18,21 +18,32 @@ export function BankSelector({ onSelect }: BankSelectorProps) {
     const [isOpen, setIsOpen] = useState(false);
 
     useEffect(() => {
-        if (!user || (!isPro && isAuthenticated)) {
+        try {
+            const cached = localStorage.getItem("proofa_bank_vault");
+            if (cached) {
+                const parsed = JSON.parse(cached);
+                if (Array.isArray(parsed) && parsed.length > 0) {
+                    setAccounts(parsed);
+                }
+            }
+        } catch (_) {}
+
+        if (!user) {
             setIsLoading(false);
             return;
         }
 
         const fetchAccounts = async () => {
             const { data } = await getBankAccounts(user.id);
-            if (data) {
+            if (data && data.length > 0) {
                 setAccounts(data);
+                localStorage.setItem("proofa_bank_vault", JSON.stringify(data));
             }
             setIsLoading(false);
         };
 
         fetchAccounts();
-    }, [user, isPro, isAuthenticated]);
+    }, [user]);
 
     if (isLoading) {
         return (
@@ -43,7 +54,7 @@ export function BankSelector({ onSelect }: BankSelectorProps) {
         );
     }
 
-    if (!isPro || accounts.length === 0) {
+    if (accounts.length === 0) {
         return null;
     }
 

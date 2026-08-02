@@ -21,6 +21,7 @@ import {
     Rocket
 } from "lucide-react";
 import Image from "next/image";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
 
 const POPULAR_BANKS = [
     "GTBank",
@@ -121,7 +122,11 @@ export default function WelcomePage() {
     };
 
     return (
-        <main className="app-container min-h-screen pb-16 pt-8 flex flex-col justify-center bg-gradient-to-b from-orange-50/40 via-white to-surface-50">
+        <main className="app-container min-h-screen pb-16 pt-8 flex flex-col justify-center bg-gradient-to-b from-orange-50/40 via-white to-surface-50 dark:from-surface-950 dark:via-surface-900 dark:to-surface-950 relative transition-colors duration-200">
+            {/* Top Right Dark Mode Toggle */}
+            <div className="absolute top-6 right-6 z-30">
+                <ThemeToggle />
+            </div>
             {/* Header & Step Indicator */}
             <div className="text-center mb-8">
                 <div className="w-14 h-14 bg-white border border-surface-200 rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-sm">

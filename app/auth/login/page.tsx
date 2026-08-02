@@ -1,20 +1,30 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Mail, Lock, Eye, EyeOff, ArrowRight, Loader2, ShieldCheck } from "lucide-react";
 import { signIn, signInWithGoogle } from "@/lib/auth";
+import { useAuth } from "@/context/AuthContext";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
 
 export default function LoginPage() {
     const router = useRouter();
+    const { isAuthenticated, isLoading: authLoading } = useAuth();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (!authLoading && isAuthenticated) {
+            const redirect = new URLSearchParams(window.location.search).get("from") || "/";
+            router.replace(redirect);
+        }
+    }, [authLoading, isAuthenticated, router]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -43,12 +53,17 @@ export default function LoginPage() {
     };
 
     return (
-        <main className="app-container min-h-screen flex flex-col justify-center py-10 bg-gradient-to-b from-orange-50/50 via-white to-surface-50">
+        <main className="app-container min-h-screen flex flex-col justify-center py-10 bg-gradient-to-b from-orange-50/50 via-white to-surface-50 dark:from-surface-950 dark:via-surface-900 dark:to-surface-950 relative transition-colors duration-200">
+            {/* Top Right Dark Mode Toggle for Unauthenticated Guests */}
+            <div className="absolute top-6 right-6 z-30">
+                <ThemeToggle />
+            </div>
+
             <motion.div
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.35, ease: "easeOut" }}
-                className="w-full max-w-sm mx-auto bg-white border border-surface-200/80 p-8 rounded-[2.5rem] shadow-xl shadow-surface-900/5 relative overflow-hidden"
+                className="w-full max-w-sm mx-auto bg-white dark:bg-surface-900 border border-surface-200/80 dark:border-surface-800 p-8 rounded-[2.5rem] shadow-xl shadow-surface-900/5 relative overflow-hidden"
             >
                 {/* Decorative Brand Bar */}
                 <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-primary-500 via-amber-500 to-primary-600" />
