@@ -158,17 +158,7 @@ export default function BrandIdentityPage() {
     }
 
     return (
-        <main className="app-container min-h-screen pb-24 pt-8">
-            <header className="mb-8 flex items-center justify-between relative">
-                <button onClick={() => router.back()} className="w-10 h-10 bg-white border border-surface-200 rounded-full flex items-center justify-center text-surface-600 shadow-sm active:scale-95 transition-all">
-                    <ChevronLeft size={20} />
-                </button>
-                <div className="flex items-center gap-2 absolute left-1/2 -translate-x-1/2">
-                    <Palette size={20} className="text-primary-500" />
-                    <h1 className="text-xl font-black text-surface-900 tracking-tight">Brand Identity</h1>
-                </div>
-                <div className="w-10 h-10"></div>
-            </header>
+        <main className="app-container min-h-screen pb-24 pt-4">
 
             {/* Logo Section */}
             <div className="bg-white border-2 border-surface-100 rounded-[2rem] p-6 shadow-sm mb-6">

@@ -11,6 +11,7 @@ import { getDocumentById, saveDocument } from "@/lib/StorageUtils";
 import { PageTransition, StaggerContainer, StaggerItem } from "@/components/ui/Animations";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/components/ui/Toast";
+import { DatePicker } from "@/components/ui/DatePicker";
 
 export default function ReceiptForm() {
     const searchParams = useSearchParams();
@@ -206,13 +207,7 @@ export default function ReceiptForm() {
 
 
     const handleModeSwitch = (newMode: "edit" | "preview") => {
-        if (newMode === "preview") {
-            if (validate()) {
-                setMode("preview");
-            }
-        } else {
-            setMode("edit");
-        }
+        setMode(newMode);
     };
 
     return (
@@ -316,7 +311,7 @@ export default function ReceiptForm() {
                                                     className="bg-white border-none"
                                                 />
                                                 <div className="flex flex-col gap-1.5">
-                                                    <label className="text-[9px] font-black text-surface-400 tracking-widest uppercase ml-1">Category</label>
+                                                    <label className="text-[10px] font-black text-surface-400 tracking-widest uppercase ml-1">Category</label>
                                                     <div className="flex gap-2">
                                                         {["Product", "Service", "Expense"].map((cat) => (
                                                             <button
@@ -334,7 +329,7 @@ export default function ReceiptForm() {
                                                 </div>
                                                 <div className="grid grid-cols-2 gap-4">
                                                     <div className="flex flex-col gap-1.5">
-                                                        <label className="text-[9px] font-black text-surface-400 tracking-widest uppercase ml-1">QTY</label>
+                                                        <label className="text-[10px] font-black text-surface-400 tracking-widest uppercase ml-1">QTY</label>
                                                         <input
                                                             type="number"
                                                             value={item.quantity}
@@ -354,12 +349,10 @@ export default function ReceiptForm() {
                                         {errors.items && <p className="text-red-500 text-[10px] font-bold mt-1 px-1">{errors.items}</p>}
 
                                         <div className="flex flex-col gap-4 pt-2 border-t border-surface-100 mt-2">
-                                            <Input
+                                            <DatePicker
                                                 label="DATE"
-                                                type="date"
                                                 value={formData.date}
-                                                onChange={(e) => handleChange("date", e.target.value)}
-                                                className="bg-surface-50 border-none"
+                                                onChange={(dateStr) => handleChange("date", dateStr)}
                                             />
                                         </div>
                                     </div>

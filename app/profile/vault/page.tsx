@@ -43,6 +43,7 @@ export default function BankVaultPage() {
             setError(error.message);
         } else if (data) {
             setAccounts(data);
+            localStorage.setItem("proofa_bank_vault", JSON.stringify(data));
         }
         setIsLoading(false);
     };
@@ -82,7 +83,9 @@ export default function BankVaultPage() {
         if (error) {
             setError(error.message);
         } else {
-            setAccounts(accounts.filter((a) => a.id !== id));
+            const updated = accounts.filter((a) => a.id !== id);
+            setAccounts(updated);
+            localStorage.setItem("proofa_bank_vault", JSON.stringify(updated));
         }
         setIsDeleting(null);
     };
@@ -98,16 +101,8 @@ export default function BankVaultPage() {
     // Up-sell for non-pro users
     if (!isPro) {
         return (
-            <main className="app-container min-h-screen pb-24 pt-8 flex flex-col">
-                <header className="mb-8 flex items-center justify-between relative">
-                    <button onClick={() => router.back()} className="w-10 h-10 bg-white border border-surface-200 rounded-full flex items-center justify-center text-surface-600 shadow-sm active:scale-95 transition-all">
-                        <ChevronLeft size={20} />
-                    </button>
-                    <h1 className="text-xl font-black text-surface-900 tracking-tight absolute left-1/2 -translate-x-1/2">Bank Vault</h1>
-                    <div className="w-10 h-10"></div>
-                </header>
-
-                <div className="flex-1 flex flex-col items-center justify-center text-center px-4 -mt-20">
+            <main className="app-container min-h-screen pb-24 pt-4 flex flex-col">
+                <div className="flex-1 flex flex-col items-center justify-center text-center px-4">
                     <div className="w-24 h-24 bg-gradient-to-br from-amber-100 to-amber-50 rounded-3xl flex items-center justify-center text-amber-500 mb-6 shadow-xl shadow-amber-500/10 rotate-3">
                         <Lock size={40} className="opacity-80 drop-shadow-sm" />
                     </div>
@@ -127,26 +122,21 @@ export default function BankVaultPage() {
     }
 
     return (
-        <main className="app-container min-h-screen pb-24 pt-8">
-            <header className="mb-8 flex items-center justify-between relative">
-                <button onClick={() => router.back()} className="w-10 h-10 bg-white border border-surface-200 rounded-full flex items-center justify-center text-surface-600 shadow-sm active:scale-95 transition-all">
-                    <ChevronLeft size={20} />
-                </button>
-                <div className="flex items-center gap-2 absolute left-1/2 -translate-x-1/2">
-                    <WalletCards size={20} className="text-primary-500" />
-                    <h1 className="text-xl font-black text-surface-900 tracking-tight">Bank Vault</h1>
+        <main className="app-container min-h-screen pb-24 pt-4">
+            <div className="mb-6 flex items-center justify-between">
+                <div>
+                    <h2 className="text-sm font-bold text-surface-900">Saved Bank Accounts</h2>
+                    <p className="text-xs text-surface-500 font-medium">Insert saved details into any receipt</p>
                 </div>
-                {!isAdding && accounts.length < 3 ? (
+                {!isAdding && accounts.length < 3 && (
                     <button
                         onClick={() => setIsAdding(true)}
-                        className="w-10 h-10 bg-primary-50 text-primary-600 rounded-full flex items-center justify-center shadow-sm active:scale-95 transition-all hover:bg-primary-100"
+                        className="bg-primary-500 text-white text-xs font-bold px-3.5 py-2 rounded-xl flex items-center gap-1.5 shadow-sm active:scale-95 transition-all"
                     >
-                        <Plus size={20} />
+                        <Plus size={16} /> Add Bank
                     </button>
-                ) : (
-                    <div className="w-10 h-10"></div>
                 )}
-            </header>
+            </div>
 
             {error && (
                 <div className="bg-red-50 border border-red-100 text-red-600 text-sm font-bold px-4 py-3 rounded-xl mb-6 flex justify-between items-center">

@@ -12,6 +12,7 @@ import { PageTransition, StaggerContainer, StaggerItem } from "@/components/ui/A
 import { useAuth } from "@/context/AuthContext";
 import { formatCurrency, formatDate } from "@/components/templates/TemplateUtils";
 import { useToast } from "@/components/ui/Toast";
+import { DatePicker } from "@/components/ui/DatePicker";
 
 export default function InvoiceForm() {
     const searchParams = useSearchParams();
@@ -190,13 +191,7 @@ export default function InvoiceForm() {
 
 
     const handleModeSwitch = (newMode: "edit" | "preview") => {
-        if (newMode === "preview") {
-            if (validate()) {
-                setMode("preview");
-            }
-        } else {
-            setMode("edit");
-        }
+        setMode(newMode);
     };
 
     return (
@@ -276,11 +271,10 @@ export default function InvoiceForm() {
                                             value={formData.invoiceNumber}
                                             onChange={(e) => handleChange("invoiceNumber", e.target.value)}
                                         />
-                                        <Input
+                                        <DatePicker
                                             label="DATE"
-                                            type="date"
                                             value={formData.issueDate}
-                                            onChange={(e) => handleChange("issueDate", e.target.value)}
+                                            onChange={(dateStr) => handleChange("issueDate", dateStr)}
                                         />
                                     </div>
                                 </section>

@@ -192,13 +192,7 @@ export default function OrderForm() {
 
 
     const handleModeSwitch = (newMode: "edit" | "preview") => {
-        if (newMode === "preview") {
-            if (validate()) {
-                setMode("preview");
-            }
-        } else {
-            setMode("edit");
-        }
+        setMode(newMode);
     };
 
     return (

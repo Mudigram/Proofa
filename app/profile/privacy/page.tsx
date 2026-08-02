@@ -32,25 +32,16 @@ export default function DataPrivacyPage() {
     };
 
     return (
-        <main className="app-container min-h-screen pb-32 pt-8">
-            <header className="mb-6">
-                <Link
-                    href="/profile"
-                    className="inline-flex items-center text-surface-500 hover:text-surface-900 transition-colors mb-4"
-                >
-                    <ChevronLeft size={20} className="mr-1" />
-                    Back to Profile
-                </Link>
-                <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-surface-100 text-surface-600 rounded-xl flex items-center justify-center">
-                        <ShieldCheck size={24} />
-                    </div>
-                    <div>
-                        <h1 className="text-2xl font-black text-surface-900 tracking-tight">Data & Privacy</h1>
-                        <p className="text-sm text-surface-500 font-medium mt-0.5">Manage your data and understand your rights</p>
-                    </div>
+        <main className="app-container min-h-screen pb-32 pt-4">
+            <div className="flex items-center gap-3 mb-6">
+                <div className="w-12 h-12 bg-surface-100 text-surface-600 rounded-xl flex items-center justify-center">
+                    <ShieldCheck size={24} />
                 </div>
-            </header>
+                <div>
+                    <h1 className="text-xl font-bold text-surface-900 tracking-tight">Data &amp; Privacy</h1>
+                    <p className="text-xs text-surface-500 font-medium mt-0.5">Manage your data and understand your rights</p>
+                </div>
+            </div>
 
             <div className="space-y-6">
                 {/* Data Actions */}

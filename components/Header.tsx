@@ -21,7 +21,11 @@ export default function Header() {
         if (pathname.includes("/how-it-works")) return "How it Works";
         if (pathname.includes("/history")) return "History";
         if (pathname.includes("/templates")) return "Templates";
-        if (pathname.includes("/profile")) return "Profile";
+        if (pathname.includes("/profile/vault")) return "Bank Vault";
+        if (pathname.includes("/profile/brand")) return "Brand Identity";
+        if (pathname.includes("/profile/settings")) return "Account Settings";
+        if (pathname.includes("/profile/privacy")) return "Data & Privacy";
+        if (pathname.includes("/profile")) return "Account";
         return "";
     };
 

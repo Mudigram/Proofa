@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
@@ -10,12 +10,36 @@ import Image from "next/image";
 import { Modal } from "@/components/ui/Modal";
 import { useToast } from "@/components/ui/Toast";
 
+import { SavedBankAccount } from "@/lib/types";
+import { getBankAccounts } from "@/lib/bank";
+
 export default function ProfilePage() {
     const { user, profile, isPro, plan, signOut, isAuthenticated, isLoading } = useAuth();
     const router = useRouter();
     const { showToast } = useToast();
     const [isSupportOpen, setIsSupportOpen] = useState(false);
     const [copiedEmail, setCopiedEmail] = useState(false);
+    const [vaultAccounts, setVaultAccounts] = useState<SavedBankAccount[]>([]);
+
+    useEffect(() => {
+        if (typeof window !== "undefined") {
+            const cached = localStorage.getItem("proofa_bank_vault");
+            if (cached) {
+                try {
+                    const parsed = JSON.parse(cached);
+                    if (Array.isArray(parsed) && parsed.length > 0) setVaultAccounts(parsed);
+                } catch {}
+            }
+        }
+        if (user?.id) {
+            getBankAccounts(user.id).then(({ data }) => {
+                if (data && data.length > 0) {
+                    setVaultAccounts(data);
+                    localStorage.setItem("proofa_bank_vault", JSON.stringify(data));
+                }
+            });
+        }
+    }, [user]);
 
     const handleSignOut = async () => {
         await signOut();
@@ -69,7 +93,8 @@ export default function ProfilePage() {
 
     // Live status & merchant readiness calculation
     const p = profile as any;
-    const hasBank = Boolean(p?.bankDetails?.bankName || p?.bankName);
+    const hasBank = Boolean(p?.bankDetails?.bankName || p?.bankName || vaultAccounts.length > 0);
+    const activeBankName = vaultAccounts[0]?.bankName || p?.bankDetails?.bankName || p?.bankName;
     const hasLogo = Boolean(profile?.logoUrl);
     const hasBusinessName = Boolean(profile?.businessName);
 
@@ -77,7 +102,7 @@ export default function ProfilePage() {
     const setupPercentage = Math.round((completedSteps / 3) * 100);
 
     const bankSnippet = hasBank
-        ? `${p.bankDetails?.bankName || p.bankName} active • Ready for transfers 💸`
+        ? `${activeBankName} active • Ready for transfers 💸`
         : isPro
             ? "Manage saved account details"
             : "Manage saved account details (Pro)";

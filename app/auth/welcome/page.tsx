@@ -1,107 +1,391 @@
 "use client";
 
-import React from "react";
-import { motion } from "framer-motion";
+import React, { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import { Crown, CheckCircle2, ArrowRight, Zap, Image as ImageIcon, Smartphone } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
+import { updateProfile } from "@/lib/auth";
+import { addBankAccount } from "@/lib/bank";
+import {
+    CheckCircle2,
+    ArrowRight,
+    Building2,
+    WalletCards,
+    Sparkles,
+    Check,
+    Phone,
+    Globe,
+    Crown,
+    Loader2,
+    Rocket
+} from "lucide-react";
+import Image from "next/image";
+
+const POPULAR_BANKS = [
+    "GTBank",
+    "Access Bank",
+    "Zenith Bank",
+    "Moniepoint",
+    "OPay",
+    "Kuda Bank",
+    "First Bank",
+    "UBA",
+    "Fidelity Bank",
+    "Stanbic IBTC"
+];
+
+const CURRENCIES = [
+    { code: "NGN", symbol: "₦", label: "Nigerian Naira" },
+    { code: "USD", symbol: "$", label: "US Dollar" },
+    { code: "GBP", symbol: "£", label: "British Pound" },
+    { code: "EUR", symbol: "€", label: "Euro" },
+];
 
 export default function WelcomePage() {
-    const features = [
-        {
-            icon: <Zap className="text-orange-500" size={20} />,
-            title: "Remove Watermark",
-            desc: "Export clean, professional documents without the 'Made with Proofa' tag."
-        },
-        {
-            icon: <ImageIcon className="text-blue-500" size={20} />,
-            title: "Permanent Business Logo",
-            desc: "Upload once, and we'll auto-fetch your logo for every new receipt."
-        },
-        {
-            icon: <Smartphone className="text-green-500" size={20} />,
-            title: "HD Proofs",
-            desc: "Higher resolution exports that look sharp on any screen or printer."
+    const router = useRouter();
+    const { user, profile, refreshProfile } = useAuth();
+
+    const [step, setStep] = useState<1 | 2 | 3>(1);
+    const [isLoading, setIsLoading] = useState(false);
+
+    // Form states
+    const [businessName, setBusinessName] = useState("");
+    const [phone, setPhone] = useState("");
+    const [currency, setCurrency] = useState("NGN");
+
+    // Bank states
+    const [bankName, setBankName] = useState("GTBank");
+    const [accountName, setAccountName] = useState("");
+    const [accountNumber, setAccountNumber] = useState("");
+
+    useEffect(() => {
+        // Pre-fill business name from signup
+        if (typeof window !== "undefined") {
+            const cachedName = localStorage.getItem("proofa_onboarding_biz_name");
+            if (cachedName) {
+                setBusinessName(cachedName);
+            } else if (profile?.businessName) {
+                setBusinessName(profile.businessName);
+            }
         }
-    ];
+    }, [profile]);
+
+    // Save Step 1 (Business Identity)
+    const handleStep1 = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsLoading(true);
+
+        if (user) {
+            await updateProfile(user.id, {
+                business_name: businessName.trim() || "My Business",
+                default_currency: currency,
+            });
+            await refreshProfile();
+        }
+
+        setIsLoading(false);
+        setStep(2);
+    };
+
+    // Save Step 2 (Bank Vault)
+    const handleStep2 = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsLoading(true);
+
+        if (user && bankName && accountName && accountNumber) {
+            await addBankAccount(user.id, {
+                bankName: bankName.trim(),
+                accountName: accountName.trim(),
+                accountNumber: accountNumber.trim(),
+            });
+            // Cache locally for instant availability
+            try {
+                const vault = [{
+                    id: `bank_${Date.now()}`,
+                    userId: user.id,
+                    bankName: bankName.trim(),
+                    accountName: accountName.trim(),
+                    accountNumber: accountNumber.trim(),
+                }];
+                localStorage.setItem("proofa_bank_vault", JSON.stringify(vault));
+            } catch {}
+        }
+
+        setIsLoading(false);
+        setStep(3);
+    };
+
+    const handleSkipBank = () => {
+        setStep(3);
+    };
 
     return (
-        <main className="min-h-screen bg-white">
-            <div className="app-container py-12 flex flex-col items-center text-center">
-                <motion.div
-                    initial={{ scale: 0.8, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    transition={{ duration: 0.5 }}
-                    className="w-20 h-20 bg-primary-50 text-primary-500 rounded-3xl flex items-center justify-center mb-8 shadow-xl shadow-primary-500/10"
-                >
-                    <CheckCircle2 size={40} strokeWidth={2.5} />
-                </motion.div>
+        <main className="app-container min-h-screen pb-16 pt-8 flex flex-col justify-center bg-gradient-to-b from-orange-50/40 via-white to-surface-50">
+            {/* Header & Step Indicator */}
+            <div className="text-center mb-8">
+                <div className="w-14 h-14 bg-white border border-surface-200 rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-sm">
+                    <Image
+                        src="/Logo/Proofa orange icon.png"
+                        alt="Proofa Logo"
+                        width={36}
+                        height={36}
+                        className="object-contain"
+                        unoptimized
+                    />
+                </div>
+                <h1 className="text-2xl font-black text-surface-900 tracking-tight font-heading">
+                    Setup Your Business
+                </h1>
+                <p className="text-xs text-surface-500 font-medium mt-0.5">
+                    Step {step} of 3 &bull; Takes less than 60 seconds
+                </p>
 
-                <motion.h1
-                    initial={{ y: 20, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    transition={{ delay: 0.2 }}
-                    className="text-4xl font-black text-surface-900 tracking-tight mb-4"
-                >
-                    Account Created!
-                </motion.h1>
+                {/* Progress Bar */}
+                <div className="w-48 h-1.5 bg-surface-200 rounded-full mx-auto mt-4 overflow-hidden flex">
+                    <div
+                        className="h-full bg-primary-500 transition-all duration-500"
+                        style={{ width: step === 1 ? "33%" : step === 2 ? "66%" : "100%" }}
+                    />
+                </div>
+            </div>
 
-                <motion.p
-                    initial={{ y: 20, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    transition={{ delay: 0.3 }}
-                    className="text-surface-500 font-medium max-w-[280px] mb-12 leading-relaxed"
-                >
-                    Welcome to Proofa. Your professional business presence starts right here.
-                </motion.p>
+            <AnimatePresence mode="wait">
+                {step === 1 && (
+                    <motion.div
+                        key="step1"
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -20 }}
+                        transition={{ duration: 0.25 }}
+                        className="w-full max-w-sm mx-auto bg-white border border-surface-200/80 p-6 rounded-[2.5rem] shadow-xl shadow-surface-900/5"
+                    >
+                        <div className="flex items-center gap-2 mb-4">
+                            <div className="w-8 h-8 rounded-xl bg-primary-50 text-primary-600 flex items-center justify-center shrink-0">
+                                <Building2 size={18} />
+                            </div>
+                            <div>
+                                <h2 className="text-sm font-bold text-surface-900">1. Business Identity</h2>
+                                <p className="text-xs text-surface-500">Appears at the top of your receipts</p>
+                            </div>
+                        </div>
 
-                <motion.div
-                    initial={{ y: 30, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    transition={{ delay: 0.4 }}
-                    className="w-full max-w-sm bg-surface-50 rounded-[2.5rem] p-8 border border-surface-100 mb-10 text-left"
-                >
-                    <div className="flex items-center gap-2 mb-6">
-                        <Crown className="text-primary-500" size={18} />
-                        <h2 className="text-xs font-black uppercase tracking-widest text-surface-400">Unlock your upgrade</h2>
-                    </div>
+                        <form onSubmit={handleStep1} className="flex flex-col gap-4">
+                            <div>
+                                <label className="text-[10px] font-black text-surface-700 uppercase tracking-widest mb-1 block">
+                                    Business / Store Name
+                                </label>
+                                <input
+                                    type="text"
+                                    value={businessName}
+                                    onChange={(e) => setBusinessName(e.target.value)}
+                                    placeholder="e.g. Amaka's Fashion Hub"
+                                    required
+                                    className="w-full px-4 py-3.5 bg-surface-50 border border-surface-200 rounded-2xl text-surface-900 font-bold placeholder:text-surface-400 focus:outline-none focus:border-primary-500 text-xs"
+                                />
+                            </div>
 
-                    <div className="flex flex-col gap-6">
-                        {features.map((f, i) => (
-                            <div key={i} className="flex gap-4">
-                                <div className="w-10 h-10 rounded-xl bg-white border border-surface-100 flex items-center justify-center flex-shrink-0 shadow-sm">
-                                    {f.icon}
-                                </div>
-                                <div>
-                                    <h3 className="text-sm font-black text-surface-900 mb-1">{f.title}</h3>
-                                    <p className="text-[11px] font-medium text-surface-500 leading-relaxed uppercase tracking-wide">
-                                        {f.desc}
-                                    </p>
+                            <div>
+                                <label className="text-[10px] font-black text-surface-700 uppercase tracking-widest mb-1 block">
+                                    WhatsApp Number (Optional)
+                                </label>
+                                <div className="relative">
+                                    <Phone size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-surface-400" />
+                                    <input
+                                        type="tel"
+                                        value={phone}
+                                        onChange={(e) => setPhone(e.target.value)}
+                                        placeholder="e.g. 08012345678"
+                                        className="w-full pl-11 pr-4 py-3.5 bg-surface-50 border border-surface-200 rounded-2xl text-surface-900 font-bold placeholder:text-surface-400 focus:outline-none focus:border-primary-500 text-xs"
+                                    />
                                 </div>
                             </div>
-                        ))}
-                    </div>
-                </motion.div>
 
-                <motion.div
-                    initial={{ y: 40, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    transition={{ delay: 0.6 }}
-                    className="flex flex-col gap-4 w-full max-w-xs"
-                >
-                    <Link
-                        href="/pricing"
-                        className="bg-primary-500 text-white font-black py-5 rounded-2xl shadow-xl shadow-primary-500/20 active:scale-95 transition-all flex items-center justify-center gap-3 text-sm uppercase tracking-widest"
+                            <div>
+                                <label className="text-[10px] font-black text-surface-700 uppercase tracking-widest mb-1.5 block">
+                                    Default Currency
+                                </label>
+                                <div className="grid grid-cols-2 gap-2">
+                                    {CURRENCIES.map((c) => (
+                                        <button
+                                            key={c.code}
+                                            type="button"
+                                            onClick={() => setCurrency(c.code)}
+                                            className={`p-3 rounded-xl border text-left transition-all flex items-center justify-between ${currency === c.code
+                                                ? "bg-primary-50 border-primary-500 text-primary-900 font-bold"
+                                                : "bg-surface-50 border-surface-200 text-surface-600 font-medium"
+                                                }`}
+                                        >
+                                            <span className="text-xs">{c.symbol} {c.code}</span>
+                                            {currency === c.code && <Check size={14} className="text-primary-600" />}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <button
+                                type="submit"
+                                disabled={isLoading}
+                                className="w-full bg-primary-500 hover:bg-primary-600 text-white font-bold py-4 rounded-2xl flex items-center justify-center gap-2 shadow-lg shadow-primary-500/20 active:scale-[0.98] transition-all text-xs uppercase tracking-wider mt-2"
+                            >
+                                {isLoading ? (
+                                    <Loader2 size={18} className="animate-spin" />
+                                ) : (
+                                    <>
+                                        Continue to Bank Vault <ArrowRight size={16} />
+                                    </>
+                                )}
+                            </button>
+                        </form>
+                    </motion.div>
+                )}
+
+                {step === 2 && (
+                    <motion.div
+                        key="step2"
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -20 }}
+                        transition={{ duration: 0.25 }}
+                        className="w-full max-w-sm mx-auto bg-white border border-surface-200/80 p-6 rounded-[2.5rem] shadow-xl shadow-surface-900/5"
                     >
-                        See Pro Plans <ArrowRight size={18} />
-                    </Link>
-                    <Link
-                        href="/"
-                        className="text-surface-400 font-black py-4 text-xs uppercase tracking-[0.2em] active:opacity-60 transition-all"
+                        <div className="flex items-center gap-2 mb-4">
+                            <div className="w-8 h-8 rounded-xl bg-primary-50 text-primary-600 flex items-center justify-center shrink-0">
+                                <WalletCards size={18} />
+                            </div>
+                            <div>
+                                <h2 className="text-sm font-bold text-surface-900">2. Bank Vault (Payment Details)</h2>
+                                <p className="text-xs text-surface-500">Insert into receipts with 1 tap</p>
+                            </div>
+                        </div>
+
+                        <form onSubmit={handleStep2} className="flex flex-col gap-4">
+                            <div>
+                                <label className="text-[10px] font-black text-surface-700 uppercase tracking-widest mb-1 block">
+                                    Bank Name
+                                </label>
+                                <select
+                                    value={bankName}
+                                    onChange={(e) => setBankName(e.target.value)}
+                                    className="w-full px-4 py-3.5 bg-surface-50 border border-surface-200 rounded-2xl text-surface-900 font-bold focus:outline-none focus:border-primary-500 text-xs"
+                                >
+                                    {POPULAR_BANKS.map((b) => (
+                                        <option key={b} value={b}>{b}</option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div>
+                                <label className="text-[10px] font-black text-surface-700 uppercase tracking-widest mb-1 block">
+                                    Account Name
+                                </label>
+                                <input
+                                    type="text"
+                                    value={accountName}
+                                    onChange={(e) => setAccountName(e.target.value)}
+                                    placeholder="e.g. Amaka OKONKWO"
+                                    className="w-full px-4 py-3.5 bg-surface-50 border border-surface-200 rounded-2xl text-surface-900 font-bold placeholder:text-surface-400 focus:outline-none focus:border-primary-500 text-xs"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="text-[10px] font-black text-surface-700 uppercase tracking-widest mb-1 block">
+                                    Account Number
+                                </label>
+                                <input
+                                    type="text"
+                                    value={accountNumber}
+                                    onChange={(e) => setAccountNumber(e.target.value)}
+                                    placeholder="e.g. 0123456789"
+                                    className="w-full px-4 py-3.5 bg-surface-50 border border-surface-200 rounded-2xl text-surface-900 font-bold placeholder:text-surface-400 focus:outline-none focus:border-primary-500 text-xs font-mono"
+                                />
+                            </div>
+
+                            <button
+                                type="submit"
+                                disabled={isLoading}
+                                className="w-full bg-primary-500 hover:bg-primary-600 text-white font-bold py-4 rounded-2xl flex items-center justify-center gap-2 shadow-lg shadow-primary-500/20 active:scale-[0.98] transition-all text-xs uppercase tracking-wider mt-1"
+                            >
+                                {isLoading ? (
+                                    <Loader2 size={18} className="animate-spin" />
+                                ) : (
+                                    <>
+                                        Save Bank &amp; Finish Setup <ArrowRight size={16} />
+                                    </>
+                                )}
+                            </button>
+
+                            <button
+                                type="button"
+                                onClick={handleSkipBank}
+                                className="text-surface-400 font-bold text-xs hover:text-surface-600 transition-colors py-1 text-center"
+                            >
+                                Skip bank setup for now
+                            </button>
+                        </form>
+                    </motion.div>
+                )}
+
+                {step === 3 && (
+                    <motion.div
+                        key="step3"
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 0.3 }}
+                        className="w-full max-w-sm mx-auto text-center"
                     >
-                        Skip for now
-                    </Link>
-                </motion.div>
-            </div>
+                        <div className="w-16 h-16 bg-emerald-500 text-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-xl shadow-emerald-500/20">
+                            <CheckCircle2 size={36} strokeWidth={2.5} />
+                        </div>
+
+                        <h2 className="text-2xl font-black text-surface-900 tracking-tight font-heading mb-1">
+                            You&apos;re All Set! 🎉
+                        </h2>
+                        <p className="text-xs text-surface-500 font-medium mb-6">
+                            Your merchant profile for <span className="font-bold text-surface-900">{businessName || "My Business"}</span> is ready.
+                        </p>
+
+                        {/* Live Sample Card */}
+                        <div className="bg-white border border-surface-200 rounded-2xl p-4 shadow-sm text-left mb-6">
+                            <div className="flex items-center justify-between border-b border-surface-100 pb-3 mb-3">
+                                <div>
+                                    <p className="text-[10px] font-black uppercase text-primary-600 tracking-widest">Sample Receipt</p>
+                                    <p className="text-sm font-bold text-surface-900">{businessName || "My Business"}</p>
+                                </div>
+                                <span className="bg-emerald-50 text-emerald-600 text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full">
+                                    PAID
+                                </span>
+                            </div>
+                            <div className="flex justify-between items-center text-xs font-bold text-surface-700">
+                                <span>1x Designer Item</span>
+                                <span>{currency === "USD" ? "$" : currency === "GBP" ? "£" : currency === "EUR" ? "€" : "₦"}25,000</span>
+                            </div>
+                            {bankName && accountNumber && (
+                                <p className="text-xs text-surface-400 font-medium mt-2 pt-2 border-t border-surface-100">
+                                    Pay to: {bankName} &bull; {accountNumber}
+                                </p>
+                            )}
+                        </div>
+
+                        {/* Action Buttons */}
+                        <div className="flex flex-col gap-3">
+                            <Link
+                                href="/"
+                                className="w-full bg-primary-500 hover:bg-primary-600 text-white font-bold py-4 rounded-2xl flex items-center justify-center gap-2 shadow-lg shadow-primary-500/20 active:scale-[0.98] transition-all text-xs uppercase tracking-wider"
+                            >
+                                <Rocket size={16} /> Open Workspace &amp; Create Receipt
+                            </Link>
+
+                            <Link
+                                href="/pricing"
+                                className="w-full bg-white border border-surface-200 text-surface-700 font-bold py-3.5 rounded-2xl flex items-center justify-center gap-2 hover:bg-surface-50 active:scale-[0.98] transition-all text-xs"
+                            >
+                                <Crown size={15} className="text-amber-500" /> Explore Pro Features
+                            </Link>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </main>
     );
 }
