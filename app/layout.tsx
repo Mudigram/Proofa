@@ -92,6 +92,9 @@ export const viewport: Viewport = {
 
 import { ToastProvider } from "@/components/ui/Toast";
 import { AuthProvider } from "@/context/AuthContext";
+import NetworkToast from "@/components/NetworkToast";
+import ServiceWorkerRegister from "@/components/ServiceWorkerRegister";
+import InstallPwaBanner from "@/components/InstallPwaBanner";
 
 export default function RootLayout({
   children,
@@ -104,6 +107,9 @@ export default function RootLayout({
 
         <AuthProvider>
           <ToastProvider>
+            <ServiceWorkerRegister />
+            <NetworkToast />
+            <InstallPwaBanner />
             <Header />
             {children}
             <BottomNav />

@@ -1,21 +1,48 @@
 {
-    "name": "Proofa",
+    "name": "Proofa — Receipt & Invoice Generator",
     "short_name": "Proofa",
-    "description": "Professional Receipt & Invoice Generator for Nigerian SMEs.",
+    "description": "Professional Receipt & Invoice Generator for Nigerian SMEs. Send receipts on WhatsApp in seconds.",
     "start_url": "/",
     "display": "standalone",
+    "orientation": "portrait",
     "background_color": "#ffffff",
     "theme_color": "#e8590c",
+    "categories": ["business", "finance", "productivity"],
     "icons": [
         {
             "src": "/Logo/Proofa orange icon.png",
             "sizes": "192x192",
-            "type": "image/png"
+            "type": "image/png",
+            "purpose": "any maskable"
         },
         {
             "src": "/Logo/Proofa orange icon.png",
             "sizes": "512x512",
-            "type": "image/png"
+            "type": "image/png",
+            "purpose": "any maskable"
+        }
+    ],
+    "shortcuts": [
+        {
+            "name": "Create Receipt",
+            "short_name": "Receipt",
+            "description": "Generate payment receipt for WhatsApp",
+            "url": "/receipt",
+            "icons": [{ "src": "/Logo/Proofa orange icon.png", "sizes": "192x192" }]
+        },
+        {
+            "name": "Create Invoice",
+            "short_name": "Invoice",
+            "description": "Create itemized bill with bank details",
+            "url": "/invoice",
+            "icons": [{ "src": "/Logo/Proofa orange icon.png", "sizes": "192x192" }]
+        },
+        {
+            "name": "Receipt History",
+            "short_name": "History",
+            "description": "View saved documents and drafts",
+            "url": "/history",
+            "icons": [{ "src": "/Logo/Proofa orange icon.png", "sizes": "192x192" }]
         }
     ]
 }

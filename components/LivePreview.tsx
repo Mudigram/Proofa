@@ -117,11 +117,15 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
     // ── Persist helper — saves locally + cloud for Pro/Business users ─────────
     const persistDocument = useCallback(() => {
         const currency = profile?.defaultCurrency ?? "NGN";
-        // fire-and-forget; errors are caught inside saveDocument
-        saveDocument(data, type, activeTemplate, user?.id ?? null, ownerId, authIsPro, currency).catch(
+        // If status was Draft, update to Paid (or Due for invoice) when exporting final document
+        const exportData = {
+            ...data,
+            status: data?.status === "Draft" ? (type === "invoice" ? "Due" : "Paid") : (data?.status || "Paid")
+        };
+        saveDocument(exportData, type, activeTemplate, user?.id ?? null, ownerId, authIsPro, currency, docId).catch(
             (e) => console.error("[LivePreview] persistDocument failed:", e)
         );
-    }, [data, type, activeTemplate, user, ownerId, authIsPro, profile]);
+    }, [data, type, activeTemplate, user, ownerId, authIsPro, profile, docId]);
 
     // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -147,8 +151,6 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
 
     const handleWhatsApp = async () => {
         if (blockIfLocked()) return;
-        // Gate: free users see the upgrade prompt instead of a watermarked share
-        if (!gate("export")) return;
         setIsExporting(true);
         persistDocument();
 
@@ -187,7 +189,6 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
 
     const handleShare = async () => {
         if (blockIfLocked()) return;
-        if (!gate("export")) return;
         setIsExporting(true);
         persistDocument();
 
@@ -228,7 +229,6 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
 
     const handleDownload = async () => {
         if (blockIfLocked()) return;
-        if (!gate("export")) return;
         setIsExporting(true);
         persistDocument();
         const dataUrl = await getFreshDataUrl();
@@ -240,6 +240,7 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
         }
         setIsExporting(false);
     };
+
 
     // ── Derived UI state ───────────────────────────────────────────────────────
 

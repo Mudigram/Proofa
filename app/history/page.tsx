@@ -1,7 +1,9 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { getHistory, deleteDocument } from "@/lib/StorageUtils";
+import React, { useState, useEffect, useCallback } from "react";
+import { usePullToRefresh } from "@/hooks/usePullToRefresh";
+import { getHistory, deleteDocument, extractAmount } from "@/lib/StorageUtils";
+
 import { SavedDocument, ReceiptData, InvoiceData, OrderData } from "@/lib/types";
 import { formatCurrency, formatDate } from "@/components/templates/TemplateUtils";
 import { PageTransition, StaggerContainer, StaggerItem } from "@/components/ui/Animations";
@@ -26,14 +28,20 @@ export default function HistoryPage() {
         setIsLoading(false);
     }, []);
 
+    const handleRefresh = useCallback(() => {
+        setHistory(getHistory());
+    }, []);
+
+    const { isPulling, pullDistance, isRefreshing } = usePullToRefresh(handleRefresh);
+
     const filteredHistory = history.filter(doc => {
         const data = doc.data as any;
-        const status = data.status;
+        const status = typeof data.status === "string" ? data.status.toLowerCase() : "";
         if (filter === "all") return true;
 
         // If status is missing, treat as "Saved"
-        if (filter === "drafts") return status === "Draft";
-        if (filter === "saved") return !status || status !== "Draft";
+        if (filter === "drafts") return status === "draft";
+        if (filter === "saved") return !status || status !== "draft";
         return true;
     });
 
@@ -60,21 +68,10 @@ export default function HistoryPage() {
     };
 
     const getDocAmount = (doc: SavedDocument) => {
-        const data = doc.data as any;
-        try {
-            if (doc.type === "receipt") return data.amount || 0;
-            if (doc.type === "order") return data.totalAmount || 0;
-            if (doc.type === "invoice") {
-                const subtotal = data.items?.reduce((acc: number, item: any) => acc + (item.quantity * item.price), 0) || 0;
-                const vat = data.includeVat ? subtotal * ((data.vatRate || 0) / 100) : 0;
-                const delivery = data.deliveryInfo?.enabled ? data.deliveryInfo.cost : 0;
-                return subtotal + vat + delivery;
-            }
-        } catch (e) {
-            return 0;
-        }
-        return 0;
+        if (!doc || !doc.data) return 0;
+        return extractAmount(doc.data, doc.type);
     };
+
 
     if (isLoading) {
         return (
@@ -106,7 +103,19 @@ export default function HistoryPage() {
 
     return (
         <PageTransition>
-            <main className="app-container py-6 pb-24">
+            <main className="app-container py-6 pb-24" style={{ overscrollBehaviorY: "contain" }}>
+                {/* Pull-to-refresh indicator */}
+                {(isPulling || isRefreshing) && (
+                    <div
+                        className="flex justify-center items-center overflow-hidden transition-all duration-200"
+                        style={{ height: isRefreshing ? 48 : pullDistance * 0.6 }}
+                    >
+                        <div className={`w-6 h-6 border-2 border-primary-500 border-t-transparent rounded-full ${isRefreshing ? "animate-spin" : ""}`}
+                            style={!isRefreshing ? { transform: `rotate(${pullDistance * 3}deg)`, opacity: Math.min(pullDistance / 60, 1) } : undefined}
+                        />
+                    </div>
+                )}
+
                 <header className="mb-8">
                     <h1 className="text-2xl font-black tracking-tight text-surface-900">Document History</h1>
                     <p className="text-sm text-surface-400 font-medium mt-1">
@@ -149,7 +158,7 @@ export default function HistoryPage() {
                             ))}
                         </div>
 
-                        <StaggerContainer>
+                        <StaggerContainer key={filter}>
                             {!isPro && filter !== "drafts" && (
                                 <StaggerItem>
                                     <div className="mb-6 overflow-hidden relative group">

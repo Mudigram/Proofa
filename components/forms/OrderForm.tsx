@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
+
 import { Input, SegmentedControl, CurrencyInput, TextArea, PasteButton } from "@/components/ui/FormInput";
 import { LogoUpload } from "@/components/ui/LogoUpload";
 import LivePreview from "@/components/LivePreview";
@@ -16,7 +17,7 @@ export default function OrderForm() {
     const searchParams = useSearchParams();
     const docId = searchParams.get("id");
     const [currentDocId, setCurrentDocId] = useState<string | null>(docId);
-    const { profile, isPro } = useAuth();
+    const { user, profile, isPro } = useAuth();
     const { showToast } = useToast();
     const currencySymbol = profile?.defaultCurrency === "NGN" ? "₦" : (profile?.defaultCurrency === "USD" ? "$" : (profile?.defaultCurrency === "GBP" ? "£" : (profile?.defaultCurrency === "EUR" ? "€" : "₦")));
 
@@ -42,6 +43,17 @@ export default function OrderForm() {
 
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [mode, setMode] = useState<"edit" | "preview">("edit");
+
+    const subtotal = useMemo(() => {
+        return formData.items.reduce((acc, item) => acc + item.quantity * item.price, 0);
+    }, [formData.items]);
+
+    const deliveryCost = useMemo(() => {
+        return formData.deliveryInfo?.enabled ? formData.deliveryInfo.cost : 0;
+    }, [formData.deliveryInfo]);
+
+    const total = useMemo(() => subtotal + deliveryCost, [subtotal, deliveryCost]);
+
 
     useEffect(() => {
         if (docId) {
@@ -162,12 +174,22 @@ export default function OrderForm() {
     };
 
     const handleSaveDraft = async () => {
-        const updatedData = { ...formData, status: "Draft" as const };
-        const doc = await saveDocument(updatedData, "order", searchParams.get("template") as any || "minimalist", undefined, currentDocId || undefined);
+        const updatedData = { ...formData, totalAmount: total, status: "Draft" as const };
+        const doc = await saveDocument(
+            updatedData,
+            "order",
+            (searchParams.get("template") as any) || "minimalist",
+            user?.id ?? null,
+            profile?.teamOwnerId ?? user?.id ?? null,
+            isPro,
+            profile?.defaultCurrency || "NGN",
+            currentDocId || undefined
+        );
         setCurrentDocId(doc.id);
         setFormData(updatedData);
         showToast("Order Summary Draft saved!", "success");
     };
+
 
     const handleModeSwitch = (newMode: "edit" | "preview") => {
         if (newMode === "preview") {

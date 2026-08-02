@@ -17,7 +17,8 @@ export default function InvoiceForm() {
     const searchParams = useSearchParams();
     const docId = searchParams.get("id");
     const [currentDocId, setCurrentDocId] = useState<string | null>(docId);
-    const { profile, isPro } = useAuth();
+    const { user, profile, isPro } = useAuth();
+
     const { showToast } = useToast();
 
     const [formData, setFormData] = useState<InvoiceData>({
@@ -172,11 +173,21 @@ export default function InvoiceForm() {
 
     const handleSaveDraft = async () => {
         const updatedData = { ...formData, status: "Draft" as const };
-        const doc = await saveDocument(updatedData, "invoice", searchParams.get("template") as any || "minimalist", undefined, currentDocId || undefined);
+        const doc = await saveDocument(
+            updatedData,
+            "invoice",
+            (searchParams.get("template") as any) || "minimalist",
+            user?.id ?? null,
+            profile?.teamOwnerId ?? user?.id ?? null,
+            isPro,
+            profile?.defaultCurrency || "NGN",
+            currentDocId || undefined
+        );
         setCurrentDocId(doc.id);
         setFormData(updatedData);
         showToast("Invoice Draft saved!", "success");
     };
+
 
     const handleModeSwitch = (newMode: "edit" | "preview") => {
         if (newMode === "preview") {

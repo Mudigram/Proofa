@@ -1,8 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useEffect } from "react";
-import { getHistory, deleteDocument, getUserName, saveUserName } from "@/lib/StorageUtils";
+import { useState, useEffect, useCallback } from "react";
+import { usePullToRefresh } from "@/hooks/usePullToRefresh";
+import { getHistory, deleteDocument, getUserName, saveUserName, extractAmount } from "@/lib/StorageUtils";
+
 
 import { SavedDocument } from "@/lib/types";
 import Image from "next/image";
@@ -97,10 +99,10 @@ const mainActions = [
   {
     id: "receipt",
     title: "Create Receipt",
-    subtitle: "Quick expense capture",
+    subtitle: "Instant payment proof for WhatsApp sales",
     href: "/receipt",
     icon: (
-      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
         <path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z" />
         <path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8" />
         <path d="M12 17.5v.5" />
@@ -117,10 +119,10 @@ const mainActions = [
   {
     id: "invoice",
     title: "Create Invoice",
-    subtitle: "Professional billing",
+    subtitle: "Itemized bill with bank details",
     href: "/invoice",
     icon: (
-      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
         <path d="M12 2L2 7l10 5 10-5-10-5Z" />
         <path d="m2 17 10 5 10-5" />
         <path d="m2 12 10 5 10-5" />
@@ -136,10 +138,10 @@ const mainActions = [
   {
     id: "order",
     title: "Order Summary",
-    subtitle: "Inventory & Sales",
+    subtitle: "Order breakdown for buyers",
     href: "/order",
     icon: (
-      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
         <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
         <line x1="9" y1="9" x2="15" y2="9" />
         <line x1="9" y1="13" x2="15" y2="13" />
@@ -151,7 +153,7 @@ const mainActions = [
     cardBg: "bg-white",
     iconBg: "bg-surface-100 text-surface-500",
     textColor: "text-surface-900",
-    subColor: "text-surface-400",
+    subColor: "text-surface-600",
   },
 ];
 
@@ -168,6 +170,13 @@ export default function HomePage() {
     setIsLoading(false);
   }, []);
 
+  const handleRefresh = useCallback(() => {
+    setRecentHistory(getHistory().slice(0, 3));
+    setUserName(getUserName());
+  }, []);
+
+  const { isPulling, pullDistance, isRefreshing } = usePullToRefresh(handleRefresh);
+
   const handleEditName = () => {
     setTempName(userName);
     setIsEditingName(true);
@@ -178,31 +187,39 @@ export default function HomePage() {
   const greeting = hour < 12 ? "Good Morning" : hour < 18 ? "Good Afternoon" : "Good Evening";
 
   const handleSaveName = () => {
-    const finalName = tempName.trim() || "User";
+    const finalName = tempName.trim().substring(0, 15) || "User";
     saveUserName(finalName);
     setUserName(finalName);
     setIsEditingName(false);
   };
 
   const getDocTitle = (doc: SavedDocument) => {
+    if (!doc || !doc.data) return "Untitled Document";
     const data = doc.data as any;
-    return data.businessName || data.customerName || "Untitled";
+    return data.businessName?.trim() || data.customerName?.trim() || "Untitled Document";
   };
 
   const getDocAmount = (doc: SavedDocument) => {
-    const data = doc.data as any;
-    if (doc.type === "receipt") return data.amount;
-    if (doc.type === "order") return data.totalAmount;
-    if (doc.type === "invoice") {
-      const subtotal = data.items?.reduce((acc: number, item: any) => acc + (item.quantity * item.price), 0) || 0;
-      return subtotal * 1.075;
-    }
-    return 0;
+    if (!doc || !doc.data) return 0;
+    return extractAmount(doc.data, doc.type);
   };
+
 
   return (
     <PageTransition>
-      <main className="app-container py-6">
+      <main className="app-container py-6" style={{ overscrollBehaviorY: "contain" }}>
+        {/* Pull-to-refresh indicator */}
+        {(isPulling || isRefreshing) && (
+          <div
+            className="flex justify-center items-center overflow-hidden transition-all duration-200"
+            style={{ height: isRefreshing ? 48 : pullDistance * 0.6 }}
+          >
+            <div className={`w-6 h-6 border-2 border-primary-500 border-t-transparent rounded-full ${isRefreshing ? "animate-spin" : ""}`}
+              style={!isRefreshing ? { transform: `rotate(${pullDistance * 3}deg)`, opacity: Math.min(pullDistance / 60, 1) } : undefined}
+            />
+          </div>
+        )}
+
         {/* Greeting Section */}
         <section className="mb-8 mt-2">
           <div className="flex items-center gap-4">
@@ -216,28 +233,37 @@ export default function HomePage() {
                 priority
               />
             </div>
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
                 {isEditingName ? (
-                  <div className="flex items-center gap-2 animate-in fade-in slide-in-from-left-4 duration-300">
+                  <form
+                    onSubmit={(e) => { e.preventDefault(); handleSaveName(); }}
+                    className="flex items-center gap-2 animate-in fade-in slide-in-from-left-4 duration-300 w-full"
+                  >
+                    <label htmlFor="user-name-input" className="sr-only">Edit your name</label>
                     <input
+                      id="user-name-input"
                       type="text"
                       value={tempName}
-                      onChange={(e) => setTempName(e.target.value.substring(0, 10))}
-                      className="text-3xl font-extrabold text-primary-600 tracking-tight bg-primary-50 border-b-2 border-primary-500 outline-none w-[160px] pb-1"
+                      onChange={(e) => setTempName(e.target.value.substring(0, 15))}
+                      maxLength={15}
+                      aria-label="Edit display name"
+                      className="text-3xl font-extrabold text-primary-600 tracking-tight bg-primary-50 border-b-2 border-primary-500 outline-none min-w-[120px] max-w-[180px] pb-1"
                       autoFocus
                       onBlur={handleSaveName}
                       onKeyDown={(e) => e.key === 'Enter' && handleSaveName()}
                     />
                     <button
-                      onClick={handleSaveName}
-                      className="w-10 h-10 bg-primary-500 text-white rounded-full flex items-center justify-center shadow-lg active:scale-90 transition-all"
+                      type="submit"
+                      aria-label="Save display name"
+                      title="Save name"
+                      className="w-10 h-10 bg-primary-500 text-white rounded-full flex items-center justify-center shadow-lg active:scale-90 transition-all shrink-0"
                     >
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                         <polyline points="20 6 9 17 4 12" />
                       </svg>
                     </button>
-                  </div>
+                  </form>
                 ) : (
                   <div>
                     <h1 className="sr-only">WhatsApp Receipt Generator for Nigerian Businesses</h1>
@@ -245,9 +271,11 @@ export default function HomePage() {
                       {greeting}, <span className="text-primary-600">{userName}</span>
                       <button
                         onClick={handleEditName}
-                        className="p-2 opacity-40 hover:opacity-100 hover:bg-surface-900 rounded-full transition-all text-surface-400"
+                        aria-label="Edit display name"
+                        title="Edit name"
+                        className="p-2 opacity-60 hover:opacity-100 hover:bg-surface-100 rounded-full transition-all text-surface-600 focus:outline-none focus:ring-2 focus:ring-primary-500"
                       >
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                           <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
                           <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
                         </svg>
@@ -256,8 +284,8 @@ export default function HomePage() {
                   </div>
                 )}
               </div>
-              <p className="text-surface-500 text-base mt-1.5 font-medium">
-                Ready to create a new document?
+              <p className="text-surface-600 text-base mt-1.5 font-medium">
+                Create &amp; share professional receipts in 30 seconds.
               </p>
             </div>
           </div>
@@ -265,7 +293,7 @@ export default function HomePage() {
 
         {/* SEO Hero Section */}
         <section className="mb-10 text-center sm:text-left animate-in fade-in slide-in-from-bottom-4 duration-700 delay-150">
-          <p className="text-surface-600 font-medium leading-relaxed max-w-2xl text-[15px]">
+          <p className="text-surface-600 font-medium leading-relaxed max-w-2xl text-sm sm:text-base">
             <strong className="text-surface-900 font-bold">Proofa is Nigeria&apos;s fastest WhatsApp receipt generator.</strong> Create professional receipts, invoices, and order summaries in under 30 seconds — then share them directly to any WhatsApp contact. Over 10,000 Nigerian traders, market vendors, and small business owners use Proofa daily to look professional and get paid faster.
           </p>
         </section>
@@ -277,7 +305,7 @@ export default function HomePage() {
               <StaggerItem key={action.id}>
                 <Link
                   href={action.href}
-                  className={`${action.bgClass} flex items-center gap-5 p-5 pr-8 rounded-3xl shadow-card transition-all duration-300 active:scale-[0.98] group relative overflow-hidden`}
+                  className={`${action.bgClass} flex items-center gap-5 p-5 pr-8 rounded-3xl shadow-card transition-all duration-300 active:scale-[0.98] group relative overflow-hidden focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2`}
                 >
                   {/* Glossy overlay for colored cards */}
                   {action.variant !== 'white' && (
@@ -313,8 +341,8 @@ export default function HomePage() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="bg-white border border-surface-100 p-5 rounded-3xl shadow-sm flex items-start gap-4">
-              <div className="w-10 h-10 rounded-xl bg-orange-50 flex items-center justify-center text-primary-500 shrink-0">
-                <span className="text-lg">📊</span>
+              <div className="w-10 h-10 rounded-xl bg-primary-50 flex items-center justify-center text-primary-600 shrink-0">
+                <span className="text-lg" aria-hidden="true">📊</span>
               </div>
               <p className="text-sm text-surface-600 font-medium leading-relaxed pt-1">
                 <strong className="text-surface-900 block mb-0.5">WhatsApp Dominance</strong>
@@ -322,8 +350,8 @@ export default function HomePage() {
               </p>
             </div>
             <div className="bg-white border border-surface-100 p-5 rounded-3xl shadow-sm flex items-start gap-4">
-              <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-500 shrink-0">
-                <span className="text-lg">⚡</span>
+              <div className="w-10 h-10 rounded-xl bg-primary-50/70 flex items-center justify-center text-primary-600 shrink-0">
+                <span className="text-lg" aria-hidden="true">⚡</span>
               </div>
               <p className="text-sm text-surface-600 font-medium leading-relaxed pt-1">
                 <strong className="text-surface-900 block mb-0.5">Lightning Fast</strong>
@@ -331,8 +359,8 @@ export default function HomePage() {
               </p>
             </div>
             <div className="bg-white border border-surface-100 p-5 rounded-3xl shadow-sm flex items-start gap-4">
-              <div className="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center text-purple-500 shrink-0">
-                <span className="text-lg">🧾</span>
+              <div className="w-10 h-10 rounded-xl bg-surface-100 flex items-center justify-center text-surface-900 shrink-0">
+                <span className="text-lg" aria-hidden="true">🧾</span>
               </div>
               <p className="text-sm text-surface-600 font-medium leading-relaxed pt-1">
                 <strong className="text-surface-900 block mb-0.5">Versatile Documents</strong>
@@ -340,8 +368,8 @@ export default function HomePage() {
               </p>
             </div>
             <div className="bg-white border border-surface-100 p-5 rounded-3xl shadow-sm flex items-start gap-4">
-              <div className="w-10 h-10 rounded-xl bg-green-50 flex items-center justify-center text-green-500 shrink-0">
-                <span className="text-lg">🇳🇬</span>
+              <div className="w-10 h-10 rounded-xl bg-primary-50 flex items-center justify-center text-primary-600 shrink-0">
+                <span className="text-lg" aria-hidden="true">🇳🇬</span>
               </div>
               <p className="text-sm text-surface-600 font-medium leading-relaxed pt-1">
                 <strong className="text-surface-900 block mb-0.5">Built for Nigeria</strong>
@@ -357,7 +385,7 @@ export default function HomePage() {
             <h3 className="text-xl font-bold text-surface-900">
               Recent Activity
             </h3>
-            <Link href="/history" className="text-primary-600 text-[10px] font-black uppercase tracking-widest">
+            <Link href="/history" className="text-primary-600 text-xs font-black uppercase tracking-widest hover:text-primary-700 transition-colors">
               See All
             </Link>
           </div>
@@ -374,23 +402,23 @@ export default function HomePage() {
                 </div>
               ))
             ) : recentHistory.length === 0 ? (
-              <div className="bg-surface-50 border-2 border-dashed border-surface-100 rounded-[2rem] p-8 text-center">
-                <p className="text-xs font-bold text-surface-300 uppercase tracking-widest">No recent documents</p>
+              <div className="bg-surface-50 border-2 border-dashed border-surface-200 rounded-[2rem] p-8 text-center" aria-live="polite">
+                <p className="text-xs font-bold text-surface-600 uppercase tracking-widest">No recent documents</p>
               </div>
             ) : (
               recentHistory.map((doc) => (
                 <Link
                   key={doc.id}
                   href={`/${doc.type}?id=${doc.id}`}
-                  className="bg-white border border-surface-100 p-4 rounded-3xl shadow-sm flex items-center gap-4 hover:shadow-md hover:border-primary-100 transition-all active:scale-[0.98]"
+                  className="bg-white border border-surface-100 p-4 rounded-3xl shadow-sm flex items-center gap-4 hover:shadow-md hover:border-primary-100 transition-all active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
                 >
-                  <div className={`w-14 h-14 rounded-xl flex items-center justify-center p-2 ${doc.type === "receipt" ? "bg-orange-50" :
-                    doc.type === "invoice" ? "bg-blue-50" :
-                      "bg-purple-50"
+                  <div className={`w-14 h-14 rounded-xl flex items-center justify-center p-2 ${doc.type === "receipt" ? "bg-primary-50 text-primary-600" :
+                    doc.type === "invoice" ? "bg-secondary-900 text-white" :
+                      "bg-surface-100 text-surface-900"
                     }`}>
                     <Image
                       src="/Logo/Proofa orange icon.png"
-                      alt="Proofa"
+                      alt="Proofa Icon"
                       width={40}
                       height={40}
                       className="object-contain opacity-90"
@@ -400,11 +428,11 @@ export default function HomePage() {
                     <h4 className="font-bold text-surface-900 leading-none truncate">
                       {getDocTitle(doc)}
                     </h4>
-                    <p className="text-surface-400 text-[10px] font-bold uppercase tracking-widest mt-2 flex items-center gap-1.5">
+                    <p className="text-surface-600 text-xs font-bold uppercase tracking-widest mt-2 flex items-center gap-1.5 font-mono tabular-nums">
                       {formatCurrency(getDocAmount(doc))} &middot; {formatDate(doc.createdAt)}
                     </p>
                   </div>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-surface-300">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-surface-400" aria-hidden="true">
                     <polyline points="9 18 15 12 9 6" />
                   </svg>
                 </Link>
@@ -422,24 +450,24 @@ export default function HomePage() {
           </div>
           <div className="flex flex-col gap-4">
             <div className="flex items-start gap-4 bg-white border border-surface-100 p-5 rounded-3xl shadow-sm">
-              <div className="w-8 h-8 rounded-full bg-primary-500 text-white flex items-center justify-center font-bold text-sm shrink-0">1</div>
+              <div className="w-8 h-8 rounded-full bg-primary-500 text-white flex items-center justify-center font-bold text-sm shrink-0 font-mono tabular-nums">1</div>
               <div>
                 <h4 className="font-bold text-surface-900 mb-1">Fill in your details</h4>
-                <p className="text-sm text-surface-500 font-medium">Enter your business name, customer info, and transaction amount.</p>
+                <p className="text-sm text-surface-600 font-medium leading-relaxed">Enter your business name, customer info, and transaction amount.</p>
               </div>
             </div>
             <div className="flex items-start gap-4 bg-white border border-surface-100 p-5 rounded-3xl shadow-sm">
-              <div className="w-8 h-8 rounded-full bg-primary-500 text-white flex items-center justify-center font-bold text-sm shrink-0">2</div>
+              <div className="w-8 h-8 rounded-full bg-primary-500 text-white flex items-center justify-center font-bold text-sm shrink-0 font-mono tabular-nums">2</div>
               <div>
                 <h4 className="font-bold text-surface-900 mb-1">Choose your template</h4>
-                <p className="text-sm text-surface-500 font-medium">Pick from receipt, invoice, or order summary formats.</p>
+                <p className="text-sm text-surface-600 font-medium leading-relaxed">Pick from receipt, invoice, or order summary formats.</p>
               </div>
             </div>
             <div className="flex items-start gap-4 bg-white border border-surface-100 p-5 rounded-3xl shadow-sm">
-              <div className="w-8 h-8 rounded-full bg-primary-500 text-white flex items-center justify-center font-bold text-sm shrink-0">3</div>
+              <div className="w-8 h-8 rounded-full bg-primary-500 text-white flex items-center justify-center font-bold text-sm shrink-0 font-mono tabular-nums">3</div>
               <div>
                 <h4 className="font-bold text-surface-900 mb-1">Share on WhatsApp</h4>
-                <p className="text-sm text-surface-500 font-medium">Tap the WhatsApp button and your professional document is sent instantly.</p>
+                <p className="text-sm text-surface-600 font-medium leading-relaxed">Tap the WhatsApp button and your professional document is sent instantly.</p>
               </div>
             </div>
           </div>
@@ -470,7 +498,7 @@ export default function HomePage() {
                   <span className="w-1.5 h-1.5 rounded-full bg-primary-500 shrink-0 group-hover:scale-150 transition-transform" />
                   {faq.question}
                 </h4>
-                <p className="text-sm text-surface-500 font-medium leading-relaxed">
+                <p className="text-sm text-surface-600 font-medium leading-relaxed">
                   {faq.answer}
                 </p>
               </div>
@@ -484,28 +512,28 @@ export default function HomePage() {
             Trusted by Nigerian Entrepreneurs
           </h3>
           <div className="flex flex-wrap justify-center gap-2">
-            <span className="bg-surface-100 text-surface-600 text-[11px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full">Fashion Vendors</span>
-            <span className="bg-surface-100 text-surface-600 text-[11px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full">Food Delivery</span>
-            <span className="bg-surface-100 text-surface-600 text-[11px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full">Freelancers</span>
-            <span className="bg-surface-100 text-surface-600 text-[11px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full">Online Traders</span>
+            <span className="bg-surface-100 text-surface-600 text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded-full">Fashion Vendors</span>
+            <span className="bg-surface-100 text-surface-600 text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded-full">Food Delivery</span>
+            <span className="bg-surface-100 text-surface-600 text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded-full">Freelancers</span>
+            <span className="bg-surface-100 text-surface-600 text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded-full">Online Traders</span>
           </div>
         </section>
 
-        {/* CTA Section - Briefly mirrored from How it Works for conversion */}
+        {/* CTA Section - Conversion anchor */}
         <section className="mt-12">
           <div className="bg-linear-to-br from-secondary-900 to-secondary-950 p-7 rounded-[32px] text-center shadow-lg relative overflow-hidden">
             <div className="absolute top-0 right-0 w-24 h-24 bg-primary-500/10 rounded-full blur-2xl" />
             <h2 className="text-xl font-bold text-white mb-3">
-              Ready to boost productivity?
+              Make your business look professional today
             </h2>
-            <p className="text-white/50 text-xs mb-6 font-medium">
-              Join thousands of professionals using Proofa to streamline documentation.
+            <p className="text-white/75 text-xs mb-6 font-medium leading-relaxed max-w-xs mx-auto">
+              Over 10,000 Nigerian sellers use Proofa to build trust and get paid faster.
             </p>
             <Link
-              href="/how-it-works"
-              className="inline-flex w-full bg-primary-500 text-white font-bold py-3.5 rounded-xl items-center justify-center active:scale-[0.98] transition-all text-sm"
+              href="/receipt"
+              className="inline-flex w-full bg-primary-500 text-white font-bold py-3.5 rounded-xl items-center justify-center active:scale-[0.98] transition-all text-sm shadow-md focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-secondary-900"
             >
-              See How it Works
+              Create Your First Receipt
             </Link>
           </div>
         </section>
@@ -527,9 +555,9 @@ export default function HomePage() {
               href="https://mudiaga-dev.vercel.app/"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[10px] font-black text-surface-400 uppercase tracking-[0.2em] hover:text-primary-500 transition-colors flex items-center gap-1.5"
+              className="text-xs font-black text-surface-600 uppercase tracking-[0.2em] hover:text-primary-500 transition-colors flex items-center gap-1.5"
             >
-              Built with <span className="text-red-500 animate-pulse">❤️</span> by Mudi
+              Built with <span className="text-red-500 animate-pulse" aria-label="love">❤️</span> by Mudi
             </a>
           </div>
         </footer>

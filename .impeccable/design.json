@@ -1,0 +1,270 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-08-01T22:54:00+01:00",
+  "title": "Design System: Proofa",
+  "extensions": {
+    "colorMeta": {
+      "primary": {
+        "role": "primary",
+        "displayName": "Burnt Orange",
+        "canonical": "#e8590c",
+        "tonalRamp": ["#2a0f02", "#4d1c05", "#7f2e0e", "#9e360d", "#bc420a", "#d44d0b", "#e8590c", "#ff814d", "#ffb185", "#fff4ed"]
+      },
+      "primary-deep": {
+        "role": "primary",
+        "displayName": "Ember Deep",
+        "canonical": "#d44d0b",
+        "tonalRamp": ["#280d01", "#4a1804", "#78290b", "#9a3309", "#b53e09", "#d44d0b", "#e8590c", "#ff6d33", "#ffa07a", "#fff0e8"]
+      },
+      "primary-dark": {
+        "role": "primary",
+        "displayName": "Burnt Dark",
+        "canonical": "#9e360d",
+        "tonalRamp": ["#1e0a02", "#3a1405", "#5e200a", "#7f2e0e", "#9e360d", "#bf420f", "#d44d0b", "#e8590c", "#ff8054", "#ffeadf"]
+      },
+      "primary-light": {
+        "role": "primary",
+        "displayName": "Orange Mist",
+        "canonical": "#ffd1b3",
+        "tonalRamp": ["#3d1500", "#7a2a00", "#b33f00", "#e8590c", "#ff8054", "#ffac82", "#ffd1b3", "#ffe4cf", "#fff2e8", "#fffaf7"]
+      },
+      "primary-wash": {
+        "role": "primary",
+        "displayName": "Orange Wash",
+        "canonical": "#fff4ed",
+        "tonalRamp": ["#3d1500", "#7a2a00", "#b33f00", "#e8590c", "#ff8054", "#ffb185", "#ffd1b3", "#ffe4cf", "#fff4ed", "#fffcfa"]
+      },
+      "secondary-dark": {
+        "role": "secondary",
+        "displayName": "Rich Charcoal",
+        "canonical": "#1a1a1a",
+        "tonalRamp": ["#0d0d0d", "#1a1a1a", "#2a2a2a", "#3a3a3a", "#4a4a4a", "#616161", "#757575", "#9e9e9e", "#bdbdbd", "#f5f5f5"]
+      },
+      "neutral-bg": {
+        "role": "neutral",
+        "displayName": "Off-White Canvas",
+        "canonical": "#fafafa",
+        "tonalRamp": ["#212121", "#424242", "#616161", "#9e9e9e", "#bdbdbd", "#e0e0e0", "#eeeeee", "#f5f5f5", "#fafafa", "#ffffff"]
+      },
+      "neutral-strong": {
+        "role": "neutral",
+        "displayName": "Near Black",
+        "canonical": "#212121",
+        "tonalRamp": ["#0d0d0d", "#1a1a1a", "#212121", "#424242", "#616161", "#757575", "#9e9e9e", "#bdbdbd", "#eeeeee", "#fafafa"]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Greeting headline on Home screen. One instance per screen. Never reused for secondary headings."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Section titles, modal headers, document type labels in templates. Always uppercase in app chrome contexts."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Action card labels, form section headings. Outfit family."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "All running text, card subtext, receipt content rows, UpgradePrompt descriptions. Inter family."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Form field labels, nav labels, status badges, section separators. Always uppercase, always tracking-widest."
+      }
+    },
+    "shadows": [
+      {
+        "name": "card-rest",
+        "value": "0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05)",
+        "purpose": "Cards on Home and History screens at rest. Nearly invisible — depth hint, not anchor."
+      },
+      {
+        "name": "card-hover",
+        "value": "0 10px 15px -3px rgb(0 0 0 / 0.07), 0 4px 6px -4px rgb(0 0 0 / 0.07)",
+        "purpose": "Applied on :hover for interactive cards. Lifts card to confirm interactivity."
+      },
+      {
+        "name": "fab-glow",
+        "value": "0 20px 25px -5px rgba(232, 89, 12, 0.4), 0 8px 10px -6px rgba(232, 89, 12, 0.4)",
+        "purpose": "Orange-tinted glow under the FAB. The only coloured shadow in the system."
+      },
+      {
+        "name": "modal",
+        "value": "0 25px 50px -12px rgb(0 0 0 / 0.25)",
+        "purpose": "Modal panels and the UpgradePrompt bottom sheet."
+      },
+      {
+        "name": "button-primary",
+        "value": "0 10px 15px -3px rgb(0 0 0 / 0.15), 0 4px 6px -4px rgb(0 0 0 / 0.1)",
+        "purpose": "Primary CTA buttons. Moderate lift that grounds the button."
+      }
+    ],
+    "motion": [
+      {
+        "name": "spring-standard",
+        "value": "type: spring, damping: 25, stiffness: 300",
+        "purpose": "Default spring for modals and overlay panels (scale + opacity + y)."
+      },
+      {
+        "name": "spring-snappy",
+        "value": "type: spring, damping: 30, stiffness: 320",
+        "purpose": "UpgradePrompt bottom sheet slide-in from bottom."
+      },
+      {
+        "name": "spring-nav",
+        "value": "type: spring, stiffness: 400, damping: 30",
+        "purpose": "Nav active-dot layout animation (layoutId='active-nav')."
+      },
+      {
+        "name": "ease-colors",
+        "value": "transition: colors 150ms ease",
+        "purpose": "All colour state transitions (hover, active) on buttons, inputs, and nav items."
+      },
+      {
+        "name": "scale-press",
+        "value": "transform: scale(0.95–0.99); transition: transform 150ms ease",
+        "purpose": "active:scale-95 (buttons, FAB) and active:scale-[0.98] (CTAs) and active:scale-[0.99] (inputs). Present on every interactive element."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "app-container",
+        "value": "480px",
+        "purpose": "The only layout constraint. Content is centred at max-width 480px on all viewports. No responsive layout changes — the product is designed for one column."
+      },
+      {
+        "name": "sm",
+        "value": "640px",
+        "purpose": "Used only in UpgradePrompt to switch from bottom-anchored sheet (items-end) to centred modal (items-center)."
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Full-width primary CTA. Used on form submit, UpgradePrompt CTA, pricing page actions.",
+      "html": "<button class=\"ds-btn-primary\">GENERATE RECEIPT</button>",
+      "css": ".ds-btn-primary { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; background: #e8590c; color: #ffffff; font-family: 'Inter', sans-serif; font-size: 0.875rem; font-weight: 700; padding: 16px 24px; border-radius: 16px; border: none; cursor: pointer; box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.15); transition: background 150ms ease, transform 150ms ease; } .ds-btn-primary:hover { background: #d44d0b; } .ds-btn-primary:active { background: #9e360d; transform: scale(0.98); } .ds-btn-primary:focus-visible { outline: 2px solid #e8590c; outline-offset: 2px; }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Neutral-fill secondary action. Used for 'Cancel', 'I already have an account', dismiss actions.",
+      "html": "<button class=\"ds-btn-secondary\">I already have an account</button>",
+      "css": ".ds-btn-secondary { display: flex; align-items: center; justify-content: center; width: 100%; background: #f5f5f5; color: #212121; font-family: 'Inter', sans-serif; font-size: 0.875rem; font-weight: 700; padding: 14px 24px; border-radius: 16px; border: none; cursor: pointer; transition: background 150ms ease, transform 150ms ease; } .ds-btn-secondary:hover { background: #eeeeee; } .ds-btn-secondary:active { transform: scale(0.98); } .ds-btn-secondary:focus-visible { outline: 2px solid #e8590c; outline-offset: 2px; }"
+    },
+    {
+      "name": "Ghost Orange Badge Button",
+      "kind": "button",
+      "refersTo": "button-ghost-orange",
+      "description": "Pill-shaped orange-wash button. Used for 'Go Pro' header badge and similar lightweight upgrade nudges.",
+      "html": "<button class=\"ds-btn-ghost-orange\"><svg width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M2 4l3 12h14l3-12-6 5-4-8-4 8-6-5z\"/></svg><span>GO PRO</span></button>",
+      "css": ".ds-btn-ghost-orange { display: inline-flex; align-items: center; gap: 6px; background: #fff4ed; color: #e8590c; font-family: 'Inter', sans-serif; font-size: 0.625rem; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; padding: 6px 12px; border-radius: 9999px; border: none; cursor: pointer; transition: background 150ms ease, transform 150ms ease; } .ds-btn-ghost-orange:hover { background: #ffe5d6; } .ds-btn-ghost-orange:active { transform: scale(0.95); } .ds-btn-ghost-orange svg { transition: transform 150ms ease; } .ds-btn-ghost-orange:hover svg { transform: rotate(12deg); }"
+    },
+    {
+      "name": "Text Input",
+      "kind": "input",
+      "refersTo": "input-default",
+      "description": "Standard labelled text field. The base input pattern used across all forms.",
+      "html": "<div class=\"ds-field\"><label class=\"ds-field-label\">BUSINESS NAME</label><div class=\"ds-field-wrap\"><input class=\"ds-input\" type=\"text\" placeholder=\"Your Business\" /></div></div>",
+      "css": ".ds-field { display: flex; flex-direction: column; gap: 6px; width: 100%; } .ds-field-label { font-family: 'Inter', sans-serif; font-size: 0.625rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em; color: #616161; padding-left: 4px; } .ds-field-wrap { position: relative; } .ds-input { width: 100%; background: #ffffff; border: 1px solid #eeeeee; border-radius: 16px; padding: 14px 16px; font-family: 'Inter', sans-serif; font-size: 0.875rem; font-weight: 500; color: #212121; outline: none; box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); transition: border-color 150ms ease, box-shadow 150ms ease, transform 150ms ease; box-sizing: border-box; } .ds-input::placeholder { color: #bdbdbd; } .ds-input:focus { border-color: #e8590c; box-shadow: 0 0 0 4px rgba(232, 89, 12, 0.1); } .ds-input:active { transform: scale(0.99); }"
+    },
+    {
+      "name": "Segmented Control",
+      "kind": "chip",
+      "description": "Status picker for 2–4 options. Replaces dropdowns. Used for receipt status (Paid/Deposit/Due) and delivery status.",
+      "html": "<div class=\"ds-segmented\"><label class=\"ds-field-label\">PAYMENT STATUS</label><div class=\"ds-seg-track\"><button class=\"ds-seg-item ds-seg-active\">PAID</button><button class=\"ds-seg-item\">DEPOSIT</button><button class=\"ds-seg-item\">DUE</button></div></div>",
+      "css": ".ds-segmented { display: flex; flex-direction: column; gap: 6px; width: 100%; } .ds-field-label { font-family: 'Inter', sans-serif; font-size: 0.625rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em; color: #616161; padding-left: 4px; } .ds-seg-track { display: flex; gap: 4px; background: #ffffff; border: 1px solid #eeeeee; border-radius: 16px; padding: 4px; box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); } .ds-seg-item { flex: 1; padding: 10px; border-radius: 12px; border: none; font-family: 'Inter', sans-serif; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #9e9e9e; background: transparent; cursor: pointer; transition: background 150ms ease, color 150ms ease, box-shadow 150ms ease; } .ds-seg-item:hover { color: #616161; background: #f5f5f5; } .ds-seg-item.ds-seg-active { background: #e8590c; color: #ffffff; box-shadow: 0 4px 6px -1px rgba(232, 89, 12, 0.2); }"
+    },
+    {
+      "name": "Content Card",
+      "kind": "card",
+      "refersTo": "card-default",
+      "description": "Standard white container for history items, feature descriptions, and info blocks.",
+      "html": "<div class=\"ds-card\"><p class=\"ds-card-meta\">RECEIPT · 12 JUL 2026</p><p class=\"ds-card-title\">Amara Boutique</p><p class=\"ds-card-amount\">₦45,000</p></div>",
+      "css": ".ds-card { background: #ffffff; border: 1px solid #eeeeee; border-radius: 16px; padding: 20px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05); transition: box-shadow 150ms ease; } .ds-card:hover { box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.07), 0 4px 6px -4px rgb(0 0 0 / 0.07); } .ds-card-meta { font-family: 'Inter', sans-serif; font-size: 0.625rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em; color: #9e9e9e; margin: 0 0 4px 0; } .ds-card-title { font-family: 'Outfit', sans-serif; font-size: 1rem; font-weight: 700; color: #212121; margin: 0 0 4px 0; } .ds-card-amount { font-family: 'Inter', sans-serif; font-size: 0.875rem; font-weight: 700; color: #e8590c; margin: 0; }"
+    },
+    {
+      "name": "Bottom Navigation",
+      "kind": "nav",
+      "refersTo": "bottom-nav",
+      "description": "The floating glass pill nav at the bottom of every screen. Contains 5 items with a FAB at centre.",
+      "html": "<nav class=\"ds-bottom-nav\"><div class=\"ds-nav-pill\"><a class=\"ds-nav-item ds-nav-active\" href=\"#\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\"><path d=\"m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z\"/><polyline points=\"9 22 9 12 15 12 15 22\"/></svg></a><a class=\"ds-nav-item\" href=\"#\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M3 3h18v18H3z\"/></svg></a><a class=\"ds-nav-fab\" href=\"#\"><div class=\"ds-fab\"><svg width=\"28\" height=\"28\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"3\"><line x1=\"12\" y1=\"5\" x2=\"12\" y2=\"19\"/><line x1=\"5\" y1=\"12\" x2=\"19\" y2=\"12\"/></svg></div></a><a class=\"ds-nav-item\" href=\"#\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M2 4l3 12h14l3-12-6 5-4-8-4 8-6-5z\"/></svg></a><a class=\"ds-nav-item\" href=\"#\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2\"/><circle cx=\"12\" cy=\"7\" r=\"4\"/></svg></a></div></nav>",
+      "css": ".ds-bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; padding: 8px 16px 24px; pointer-events: none; } .ds-nav-pill { max-width: 480px; margin: 0 auto; height: 64px; position: relative; background: rgba(255,255,255,0.8); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border: 1px solid rgba(238,238,238,0.5); border-radius: 32px; box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.05); display: flex; align-items: center; justify-content: space-around; padding: 0 8px; pointer-events: auto; } .ds-nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 12px; color: #9e9e9e; text-decoration: none; transition: color 150ms ease; } .ds-nav-item.ds-nav-active { color: #e8590c; } .ds-nav-item:hover { color: #616161; } .ds-nav-fab { position: relative; top: -24px; text-decoration: none; } .ds-fab { width: 56px; height: 56px; background: #e8590c; border-radius: 16px; display: flex; align-items: center; justify-content: center; color: white; box-shadow: 0 20px 25px -5px rgba(232,89,12,0.4); outline: 4px solid white; transition: transform 150ms ease; } .ds-fab:active { transform: scale(0.95); }"
+    },
+    {
+      "name": "Toast Notification",
+      "kind": "custom",
+      "description": "Floating feedback message. Four semantic variants. Appears above bottom nav, disappears after 3s.",
+      "html": "<div class=\"ds-toast ds-toast-success\"><svg class=\"ds-toast-icon\" width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M22 11.08V12a10 10 0 1 1-5.93-9.14\"/><polyline points=\"22 4 12 14.01 9 11.01\"/></svg><span class=\"ds-toast-text\">Receipt saved to history</span></div>",
+      "css": ".ds-toast { display: inline-flex; align-items: center; gap: 12px; padding: 14px 20px; border-radius: 16px; border: 1px solid; box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1); font-family: 'Inter', sans-serif; } .ds-toast-text { font-size: 0.875rem; font-weight: 700; color: #212121; letter-spacing: -0.01em; } .ds-toast-success { background: #f0fdf4; border-color: #dcfce7; } .ds-toast-success .ds-toast-icon { color: #22c55e; } .ds-toast-error { background: #fef2f2; border-color: #fee2e2; } .ds-toast-error .ds-toast-icon { color: #ef4444; } .ds-toast-warning { background: #fefce8; border-color: #fef9c3; } .ds-toast-warning .ds-toast-icon { color: #eab308; } .ds-toast-info { background: #eff6ff; border-color: #dbeafe; } .ds-toast-info .ds-toast-icon { color: #3b82f6; }"
+    },
+    {
+      "name": "Pro Badge Chip",
+      "kind": "chip",
+      "description": "Inline label identifying a Pro feature or plan tier. Used in UpgradePrompt header and feature lists.",
+      "html": "<div class=\"ds-pro-badge\"><svg width=\"12\" height=\"12\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M2 4l3 12h14l3-12-6 5-4-8-4 8-6-5z\"/></svg>PRO FEATURE</div>",
+      "css": ".ds-pro-badge { display: inline-flex; align-items: center; gap: 6px; background: #fff4ed; color: #e8590c; font-family: 'Inter', sans-serif; font-size: 0.625rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em; padding: 6px 12px; border-radius: 9999px; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Mobile Commerce Receipt",
+    "overview": "Proofa's visual identity is built for speed, trust, and mobile authority. Every design decision is made in service of a single moment: a WhatsApp seller filling in a form while the customer is waiting, then tapping Share and watching a professional document land in the chat. The system is optimized for that 45-second interaction window — no decoration that slows comprehension, no detail that earns a second glance at the wrong moment.\n\nThe palette is a study in contrast without complexity: a single Burnt Orange accent that carries full brand authority, a Rich Charcoal that anchors dark document headers, and a disciplined greyscale that runs the surfaces. Orange earns credibility — it signals energy, premium attention, and Nigerian market confidence without shouting. Charcoal anchors the Bold template and the FAB with quiet authority. The neutral surfaces (off-white to mid-grey) keep the focus on the user's content, not the chrome.\n\nTypography leans heavy. Outfit at 800–900 weight for all headings; uppercase label text at 10px/900 weight with wide tracking for field labels, section markers, and metadata. Body copy in Inter at 500 weight — readable but never passive. Radius is consistently large (16–24px for inputs and cards, 32px for nav and modals), giving the entire product a rounded, approachable physicality that works well at thumb scale.",
+    "keyCharacteristics": [
+      "Orange-dominant single-accent palette; never split the attention of the primary colour",
+      "Mobile-first container (max 480px) centred on all screen sizes",
+      "Uppercase tracking-widest labels throughout (field labels, nav items, status badges)",
+      "Scale-on-active feedback on every interactive element",
+      "Glass/blur header and bottom navigation with backdrop-filter: blur()",
+      "Framer Motion spring transitions for modals and sheet overlays",
+      "Dark charcoal (#1a1a1a) reserved for the Invoice document header panel only"
+    ],
+    "rules": [
+      {
+        "name": "The One Accent Rule",
+        "body": "Orange (#e8590c) is the only coloured accent in the application chrome. No competing accent colours on backgrounds, borders, or icons. Semantic status colours live only in transient notification elements — never on persistent surfaces.",
+        "section": "colors"
+      },
+      {
+        "name": "The Uppercase Label Rule",
+        "body": "Every field label, nav label, and status indicator is rendered in uppercase with wide letter-spacing (tracking-widest, ≈0.1em). No label uses title-case or sentence-case. The uniformity creates instant scan hierarchy on a mobile screen.",
+        "section": "typography"
+      },
+      {
+        "name": "The Tonal-First Rule",
+        "body": "Surfaces separate by luminance difference and border, not shadow lift. Shadows appear only as a state response (hover, active, floating) or on elements that genuinely float above the page.",
+        "section": "elevation"
+      },
+      {
+        "name": "The No-Sharp-Corners Rule",
+        "body": "No element in the app chrome has border-radius: 0. Sharp corners are reserved for inside the exported document templates only — never in the app UI shell.",
+        "section": "shapes"
+      }
+    ],
+    "dos": [
+      "Do use active:scale-95 or active:scale-[0.98] on every interactive element — buttons, cards, icon buttons, inputs.",
+      "Do render all form field labels in uppercase tracking-widest text-[10px] font-black text-surface-700.",
+      "Do use rounded-2xl (16px) as the default radius for inputs, buttons, and cards.",
+      "Do limit the orange accent (#e8590c) to primary actions, active states, focus rings, and brand identity elements.",
+      "Do use spring physics for all overlay transitions: type: spring, damping: 25–30, stiffness: 300–320.",
+      "Do use Framer Motion layoutId for animated state transitions between sibling elements.",
+      "Do apply glass-effect (bg-white/80 backdrop-blur-12) for floating chrome elements above content.",
+      "Do follow the app-container constraint (max-width: 480px, padding-inline: 1.25rem) for all app-shell content."
+    ],
+    "donts": [
+      "Don't use a second accent colour in the app chrome. Green, blue, purple, and teal belong only in transient semantic contexts.",
+      "Don't use border-radius: 0 on any app-shell element.",
+      "Don't use Rich Charcoal (#1a1a1a) as an app-shell background or surface colour — it is a document-template colour only.",
+      "Don't use title-case or sentence-case for labels, status chips, or nav items.",
+      "Don't use box-shadow for surface separation in resting state — use luminance difference and hairline borders.",
+      "Don't place primary CTA buttons above fold content — primary actions are always pinned to the bottom of the form/screen.",
+      "Don't use font weights below 500 anywhere in the UI."
+    ]
+  }
+}

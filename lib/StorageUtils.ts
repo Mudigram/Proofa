@@ -59,28 +59,46 @@ export function saveUserName(name: string): void {
 
 // ─── Extract amount from any document type ───────────────────────────────────
 
-function extractAmount(
+// ─── Extract amount from any document type ───────────────────────────────────
+
+export function extractAmount(
     data: ReceiptData | InvoiceData | OrderData,
     type: DocumentType
 ): number {
+    if (!data) return 0;
+    
     if (type === "receipt") {
-        return (data as ReceiptData).amount ?? 0;
+        const r = data as ReceiptData;
+        const explicit = Number(r.amount) || 0;
+        if (explicit > 0) return explicit;
+        const subtotal = Array.isArray(r.items)
+            ? r.items.reduce((s, i) => s + (Number(i.quantity) || 0) * (Number(i.price) || 0), 0)
+            : 0;
+        const delivery = r.deliveryInfo?.enabled ? (Number(r.deliveryInfo.cost) || 0) : 0;
+        return subtotal + delivery;
     }
     if (type === "invoice") {
         const inv = data as InvoiceData;
-        const subtotal = inv.items?.reduce(
-            (s, i) => s + i.quantity * i.price, 0
-        ) ?? 0;
+        const subtotal = Array.isArray(inv.items)
+            ? inv.items.reduce((s, i) => s + (Number(i.quantity) || 0) * (Number(i.price) || 0), 0)
+            : 0;
         const tax = inv.includeVat
-            ? subtotal * ((inv.vatRate ?? 7.5) / 100)
+            ? subtotal * ((Number(inv.vatRate) || 7.5) / 100)
             : 0;
         const delivery = inv.deliveryInfo?.enabled
-            ? (inv.deliveryInfo.cost ?? 0)
+            ? (Number(inv.deliveryInfo.cost) || 0)
             : 0;
         return subtotal + tax + delivery;
     }
     if (type === "order") {
-        return (data as OrderData).totalAmount ?? 0;
+        const o = data as OrderData;
+        const explicit = Number(o.totalAmount || (o as any).amount) || 0;
+        if (explicit > 0) return explicit;
+        const subtotal = Array.isArray(o.items)
+            ? o.items.reduce((s, i) => s + (Number(i.quantity) || 0) * (Number(i.price) || 0), 0)
+            : 0;
+        const delivery = o.deliveryInfo?.enabled ? (Number(o.deliveryInfo.cost) || 0) : 0;
+        return subtotal + delivery;
     }
     return 0;
 }
@@ -108,46 +126,61 @@ function extractCustomer(
 
 /**
  * Saves a document to localStorage (all users) and Supabase (Pro + Business).
- *
- * @param data       - The full form data
- * @param type       - 'receipt' | 'invoice' | 'order'
- * @param template   - 'minimalist' | 'bold' | 'classic'
- * @param userId     - Current user's id (null = anonymous, skip cloud)
- * @param ownerId    - Owner's id (= userId for owners, team_owner_id for staff)
- * @param isPro      - Whether to save to Supabase
- * @param currency   - 'NGN' | 'USD' (default 'NGN')
+ * Supports in-place updates when existingDocId is provided.
  */
 export async function saveDocument(
-
     data: ReceiptData | InvoiceData | OrderData,
     type: DocumentType,
     template: TemplateName,
     userId: string | null = null,
     ownerId: string | null = null,
     isPro: boolean = false,
-    currency: string = "NGN"
+    currency: string = "NGN",
+    existingDocId?: string | null
 ): Promise<SavedDocument> {
 
-    // ── 1. Always save to localStorage ───────────────────────────────────────
-    const doc: SavedDocument = {
-        id: crypto.randomUUID(),
-        type,
-        template,
-        data,
-        createdAt: new Date().toISOString(),
-    };
+    // Ensure amount is synced on the data object before saving
+    const computedAmount = extractAmount(data, type);
+    if (type === "receipt") {
+        (data as ReceiptData).amount = computedAmount;
+    } else if (type === "order") {
+        (data as OrderData).totalAmount = computedAmount;
+    }
 
     const existing = getHistory();
-    // Keep newest MAX_LOCAL documents
-    const updated = [doc, ...existing].slice(0, MAX_LOCAL);
-    persistDocuments(updated);
+    let doc: SavedDocument;
+
+    const existingIndex = existingDocId ? existing.findIndex(d => d.id === existingDocId) : -1;
+
+    if (existingIndex >= 0) {
+        // In-place update existing document
+        doc = {
+            ...existing[existingIndex],
+            type,
+            template,
+            data,
+            updatedAt: new Date().toISOString(),
+        };
+        existing[existingIndex] = doc;
+        persistDocuments(existing);
+    } else {
+        // Create new document
+        doc = {
+            id: crypto.randomUUID(),
+            type,
+            template,
+            data,
+            createdAt: new Date().toISOString(),
+        };
+        const updated = [doc, ...existing].slice(0, MAX_LOCAL);
+        persistDocuments(updated);
+    }
 
     // ── 2. Save to Supabase for Pro + Business users ──────────────────────────
     if (isPro && userId && ownerId) {
-        const amount = extractAmount(data, type);
+        const amount = computedAmount;
         const customer = extractCustomer(data, type);
 
-        // Fire-and-forget — don't block the UI on the network call
         saveDocumentToCloud({
             ownerId,
             createdBy: userId,
@@ -165,3 +198,4 @@ export async function saveDocument(
 
     return doc;
 }
+

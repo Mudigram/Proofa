@@ -16,7 +16,8 @@ export default function ReceiptForm() {
     const searchParams = useSearchParams();
     const docId = searchParams.get("id");
     const [currentDocId, setCurrentDocId] = useState<string | null>(docId);
-    const { profile, isPro } = useAuth();
+    const { user, profile, isPro } = useAuth();
+
     const { showToast } = useToast();
 
     const [formData, setFormData] = useState<ReceiptData>({
@@ -168,12 +169,41 @@ export default function ReceiptForm() {
     };
 
     const handleSaveDraft = async () => {
-        const updatedData = { ...formData, status: "Draft" as const };
-        const doc = await saveDocument(updatedData, "receipt", searchParams.get("template") as any || "minimalist", undefined, currentDocId || undefined);
+        const updatedData = { ...formData, amount: total, status: "Draft" as const };
+        const doc = await saveDocument(
+            updatedData,
+            "receipt",
+            (searchParams.get("template") as any) || "minimalist",
+            user?.id ?? null,
+            profile?.teamOwnerId ?? user?.id ?? null,
+            isPro,
+            profile?.defaultCurrency || "NGN",
+            currentDocId || undefined
+        );
         setCurrentDocId(doc.id);
         setFormData(updatedData);
         showToast("Draft saved successfully!", "success");
     };
+
+    const handleSavePaid = async () => {
+        if (!validate()) return;
+        const updatedData = { ...formData, amount: total, status: "Paid" as const };
+        const doc = await saveDocument(
+            updatedData,
+            "receipt",
+            (searchParams.get("template") as any) || "minimalist",
+            user?.id ?? null,
+            profile?.teamOwnerId ?? user?.id ?? null,
+            isPro,
+            profile?.defaultCurrency || "NGN",
+            currentDocId || undefined
+        );
+        setCurrentDocId(doc.id);
+        setFormData(updatedData);
+        setMode("preview");
+        showToast("Document saved & marked as Paid!", "success");
+    };
+
 
     const handleModeSwitch = (newMode: "edit" | "preview") => {
         if (newMode === "preview") {
@@ -230,7 +260,8 @@ export default function ReceiptForm() {
                             </StaggerItem>
 
                             <StaggerItem>
-                                <section className="flex flex-col gap-6 bg-white p-7 rounded-[2.5rem] border border-surface-100 shadow-sm border-b-4 border-b-surface-200">
+                                <section className="flex flex-col gap-6 bg-white p-7 rounded-[2.5rem] border border-surface-200/80 shadow-sm">
+
                                     <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-surface-400 px-1">Customer / Client</h3>
                                     <div className="flex flex-col gap-4">
                                         <Input
@@ -500,26 +531,54 @@ export default function ReceiptForm() {
                     <StaggerItem>
                         <div className="flex flex-col gap-4 mt-4">
                             <button
-                                onClick={() => handleModeSwitch("preview")}
+                                onClick={async () => {
+                                    if (validate()) {
+                                        const updatedData = { ...formData, amount: total };
+                                        await saveDocument(
+                                            updatedData,
+                                            "receipt",
+                                            (searchParams.get("template") as any) || "minimalist",
+                                            user?.id ?? null,
+                                            profile?.teamOwnerId ?? user?.id ?? null,
+                                            isPro,
+                                            profile?.defaultCurrency || "NGN",
+                                            currentDocId || undefined
+                                        );
+                                        setMode("preview");
+                                    }
+                                }}
                                 className="w-full bg-primary-500 text-white font-bold py-5 rounded-2xl shadow-xl shadow-primary-500/20 active:scale-[0.98] transition-all flex items-center justify-center gap-3">
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                                     <polyline points="21 8 21 21 3 21 3 8" />
                                     <rect x="1" y="3" width="22" height="5" />
                                     <line x1="10" y1="12" x2="14" y2="12" />
                                 </svg>
                                 Generate Receipt
                             </button>
-                            <button
-                                onClick={handleSaveDraft}
-                                className="w-full bg-white border-2 border-surface-200 text-surface-600 font-bold py-4 rounded-2xl active:scale-[0.98] transition-all flex items-center justify-center gap-2"
-                            >
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
-                                    <polyline points="17 21 17 13 7 13 7 21" />
-                                    <polyline points="7 3 7 8 15 8" />
-                                </svg>
-                                Save as Draft
-                            </button>
+                            {formData.status === "Draft" ? (
+                                <button
+                                    onClick={handleSavePaid}
+                                    className="w-full bg-emerald-600 text-white font-bold py-4 rounded-2xl shadow-md active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+                                >
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                                        <polyline points="20 6 9 17 4 12" />
+                                    </svg>
+                                    Mark as Paid &amp; Save
+                                </button>
+                            ) : (
+                                <button
+                                    onClick={handleSaveDraft}
+                                    className="w-full bg-white border-2 border-surface-200 text-surface-600 font-bold py-4 rounded-2xl active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+                                >
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                                        <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+                                        <polyline points="17 21 17 13 7 13 7 21" />
+                                        <polyline points="7 3 7 8 15 8" />
+                                    </svg>
+                                    Save as Draft
+                                </button>
+                            )}
+
                             <p className="text-[10px] text-surface-400 font-black uppercase tracking-[0.15em] text-center">
                                 RECEIPTS ARE SAVED TO YOUR DASHBOARD
                             </p>
