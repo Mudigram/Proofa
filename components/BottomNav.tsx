@@ -38,7 +38,7 @@ export default function BottomNav() {
         <>
             <nav className="fixed bottom-0 left-0 right-0 z-50 px-4 pb-6 pt-2 pointer-events-none">
                 <div className="max-w-md mx-auto relative h-16 pointer-events-auto">
-                    <div className="absolute inset-0 bg-white/80 dark:bg-surface-900/80 backdrop-blur-xl border border-surface-200/50 dark:border-surface-800/80 rounded-[2rem] shadow-2xl shadow-surface-900/5 dark:shadow-black/40 transition-colors duration-200" />
+                    <div className="absolute inset-0 bg-white/80 dark:bg-surface-950/80 backdrop-blur-xl border border-surface-200/50 dark:border-surface-800/80 rounded-[2rem] shadow-2xl shadow-surface-900/5 dark:shadow-black/40 transition-colors duration-200" />
 
                     <div className="relative flex items-center justify-around h-full px-2">
                         {navItems.map((item) => {
@@ -71,7 +71,7 @@ export default function BottomNav() {
                                 <Link
                                     key={item.href}
                                     href={item.href}
-                                    className={`relative flex flex-col items-center justify-center p-3 transition-colors ${isActive ? "text-primary-500" : "text-surface-400"
+                                    className={`relative flex flex-col items-center justify-center p-3 transition-colors ${isActive ? "text-primary-500" : "text-surface-400 dark:text-surface-500"
                                         }`}
                                 >
                                     <Icon size={22} strokeWidth={isActive ? 2.5 : 2} />

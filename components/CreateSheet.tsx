@@ -37,11 +37,11 @@ export default function CreateSheet({ isOpen, onClose }: CreateSheetProps) {
                 onClose();
               }
             }}
-            className="fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-[2rem] p-6 pb-10 shadow-2xl flex flex-col"
+            className="fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-surface-900 rounded-t-[2rem] p-6 pb-10 shadow-2xl flex flex-col"
           >
             {/* Drag Handle */}
             <div className="flex justify-center mb-6">
-              <div className="w-10 h-1 bg-surface-300 rounded-full" />
+              <div className="w-10 h-1 bg-surface-300 dark:bg-surface-700 rounded-full" />
             </div>
 
             <div className="flex flex-col gap-4">
@@ -49,7 +49,7 @@ export default function CreateSheet({ isOpen, onClose }: CreateSheetProps) {
               <Link
                 href="/receipt"
                 onClick={onClose}
-                className="flex items-center gap-4 p-4 rounded-2xl border border-transparent hover:bg-surface-50 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors"
+                className="flex items-center gap-4 p-4 rounded-2xl border border-transparent hover:bg-surface-50 dark:hover:bg-surface-800 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors"
               >
                 <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 bg-primary-500 text-white">
                   <svg
@@ -69,12 +69,12 @@ export default function CreateSheet({ isOpen, onClose }: CreateSheetProps) {
                   </svg>
                 </div>
                 <div className="flex-1">
-                  <h3 className="font-bold text-surface-900">Create Receipt</h3>
-                  <p className="text-sm text-surface-600">
+                  <h3 className="font-bold text-surface-900 dark:text-surface-50">Create Receipt</h3>
+                  <p className="text-sm text-surface-600 dark:text-surface-300">
                     Instant payment proof for WhatsApp sales
                   </p>
                 </div>
-                <div className="text-surface-400">
+                <div className="text-surface-400 dark:text-surface-500">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     width="20"
@@ -95,7 +95,7 @@ export default function CreateSheet({ isOpen, onClose }: CreateSheetProps) {
               <Link
                 href="/invoice"
                 onClick={onClose}
-                className="flex items-center gap-4 p-4 rounded-2xl border border-transparent hover:bg-surface-50 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors"
+                className="flex items-center gap-4 p-4 rounded-2xl border border-transparent hover:bg-surface-50 dark:hover:bg-surface-800 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors"
               >
                 <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 bg-secondary-900 text-white">
                   <svg
@@ -117,12 +117,12 @@ export default function CreateSheet({ isOpen, onClose }: CreateSheetProps) {
                   </svg>
                 </div>
                 <div className="flex-1">
-                  <h3 className="font-bold text-surface-900">Create Invoice</h3>
-                  <p className="text-sm text-surface-600">
+                  <h3 className="font-bold text-surface-900 dark:text-surface-50">Create Invoice</h3>
+                  <p className="text-sm text-surface-600 dark:text-surface-300">
                     Itemized bill with bank details
                   </p>
                 </div>
-                <div className="text-surface-400">
+                <div className="text-surface-400 dark:text-surface-500">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     width="20"
@@ -143,9 +143,9 @@ export default function CreateSheet({ isOpen, onClose }: CreateSheetProps) {
               <Link
                 href="/order"
                 onClick={onClose}
-                className="flex items-center gap-4 p-4 rounded-2xl border border-surface-200 bg-white hover:bg-surface-50 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors"
+                className="flex items-center gap-4 p-4 rounded-2xl border border-surface-200 dark:border-surface-800 bg-white dark:bg-surface-900 hover:bg-surface-50 dark:hover:bg-surface-800 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors"
               >
-                <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 bg-white border border-surface-200 text-surface-900">
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 bg-white dark:bg-surface-800 border border-surface-200 dark:border-surface-700 text-surface-900 dark:text-surface-50">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     width="24"
@@ -163,12 +163,12 @@ export default function CreateSheet({ isOpen, onClose }: CreateSheetProps) {
                   </svg>
                 </div>
                 <div className="flex-1">
-                  <h3 className="font-bold text-surface-900">Order Summary</h3>
-                  <p className="text-sm text-surface-600">
+                  <h3 className="font-bold text-surface-900 dark:text-surface-50">Order Summary</h3>
+                  <p className="text-sm text-surface-600 dark:text-surface-300">
                     Order breakdown for buyers
                   </p>
                 </div>
-                <div className="text-surface-400">
+                <div className="text-surface-400 dark:text-surface-500">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     width="20"

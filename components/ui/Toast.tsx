@@ -32,19 +32,19 @@ export const ToastProvider = ({ children }: { children: ReactNode }) => {
 
     const getIcon = (type: ToastType) => {
         switch (type) {
-            case "success": return <CheckCircle2 className="w-5 h-5 text-green-500" />;
-            case "error": return <XCircle className="w-5 h-5 text-red-500" />;
-            case "warning": return <AlertTriangle className="w-5 h-5 text-yellow-500" />;
-            case "info": return <Info className="w-5 h-5 text-blue-500" />;
+            case "success": return <CheckCircle2 className="w-5 h-5 text-green-500 dark:text-green-400" />;
+            case "error": return <XCircle className="w-5 h-5 text-red-500 dark:text-red-400" />;
+            case "warning": return <AlertTriangle className="w-5 h-5 text-yellow-500 dark:text-yellow-400" />;
+            case "info": return <Info className="w-5 h-5 text-blue-500 dark:text-blue-400" />;
         }
     };
 
     const getBgColor = (type: ToastType) => {
         switch (type) {
-            case "success": return "bg-green-50 border-green-100";
-            case "error": return "bg-red-50 border-red-100";
-            case "warning": return "bg-yellow-50 border-yellow-100";
-            case "info": return "bg-blue-50 border-blue-100";
+            case "success": return "bg-green-50 border-green-100 dark:bg-green-950 dark:border-green-900";
+            case "error": return "bg-red-50 border-red-100 dark:bg-red-950 dark:border-red-900";
+            case "warning": return "bg-yellow-50 border-yellow-100 dark:bg-yellow-950 dark:border-yellow-900";
+            case "info": return "bg-blue-50 border-blue-100 dark:bg-blue-950 dark:border-blue-900";
         }
     };
 
@@ -62,7 +62,7 @@ export const ToastProvider = ({ children }: { children: ReactNode }) => {
                             className={`flex items-center gap-3 px-5 py-3.5 rounded-2xl border shadow-lg ${getBgColor(toast.type)} pointer-events-auto`}
                         >
                             {getIcon(toast.type)}
-                            <span className="text-sm font-bold text-surface-900 tracking-tight">
+                            <span className="text-sm font-bold text-surface-900 dark:text-surface-50 tracking-tight">
                                 {toast.message}
                             </span>
                         </motion.div>

@@ -297,7 +297,7 @@ export default function ReceiptForm() {
 
                             <StaggerItem>
                                 <section className="flex flex-col gap-5 bg-white dark:bg-surface-900 p-6 rounded-[2rem] border border-surface-100 dark:border-surface-800 shadow-sm">
-                                    <h3 className="text-[10px] font-black uppercase tracking-widest text-surface-400 px-1">Business Details</h3>
+                                    <h3 className="text-[10px] font-black uppercase tracking-widest text-surface-400 dark:text-surface-500 px-1">Business Details</h3>
                                     <Input
                                         label="BUSINESS NAME"
                                         placeholder="Enter business name"
@@ -309,10 +309,10 @@ export default function ReceiptForm() {
                             </StaggerItem>
 
                             <StaggerItem>
-                                <section className="flex flex-col gap-6 bg-white p-7 rounded-[2.5rem] border border-surface-200/80 shadow-sm">
+                                <section className="flex flex-col gap-6 bg-white dark:bg-surface-900 p-7 rounded-[2.5rem] border border-surface-200/80 dark:border-surface-800 shadow-sm">
 
                                     <div className="flex items-center justify-between px-1">
-                                        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-surface-400">Customer / Client</h3>
+                                        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-surface-400 dark:text-surface-500">Customer / Client</h3>
                                     </div>
                                     <div className="flex gap-1.5 overflow-x-auto no-scrollbar pb-1">
                                         {["Walk-in Customer", "VIP Client", "Repeat Buyer"].map((pill) => (
@@ -320,7 +320,7 @@ export default function ReceiptForm() {
                                                 key={pill}
                                                 type="button"
                                                 onClick={() => handleChange("customerName", pill)}
-                                                className="text-[9px] font-black uppercase tracking-wider bg-surface-100 dark:bg-surface-800 text-surface-600 dark:text-surface-300 px-2.5 py-1.5 rounded-lg hover:bg-primary-50 hover:text-primary-600 transition-all shrink-0 active:scale-95"
+                                                className="text-[9px] font-black uppercase tracking-wider bg-surface-100 dark:bg-surface-800 text-surface-600 dark:text-surface-300 px-2.5 py-1.5 rounded-lg hover:bg-primary-50 dark:hover:bg-primary-950/60 hover:text-primary-600 dark:hover:text-primary-400 transition-all shrink-0 active:scale-95"
                                             >
                                                 + {pill}
                                             </button>
@@ -333,7 +333,7 @@ export default function ReceiptForm() {
                                             value={formData.customerName || ""}
                                             onChange={(e) => handleChange("customerName", e.target.value)}
                                             onClear={() => handleChange("customerName", "")}
-                                            className="bg-white"
+                                            className="bg-white dark:bg-surface-900"
                                             rightElement={<PasteButton onPaste={(text) => handleChange("customerName", text)} />}
                                         />
                                         <Input
@@ -342,7 +342,7 @@ export default function ReceiptForm() {
                                             type="tel"
                                             value={formData.customerPhone || ""}
                                             onChange={(e) => handleChange("customerPhone", e.target.value)}
-                                            className="bg-white"
+                                            className="bg-white dark:bg-surface-900"
                                             rightElement={<PasteButton onPaste={(text) => handleChange("customerPhone", text)} />}
                                         />
                                     </div>
@@ -350,12 +350,12 @@ export default function ReceiptForm() {
                             </StaggerItem>
 
                             <StaggerItem>
-                                <section className="flex flex-col gap-6 bg-white p-6 rounded-[2rem] border border-surface-100 shadow-sm relative overflow-hidden">
+                                <section className="flex flex-col gap-6 bg-white dark:bg-surface-900 p-6 rounded-[2rem] border border-surface-100 dark:border-surface-800 shadow-sm relative overflow-hidden">
                                     <div className="flex items-center justify-between px-1">
-                                        <h3 className="text-[10px] font-black uppercase tracking-widest text-surface-400">Items / Payment Details</h3>
+                                        <h3 className="text-[10px] font-black uppercase tracking-widest text-surface-400 dark:text-surface-500">Items / Payment Details</h3>
                                         <button
                                             onClick={addItem}
-                                            className="text-primary-600 text-[10px] font-black uppercase tracking-widest bg-primary-50 px-3 py-1.5 rounded-full active:scale-95 transition-all"
+                                            className="text-primary-600 dark:text-primary-400 text-[10px] font-black uppercase tracking-widest bg-primary-50 dark:bg-primary-950/60 px-3 py-1.5 rounded-full active:scale-95 transition-all"
                                         >
                                             + Add Item
                                         </button>
@@ -363,11 +363,11 @@ export default function ReceiptForm() {
 
                                     <div className="flex flex-col gap-4">
                                         {formData.items.map((item, index) => (
-                                            <div key={item.id} className="relative bg-surface-50 p-5 rounded-3xl border border-surface-100 flex flex-col gap-4 group">
+                                            <div key={item.id} className="relative bg-surface-50 dark:bg-surface-800 p-5 rounded-3xl border border-surface-100 dark:border-surface-800 flex flex-col gap-4 group">
                                                 {formData.items.length > 1 && (
                                                     <button
                                                         onClick={() => removeItem(item.id)}
-                                                        className="absolute -top-2 -right-2 w-7 h-7 bg-white border border-surface-100 rounded-full shadow-sm flex items-center justify-center text-red-500 z-10 hover:bg-red-50 transition-colors"
+                                                        className="absolute -top-2 -right-2 w-7 h-7 bg-white dark:bg-surface-900 border border-surface-100 dark:border-surface-800 rounded-full shadow-sm flex items-center justify-center text-red-500 dark:text-red-400 z-10 hover:bg-red-50 dark:hover:bg-red-950/50 transition-colors"
                                                     >
                                                         &times;
                                                     </button>
@@ -378,7 +378,7 @@ export default function ReceiptForm() {
                                                             key={pill}
                                                             type="button"
                                                             onClick={() => updateItem(index, "name", pill)}
-                                                            className="text-[9px] font-black uppercase tracking-wider bg-white dark:bg-surface-800 text-surface-500 border border-surface-200 dark:border-surface-700 px-2 py-1 rounded-lg hover:border-primary-500 hover:text-primary-600 transition-all shrink-0 active:scale-95"
+                                                            className="text-[9px] font-black uppercase tracking-wider bg-white dark:bg-surface-800 text-surface-500 dark:text-surface-400 border border-surface-200 dark:border-surface-700 px-2 py-1 rounded-lg hover:border-primary-500 hover:text-primary-600 dark:hover:text-primary-400 transition-all shrink-0 active:scale-95"
                                                         >
                                                             + {pill}
                                                         </button>
@@ -390,10 +390,10 @@ export default function ReceiptForm() {
                                                     value={item.name}
                                                     onChange={(e) => updateItem(index, "name", e.target.value)}
                                                     onClear={() => updateItem(index, "name", "")}
-                                                    className="bg-white border-none"
+                                                    className="bg-white dark:bg-surface-900 border-none"
                                                 />
                                                 <div className="flex flex-col gap-1.5">
-                                                    <label className="text-[10px] font-black text-surface-400 tracking-widest uppercase ml-1">Category</label>
+                                                    <label className="text-[10px] font-black text-surface-400 dark:text-surface-500 tracking-widest uppercase ml-1">Category</label>
                                                     <div className="flex gap-2">
                                                         {["Product", "Service", "Expense"].map((cat) => (
                                                             <button
@@ -401,7 +401,7 @@ export default function ReceiptForm() {
                                                                 onClick={() => updateItem(index, "category", cat as any)}
                                                                 className={`flex-1 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${item.category === cat
                                                                     ? "bg-primary-500 text-white shadow-sm"
-                                                                    : "bg-white text-surface-400 border border-surface-100"
+                                                                    : "bg-white dark:bg-surface-900 text-surface-400 dark:text-surface-500 border border-surface-100 dark:border-surface-800"
                                                                     }`}
                                                             >
                                                                 {cat}
@@ -411,26 +411,26 @@ export default function ReceiptForm() {
                                                 </div>
                                                 <div className="grid grid-cols-2 gap-4">
                                                     <div className="flex flex-col gap-1.5">
-                                                        <label className="text-[10px] font-black text-surface-400 tracking-widest uppercase ml-1">QTY</label>
+                                                        <label className="text-[10px] font-black text-surface-400 dark:text-surface-500 tracking-widest uppercase ml-1">QTY</label>
                                                         <input
                                                             type="number"
                                                             value={item.quantity}
                                                             onChange={(e) => updateItem(index, "quantity", parseFloat(e.target.value) || 0)}
-                                                            className="bg-white border-none rounded-xl px-4 py-3 text-sm font-bold text-surface-900 focus:ring-2 focus:ring-primary-500/20 transition-all outline-none"
+                                                            className="bg-white dark:bg-surface-900 border-none rounded-xl px-4 py-3 text-sm font-bold text-surface-900 dark:text-surface-50 focus:ring-2 focus:ring-primary-500/20 dark:focus:ring-primary-500/40 transition-all outline-none"
                                                         />
                                                     </div>
                                                     <CurrencyInput
                                                         label="PRICE"
                                                         value={item.price}
                                                         onChange={(val) => updateItem(index, "price", val)}
-                                                        className="bg-white border-none"
+                                                        className="bg-white dark:bg-surface-900 border-none"
                                                     />
                                                 </div>
                                             </div>
                                         ))}
-                                        {errors.items && <p className="text-red-500 text-[10px] font-bold mt-1 px-1">{errors.items}</p>}
+                                        {errors.items && <p className="text-red-500 dark:text-red-400 text-[10px] font-bold mt-1 px-1">{errors.items}</p>}
 
-                                        <div className="flex flex-col gap-4 pt-2 border-t border-surface-100 mt-2">
+                                        <div className="flex flex-col gap-4 pt-2 border-t border-surface-100 dark:border-surface-800 mt-2">
                                             <DatePicker
                                                 label="DATE"
                                                 value={formData.date}
@@ -443,7 +443,7 @@ export default function ReceiptForm() {
 
                             <StaggerItem>
                                 <section className="flex flex-col gap-5 bg-white dark:bg-surface-900 p-6 rounded-[2rem] border border-surface-100 dark:border-surface-800 shadow-sm">
-                                    <h3 className="text-[10px] font-black uppercase tracking-widest text-surface-400 px-1">Receipt Status</h3>
+                                    <h3 className="text-[10px] font-black uppercase tracking-widest text-surface-400 dark:text-surface-500 px-1">Receipt Status</h3>
                                     <SegmentedControl
                                         label="STATUS"
                                         options={["Paid", "Deposit", "Due"]}
@@ -461,12 +461,12 @@ export default function ReceiptForm() {
 
                             {/* Bank Details Section */}
                             <StaggerItem>
-                                <section className="flex flex-col gap-5 bg-white p-6 rounded-[2rem] border border-surface-100 shadow-sm transition-all focus-within:ring-2 focus-within:ring-primary-500/10">
+                                <section className="flex flex-col gap-5 bg-white dark:bg-surface-900 p-6 rounded-[2rem] border border-surface-100 dark:border-surface-800 shadow-sm transition-all focus-within:ring-2 focus-within:ring-primary-500/10 dark:focus-within:ring-primary-500/30">
                                     <div className="flex items-center justify-between px-1">
-                                        <h3 className="text-[10px] font-black uppercase tracking-widest text-surface-400">Bank Details</h3>
+                                        <h3 className="text-[10px] font-black uppercase tracking-widest text-surface-400 dark:text-surface-500">Bank Details</h3>
                                         <button
                                             onClick={() => handleNestedChange("bankDetails", "enabled", !formData.bankDetails?.enabled)}
-                                            className={`w-10 h-6 rounded-full transition-all relative ${formData.bankDetails?.enabled ? 'bg-primary-500' : 'bg-surface-200'}`}
+                                            className={`w-10 h-6 rounded-full transition-all relative ${formData.bankDetails?.enabled ? 'bg-primary-500' : 'bg-surface-200 dark:bg-surface-700'}`}
                                         >
                                             <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${formData.bankDetails?.enabled ? 'left-5' : 'left-1'}`} />
                                         </button>
@@ -504,7 +504,7 @@ export default function ReceiptForm() {
                                                 value={formData.bankDetails.bankName}
                                                 onChange={(e) => handleNestedChange("bankDetails", "bankName", e.target.value)}
                                                 error={errors.bankName}
-                                                className="bg-surface-50 border-none"
+                                                className="bg-surface-50 dark:bg-surface-800 border-none"
                                                 rightElement={<PasteButton onPaste={(text) => handleNestedChange("bankDetails", "bankName", text)} />}
                                             />
                                             <Input
@@ -513,7 +513,7 @@ export default function ReceiptForm() {
                                                 value={formData.bankDetails.accountName}
                                                 onChange={(e) => handleNestedChange("bankDetails", "accountName", e.target.value)}
                                                 error={errors.accountName}
-                                                className="bg-surface-50 border-none"
+                                                className="bg-surface-50 dark:bg-surface-800 border-none"
                                                 rightElement={<PasteButton onPaste={(text) => handleNestedChange("bankDetails", "accountName", text)} />}
                                             />
                                             <Input
@@ -526,7 +526,7 @@ export default function ReceiptForm() {
                                                     handleNestedChange("bankDetails", "accountNumber", val);
                                                 }}
                                                 error={errors.accountNumber}
-                                                className="bg-surface-50 border-none"
+                                                className="bg-surface-50 dark:bg-surface-800 border-none"
                                                 rightElement={<PasteButton onPaste={(text) => handleNestedChange("bankDetails", "accountNumber", text.slice(0, 10))} />}
                                             />
                                         </div>
@@ -536,12 +536,12 @@ export default function ReceiptForm() {
 
                             {/* Delivery Details Section */}
                             <StaggerItem>
-                                <section className="flex flex-col gap-5 bg-white p-6 rounded-[2rem] border border-surface-100 shadow-sm transition-all focus-within:ring-2 focus-within:ring-primary-500/10">
+                                <section className="flex flex-col gap-5 bg-white dark:bg-surface-900 p-6 rounded-[2rem] border border-surface-100 dark:border-surface-800 shadow-sm transition-all focus-within:ring-2 focus-within:ring-primary-500/10 dark:focus-within:ring-primary-500/30">
                                     <div className="flex items-center justify-between px-1">
-                                        <h3 className="text-[10px] font-black uppercase tracking-widest text-surface-400">Delivery</h3>
+                                        <h3 className="text-[10px] font-black uppercase tracking-widest text-surface-400 dark:text-surface-500">Delivery</h3>
                                         <button
                                             onClick={() => handleNestedChange("deliveryInfo", "enabled", !formData.deliveryInfo?.enabled)}
-                                            className={`w-10 h-6 rounded-full transition-all relative ${formData.deliveryInfo?.enabled ? 'bg-primary-500' : 'bg-surface-200'}`}
+                                            className={`w-10 h-6 rounded-full transition-all relative ${formData.deliveryInfo?.enabled ? 'bg-primary-500' : 'bg-surface-200 dark:bg-surface-700'}`}
                                         >
                                             <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${formData.deliveryInfo?.enabled ? 'left-5' : 'left-1'}`} />
                                         </button>
@@ -555,14 +555,14 @@ export default function ReceiptForm() {
                                                 value={formData.deliveryInfo.location}
                                                 onChange={(e) => handleNestedChange("deliveryInfo", "location", e.target.value)}
                                                 error={errors.deliveryLocation}
-                                                className="bg-surface-50 border-none"
+                                                className="bg-surface-50 dark:bg-surface-800 border-none"
                                                 rightElement={<PasteButton onPaste={(text) => handleNestedChange("deliveryInfo", "location", text)} />}
                                             />
                                             <CurrencyInput
                                                 label="DELIVERY COST"
                                                 value={formData.deliveryInfo.cost}
                                                 onChange={(val) => handleNestedChange("deliveryInfo", "cost", val)}
-                                                className="bg-surface-50 border-none"
+                                                className="bg-surface-50 dark:bg-surface-800 border-none"
                                             />
                                         </div>
                                     )}
@@ -584,14 +584,14 @@ export default function ReceiptForm() {
                 {/* Footer Summary - Always visible */}
                 <StaggerContainer delayChildren={0.5}>
                     <StaggerItem>
-                        <div className="bg-white p-8 rounded-[2.5rem] border border-surface-100 shadow-lg mb-6 mx-2 -mt-4 relative z-10">
+                        <div className="bg-white dark:bg-surface-900 p-8 rounded-[2.5rem] border border-surface-100 dark:border-surface-800 shadow-lg mb-6 mx-2 -mt-4 relative z-10">
                             <div className="flex flex-col gap-4">
-                                <div className="flex justify-between items-center text-sm font-medium text-surface-500 tracking-tight">
+                                <div className="flex justify-between items-center text-sm font-medium text-surface-500 dark:text-surface-400 tracking-tight">
                                     <span className="uppercase tracking-widest text-[10px] font-black opacity-50">Items Total</span>
                                     <span className="font-bold text-surface-900">{profile?.defaultCurrency === "USD" ? "$" : profile?.defaultCurrency === "GBP" ? "£" : profile?.defaultCurrency === "EUR" ? "€" : "₦"}{subtotal.toLocaleString()}</span>
                                 </div>
                                 {formData.deliveryInfo?.enabled && (
-                                    <div className="flex justify-between items-center text-sm font-medium text-surface-500 tracking-tight">
+                                    <div className="flex justify-between items-center text-sm font-medium text-surface-500 dark:text-surface-400 tracking-tight">
                                         <span className="uppercase tracking-widest text-[10px] font-black opacity-50">Delivery</span>
                                         <span className="font-bold text-surface-900">{profile?.defaultCurrency === "USD" ? "$" : profile?.defaultCurrency === "GBP" ? "£" : profile?.defaultCurrency === "EUR" ? "€" : "₦"}{formData.deliveryInfo.cost.toLocaleString()}</span>
                                     </div>

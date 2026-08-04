@@ -168,15 +168,15 @@ function NotifySheet({
         animate={{ y: 0, opacity: 1 }}
         exit={{ y: "100%", opacity: 0 }}
         transition={{ type: "spring", damping: 28, stiffness: 320 }}
-        className="relative z-10 w-full max-w-md bg-white rounded-t-[2.5rem] shadow-2xl overflow-hidden"
+        className="relative z-10 w-full max-w-md bg-white dark:bg-surface-900 rounded-t-[2.5rem] shadow-2xl overflow-hidden"
       >
         {/* Drag handle */}
-        <div className="w-10 h-1.5 bg-surface-200 rounded-full mx-auto mt-4 mb-2" />
+        <div className="w-10 h-1.5 bg-surface-200 dark:bg-surface-700 rounded-full mx-auto mt-4 mb-2" />
 
         {/* Dismiss */}
         <button
           onClick={onClose}
-          className="absolute top-5 right-5 w-9 h-9 rounded-full bg-surface-100 flex items-center justify-center text-surface-400 hover:text-surface-700 transition-colors"
+          className="absolute top-5 right-5 w-9 h-9 rounded-full bg-surface-100 dark:bg-surface-800 flex items-center justify-center text-surface-400 dark:text-surface-500 hover:text-surface-700 dark:hover:text-surface-300 transition-colors"
         >
           <X size={18} />
         </button>
@@ -187,10 +187,10 @@ function NotifySheet({
               <div className="w-16 h-16 bg-primary-500 rounded-full flex items-center justify-center mx-auto mb-5 shadow-lg shadow-primary-500/30">
                 <Check size={30} className="text-white" strokeWidth={3} />
               </div>
-              <h2 className="text-2xl font-black text-surface-900 tracking-tight mb-2">
+              <h2 className="text-2xl font-black text-surface-900 dark:text-surface-50 tracking-tight mb-2">
                 You&apos;re on the list!
               </h2>
-              <p className="text-surface-500 text-sm font-medium leading-relaxed">
+              <p className="text-surface-500 dark:text-surface-400 text-sm font-medium leading-relaxed">
                 We&apos;ll notify you the moment {plan} payments go live —
                 with an early-adopter discount.
               </p>
@@ -204,15 +204,15 @@ function NotifySheet({
           ) : (
             <>
               {/* Pro badge */}
-              <div className="inline-flex items-center gap-1.5 bg-primary-50 text-primary-600 text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full mb-5">
+              <div className="inline-flex items-center gap-1.5 bg-primary-50 dark:bg-primary-950/60 text-primary-600 dark:text-primary-400 text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full mb-5">
                 <Bell size={11} />
                 {plan} · Early Access
               </div>
 
-              <h2 className="text-2xl font-black text-surface-900 tracking-tight leading-snug mb-3">
+              <h2 className="text-2xl font-black text-surface-900 dark:text-surface-50 tracking-tight leading-snug mb-3">
                 Get notified when it&apos;s live
               </h2>
-              <p className="text-surface-500 text-sm font-medium leading-relaxed mb-6">
+              <p className="text-surface-500 dark:text-surface-400 text-sm font-medium leading-relaxed mb-6">
                 Payments are launching soon. Drop your email and we&apos;ll reach
                 out the moment it&apos;s ready — with an early-adopter discount.
               </p>
@@ -224,7 +224,7 @@ function NotifySheet({
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="your@email.com"
                   required
-                  className="w-full px-4 py-4 bg-white border border-surface-200 rounded-2xl text-surface-900 font-medium placeholder:text-surface-300 focus:outline-none focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 transition-all"
+                  className="w-full px-4 py-4 bg-white dark:bg-surface-900 border border-surface-200 dark:border-surface-800 rounded-2xl text-surface-900 dark:text-surface-50 font-medium placeholder:text-surface-300 dark:placeholder:text-surface-600 focus:outline-none focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 transition-all"
                 />
                 <button
                   type="submit"
@@ -256,16 +256,16 @@ function NotifySheet({
 function CompCell({ value, isHighlight }: { value: string | boolean; isHighlight?: boolean }) {
   if (value === true) {
     return (
-      <div className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mx-auto ${isHighlight ? "bg-primary-500" : "bg-surface-200"}`}>
-        <Check size={11} className={isHighlight ? "text-white" : "text-surface-600"} strokeWidth={3} />
+      <div className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mx-auto ${isHighlight ? "bg-primary-500" : "bg-surface-200 dark:bg-surface-700"}`}>
+        <Check size={11} className={isHighlight ? "text-white" : "text-surface-600 dark:text-surface-300"} strokeWidth={3} />
       </div>
     );
   }
   if (value === false) {
-    return <span className="text-surface-200 text-base leading-none">—</span>;
+    return <span className="text-surface-200 dark:text-surface-700 text-base leading-none">—</span>;
   }
   return (
-    <span className={`text-[11px] font-bold leading-tight ${isHighlight ? "text-primary-600" : "text-surface-600"}`}>
+    <span className={`text-[11px] font-bold leading-tight ${isHighlight ? "text-primary-600 dark:text-primary-400" : "text-surface-600 dark:text-surface-300"}`}>
       {value}
     </span>
   );
@@ -293,24 +293,24 @@ function TestimonialCard({
       initial={{ y: 10 }}
       animate={{ y: 0 }}
       transition={{ delay, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-      className="bg-white rounded-[1.5rem] shadow-sm border border-surface-100 overflow-hidden"
+      className="bg-white dark:bg-surface-900 rounded-[1.5rem] shadow-sm border border-surface-100 dark:border-surface-800 overflow-hidden"
     >
       {/* WhatsApp-style chat header */}
-      <div className="bg-surface-50 border-b border-surface-100 px-4 py-2.5 flex items-center gap-3">
+      <div className="bg-surface-50 dark:bg-surface-800 border-b border-surface-100 dark:border-surface-800 px-4 py-2.5 flex items-center gap-3">
         <div className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center flex-shrink-0">
           <span className="text-primary-600 font-black text-xs">{name[0]}</span>
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-[11px] font-black text-surface-900 uppercase tracking-widest truncate">{name}</p>
-          <p className="text-[10px] text-surface-400 font-medium">{city}</p>
+          <p className="text-[11px] font-black text-surface-900 dark:text-surface-50 uppercase tracking-widest truncate">{name}</p>
+          <p className="text-[10px] text-surface-400 dark:text-surface-500 font-medium">{city}</p>
         </div>
-        <span className="text-[10px] text-surface-300 font-medium">{time}</span>
+        <span className="text-[10px] text-surface-300 dark:text-surface-600 font-medium">{time}</span>
       </div>
 
       {/* Message bubble */}
       <div className="px-4 py-4">
-        <div className="bg-surface-50 rounded-2xl rounded-tl-sm px-4 py-3 inline-block max-w-full">
-          <p className="text-sm text-surface-700 font-medium leading-relaxed">
+        <div className="bg-surface-50 dark:bg-surface-800 rounded-2xl rounded-tl-sm px-4 py-3 inline-block max-w-full">
+          <p className="text-sm text-surface-700 dark:text-surface-300 font-medium leading-relaxed">
             &ldquo;{text}&rdquo;
           </p>
         </div>
@@ -451,12 +451,12 @@ export default function PricingPage() {
         transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
         className="text-center mb-8 mt-2"
       >
-        <h1 className="text-[2.25rem] font-black text-surface-900 tracking-tight leading-[1.05] mb-3">
+        <h1 className="text-[2.25rem] font-black text-surface-900 dark:text-surface-50 tracking-tight leading-[1.05] mb-3">
           Make sure it says<br />
           <span className="text-primary-500">something good</span>
           <br />about your business.
         </h1>
-        <p className="text-surface-500 text-sm font-medium leading-relaxed max-w-[300px] mx-auto">
+        <p className="text-surface-500 dark:text-surface-400 text-sm font-medium leading-relaxed max-w-[300px] mx-auto">
           Every receipt you send is a first impression. Pro makes it count.
         </p>
       </motion.div>
@@ -472,27 +472,27 @@ export default function PricingPage() {
           {["T", "E", "A", "O"].map((letter, i) => (
             <div
               key={i}
-              className="w-7 h-7 rounded-full bg-primary-100 border-2 border-white flex items-center justify-center"
+              className="w-7 h-7 rounded-full bg-primary-100 border-2 border-white dark:border-surface-950 flex items-center justify-center"
             >
               <span className="text-primary-700 font-black text-[9px]">{letter}</span>
             </div>
           ))}
         </div>
-        <p className="text-surface-500 text-xs font-medium">
-          <span className="font-black text-surface-900">240+</span> businesses already look more professional
+        <p className="text-surface-500 dark:text-surface-400 text-xs font-medium">
+          <span className="font-black text-surface-900 dark:text-surface-50">240+</span> businesses already look more professional
         </p>
       </motion.div>
 
       {/* ── Billing toggle ───────────────────────────────────────────────── */}
       <div className="flex justify-center mb-6">
-        <div className="inline-flex items-center bg-surface-100 rounded-2xl p-1.5 gap-1 border border-surface-200">
+        <div className="inline-flex items-center bg-surface-100 dark:bg-surface-800 rounded-2xl p-1.5 gap-1 border border-surface-200 dark:border-surface-800">
           <button
             id="billing-monthly"
             onClick={() => setBilling("monthly")}
             className={`px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
               billing === "monthly"
-                ? "bg-white text-surface-900 shadow-sm"
-                : "text-surface-600 hover:text-surface-900"
+                ? "bg-white dark:bg-surface-900 text-surface-900 dark:text-surface-50 shadow-sm"
+                : "text-surface-600 dark:text-surface-300 hover:text-surface-900 dark:hover:text-surface-50"
             }`}
           >
             Monthly
@@ -502,8 +502,8 @@ export default function PricingPage() {
             onClick={() => setBilling("annual")}
             className={`px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest flex items-center gap-1.5 transition-all ${
               billing === "annual"
-                ? "bg-white text-surface-900 shadow-sm"
-                : "text-surface-600 hover:text-surface-900"
+                ? "bg-white dark:bg-surface-900 text-surface-900 dark:text-surface-50 shadow-sm"
+                : "text-surface-600 dark:text-surface-300 hover:text-surface-900 dark:hover:text-surface-50"
             }`}
           >
             Annual
@@ -535,7 +535,7 @@ export default function PricingPage() {
                   ? "shadow-2xl shadow-primary-500/15 ring-2 ring-primary-400/50 z-10"
                   : isBusiness
                   ? "shadow-lg"
-                  : "shadow-sm border border-surface-200"
+                  : "shadow-sm border border-surface-200 dark:border-surface-800"
               }`}
               style={isPro ? { transform: "scale(1.015)" } : undefined}
             >
@@ -545,8 +545,8 @@ export default function PricingPage() {
                   isPro
                     ? "bg-primary-500"
                     : isBusiness
-                    ? "bg-surface-900"
-                    : "bg-white"
+                    ? "bg-surface-900 dark:bg-surface-800"
+                    : "bg-white dark:bg-surface-900"
                 }`}
               >
                 {/* Badge row */}
@@ -555,7 +555,7 @@ export default function PricingPage() {
                     <div
                       className={`w-9 h-9 rounded-xl flex items-center justify-center ${
                         isFree
-                          ? "bg-surface-100 text-surface-600"
+                          ? "bg-surface-100 dark:bg-surface-800 text-surface-600 dark:text-surface-300"
                           : "bg-white/15 text-white"
                       }`}
                     >
@@ -564,14 +564,14 @@ export default function PricingPage() {
                     <div>
                       <h2
                         className={`text-base font-black tracking-tight ${
-                          isFree ? "text-surface-900" : "text-white"
+                          isFree ? "text-surface-900 dark:text-surface-50" : "text-white"
                         }`}
                       >
                         {planObj.name}
                       </h2>
                       <p
                         className={`text-xs font-medium ${
-                          isFree ? "text-surface-600" : "text-white/75"
+                          isFree ? "text-surface-600 dark:text-surface-300" : "text-white/75"
                         }`}
                       >
                         {planObj.headline}
@@ -597,7 +597,7 @@ export default function PricingPage() {
                   <div className="flex items-end gap-1.5">
                     <span
                       className={`text-4xl font-black tracking-tight leading-none font-mono ${
-                        isFree ? "text-surface-900" : "text-white"
+                        isFree ? "text-surface-900 dark:text-surface-50" : "text-white"
                       }`}
                     >
                       {getPrice(planObj) === 0
@@ -607,7 +607,7 @@ export default function PricingPage() {
                     {getPrice(planObj) > 0 && (
                       <span
                         className={`text-sm font-medium mb-0.5 ${
-                          isFree ? "text-surface-600" : "text-white/70"
+                          isFree ? "text-surface-600 dark:text-surface-300" : "text-white/70"
                         }`}
                       >
                         /{billing === "annual" ? "yr" : "mo"}
@@ -617,7 +617,7 @@ export default function PricingPage() {
                   {billing === "annual" && planObj.annualSave > 0 && (
                     <p
                       className={`text-xs font-bold mt-1 font-mono ${
-                        isPro ? "text-white/90" : "text-surface-700"
+                        isPro ? "text-white/90" : "text-surface-700 dark:text-surface-300"
                       }`}
                     >
                       ~₦{Math.round(planObj.annualPrice / 12).toLocaleString()}/mo · Save ₦{planObj.annualSave.toLocaleString()} vs monthly
@@ -626,7 +626,7 @@ export default function PricingPage() {
                   {billing === "monthly" && planObj.monthlyPrice > 0 && (
                     <p
                       className={`text-xs font-medium mt-1 font-mono ${
-                        isPro ? "text-white/80" : "text-surface-700"
+                        isPro ? "text-white/80" : "text-surface-700 dark:text-surface-300"
                       }`}
                     >
                       or ₦{planObj.annualPrice.toLocaleString()}/yr · save ₦{planObj.annualSave.toLocaleString()}

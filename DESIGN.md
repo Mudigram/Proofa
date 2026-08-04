@@ -7,17 +7,20 @@ colors:
   primary-dark: "#9e360d"
   primary-light: "#ffd1b3"
   primary-wash: "#fff4ed"
+  primary-ember: "#4a1c07"
   secondary-dark: "#1a1a1a"
   secondary-deeper: "#0d0d0d"
   neutral-bg: "#fafafa"
-  neutral-subtle: "#f5f5f5"
-  neutral-border: "#eeeeee"
-  neutral-divider: "#e0e0e0"
-  neutral-muted: "#9e9e9e"
-  neutral-secondary: "#757575"
-  neutral-body: "#616161"
-  neutral-emphasis: "#424242"
-  neutral-strong: "#212121"
+  neutral-subtle: "#f4f4f5"
+  neutral-border: "#e4e4e7"
+  neutral-divider: "#d4d4d8"
+  neutral-muted: "#a1a1aa"
+  neutral-secondary: "#71717a"
+  neutral-body: "#52525b"
+  neutral-emphasis: "#3f3f46"
+  neutral-strong: "#27272a"
+  neutral-deep: "#18181b"
+  neutral-void: "#09090b"
 typography:
   display:
     fontFamily: "Outfit, Inter, ui-sans-serif, system-ui, sans-serif"
@@ -137,17 +140,57 @@ A tight three-family palette: Burnt Orange (primary), Rich Charcoal (document he
 - **Deep Void** (`#0d0d0d`): Backdrop tint variant; not used on surfaces.
 
 ### Neutral
-- **Off-White Canvas** (`#fafafa`): App body background; the default page surface.
-- **Light Lift** (`#f5f5f5`): Hover backgrounds, disabled field fills, secondary button backgrounds.
-- **Hairline** (`#eeeeee`): Card borders, input borders, divider lines.
-- **Rule Grey** (`#e0e0e0`): Section dividers within templates.
-- **Mid Grey** (`#9e9e9e`): Placeholder text, secondary metadata.
-- **Secondary Text** (`#757575`): Subtext, helper labels, inactive nav icons.
-- **Body Text** (`#616161`): Default running-text paragraphs; rarely used since most text is `#212121` or white.
-- **Strong Emphasis** (`#424242`): Timestamps, secondary headings in templates.
-- **Near Black** (`#212121`): Primary body text; page headings; all high-importance content.
 
-**The One Accent Rule.** Orange (`#e8590c`) is the only coloured accent in the application chrome. No competing accent colours on backgrounds, borders, or icons. Semantic status colours (green for success toast, red for error toast) live only in transient notification elements — they never appear on persistent surfaces.
+The neutral ramp is Zinc — a very slightly cool grey. It is deliberately *one* family across both themes: dark mode inverts position on the same ramp rather than introducing a second grey. Mixing in a warmer or bluer grey (Slate, Stone, true grey) reads as a bug even when the luminance is right.
+
+- **Off-White Canvas** (`surface-50`, `#fafafa`): App body background in light mode; primary text colour in dark mode.
+- **Light Lift** (`surface-100`, `#f4f4f5`): Hover backgrounds, disabled field fills, secondary button backgrounds.
+- **Hairline** (`surface-200`, `#e4e4e7`): Card borders, input borders, divider lines.
+- **Rule Grey** (`surface-300`, `#d4d4d8`): Section dividers within templates.
+- **Mid Grey** (`surface-400`, `#a1a1aa`): Placeholder text, secondary metadata, inactive nav icons.
+- **Secondary Text** (`surface-500`, `#71717a`): Subtext, helper labels.
+- **Body Text** (`surface-600`, `#52525b`): Default running-text paragraphs.
+- **Strong Emphasis** (`surface-700`, `#3f3f46`): Timestamps, secondary headings, field labels.
+- **Near Black** (`surface-800`, `#27272a`): Raised surfaces in dark mode (inputs, tiles, inset panels).
+- **Panel Dark** (`surface-900`, `#18181b`): Card and sheet surface in dark mode.
+- **Void** (`surface-950`, `#09090b`): App body background in dark mode.
+
+**The One Accent Rule.** Orange (`#e8590c`) is the only coloured accent in the application chrome, in **both** themes. No competing accent colours on backgrounds, borders, or icons — this includes the theme toggle, which uses `primary-400` for its sun glyph rather than the amber that would otherwise be conventional. Semantic status colours (green for success toast, red for error toast) live only in transient notification elements — they never appear on persistent surfaces.
+
+## Dark Mode
+
+Dark mode is a first-class theme, not an inversion filter. It is driven by a `.dark` class on `<html>`, declared in `globals.css` as `@custom-variant dark (&:where(.dark, .dark *))`.
+
+**Application order.** A small inline script in `<head>` (see `app/layout.tsx`) reads `localStorage.proofa_theme` — falling back to `prefers-color-scheme` — and sets the class *before first paint*. `ThemeProvider` then reads the class back off the DOM rather than re-deriving it, so React state and the rendered theme can't disagree. Applying the theme in an effect instead would paint light first and flash.
+
+**`color-scheme`.** `html` declares `color-scheme: light` and `html.dark` declares `dark`. This is what themes the *native* UI — scrollbars, `<select>` popups, and date pickers. Without it those render light-on-light in dark mode, which matters disproportionately here because the product is form-heavy.
+
+### Surface Ladder
+
+Depth in dark mode is carried by surfaces getting **lighter** as they rise, the mirror of light mode's white-on-off-white:
+
+| Role | Light | Dark |
+|---|---|---|
+| Page | `surface-50` | `surface-950` |
+| Card / sheet | `#ffffff` | `surface-900` |
+| Inset / raised control | `surface-50` | `surface-800` |
+| Hairline border | `surface-200` | `surface-800` |
+| Primary text | `surface-900` | `surface-50` |
+| Secondary text | `surface-500` | `surface-400` |
+| Orange wash tile | `primary-50` | `primary-950/60` |
+
+**The Tonal-Inversion Rule.** Never carry a light-mode surface into dark mode unchanged. A `bg-white` card with no `dark:` variant is the single most common failure — it produces a glowing white panel in an otherwise dark app. The same applies to `text-surface-900` without `dark:text-surface-50`.
+
+### Dark Shadows
+
+Black shadows at 5–7% opacity are invisible against `surface-950`, so `.shadow-card` and `.shadow-card-hover` are redefined under `html.dark`: the black is deepened to 40–60% *and* paired with a hairline ring of light (`rgb(255 255 255 / 0.06)` at rest, `0.1` on hover) that does the actual separating. These alpha values are elevation tints on neutral black and white — they are intentionally not palette entries.
+
+**Focus rings.** `ring-primary-500/10` is legible over white but effectively invisible over `surface-900`. Every focus ring steps up to `/30` in dark mode. This is an accessibility requirement, not a preference.
+
+### Exempt: Document Templates
+
+`components/templates/` is **excluded from theming entirely**. Those components render to fixed-width PNG/PDF exports that must look identical regardless of the user's theme — a receipt shared to WhatsApp is a document, not app chrome. `LivePreview`'s surrounding chrome themes; the document surface inside it stays white. Never add a `dark:` variant inside `components/templates/`.
+
 
 ## Typography
 

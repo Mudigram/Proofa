@@ -109,7 +109,7 @@ export default function BankVaultPage() {
     if (authLoading) {
         return (
             <main className="app-container min-h-screen pb-24 pt-8 flex items-center justify-center">
-                <div className="w-8 h-8 rounded-full border-4 border-primary-200 border-t-primary-500 animate-spin"></div>
+                <div className="w-8 h-8 rounded-full border-4 border-primary-200 dark:border-primary-800 border-t-primary-500 animate-spin"></div>
             </main>
         );
     }
@@ -122,13 +122,13 @@ export default function BankVaultPage() {
                     <div className="w-24 h-24 bg-gradient-to-br from-amber-100 to-amber-50 rounded-3xl flex items-center justify-center text-amber-500 mb-6 shadow-xl shadow-amber-500/10 rotate-3">
                         <Lock size={40} className="opacity-80 drop-shadow-sm" />
                     </div>
-                    <h2 className="text-3xl font-black text-surface-900 mb-3 tracking-tight">Pro Feature</h2>
-                    <p className="text-surface-500 text-sm font-medium mb-8 max-w-[260px] leading-relaxed">
+                    <h2 className="text-3xl font-black text-surface-900 dark:text-surface-50 mb-3 tracking-tight">Pro Feature</h2>
+                    <p className="text-surface-500 dark:text-surface-400 text-sm font-medium mb-8 max-w-[260px] leading-relaxed">
                         Save up to 3 bank accounts and insert them into any receipt with one tap.
                     </p>
                     <Link
                         href="/pricing"
-                        className="bg-surface-900 text-white font-bold py-4 px-10 rounded-2xl shadow-xl shadow-surface-900/20 active:scale-95 transition-all text-sm w-full max-w-xs"
+                        className="bg-surface-900 dark:bg-surface-800 text-white font-bold py-4 px-10 rounded-2xl shadow-xl shadow-surface-900/20 active:scale-95 transition-all text-sm w-full max-w-xs"
                     >
                         Unlock Bank Vault
                     </Link>
@@ -141,8 +141,8 @@ export default function BankVaultPage() {
         <main className="app-container min-h-screen pb-24 pt-4">
             <div className="mb-6 flex items-center justify-between">
                 <div>
-                    <h2 className="text-sm font-bold text-surface-900">Saved Bank Accounts</h2>
-                    <p className="text-xs text-surface-500 font-medium">Insert saved details into any receipt</p>
+                    <h2 className="text-sm font-bold text-surface-900 dark:text-surface-50">Saved Bank Accounts</h2>
+                    <p className="text-xs text-surface-500 dark:text-surface-400 font-medium">Insert saved details into any receipt</p>
                 </div>
                 {!isAdding && accounts.length < 3 && (
                     <button
@@ -155,7 +155,7 @@ export default function BankVaultPage() {
             </div>
 
             {error && (
-                <div className="bg-red-50 border border-red-100 text-red-600 text-sm font-bold px-4 py-3 rounded-xl mb-6 flex justify-between items-center">
+                <div className="bg-red-50 dark:bg-red-950/50 border border-red-100 dark:border-red-900 text-red-600 dark:text-red-400 text-sm font-bold px-4 py-3 rounded-xl mb-6 flex justify-between items-center">
                     {error}
                     <button onClick={() => setError(null)} className="text-red-400 hover:text-red-600">×</button>
                 </div>
@@ -164,16 +164,16 @@ export default function BankVaultPage() {
             {isLoading ? (
                 <div className="flex flex-col gap-4">
                     {[1, 2, 3].map((i) => (
-                        <div key={i} className="bg-white border-2 border-surface-100 rounded-[1.5rem] p-5 shadow-sm flex items-center justify-between">
+                        <div key={i} className="bg-white dark:bg-surface-900 border-2 border-surface-100 dark:border-surface-800 rounded-[1.5rem] p-5 shadow-sm flex items-center justify-between">
                             <div className="flex-1">
-                                <div className="h-5 w-32 bg-surface-200 animate-pulse rounded mb-2" />
+                                <div className="h-5 w-32 bg-surface-200 dark:bg-surface-700 animate-pulse rounded mb-2" />
                                 <div className="flex items-center gap-2">
-                                    <div className="h-4 w-24 bg-surface-100 animate-pulse rounded" />
-                                    <div className="w-1 h-1 bg-surface-200 rounded-full" />
-                                    <div className="h-3 w-32 bg-surface-50 animate-pulse rounded" />
+                                    <div className="h-4 w-24 bg-surface-100 dark:bg-surface-800 animate-pulse rounded" />
+                                    <div className="w-1 h-1 bg-surface-200 dark:bg-surface-700 rounded-full" />
+                                    <div className="h-3 w-32 bg-surface-50 dark:bg-surface-900 animate-pulse rounded" />
                                 </div>
                             </div>
-                            <div className="w-10 h-10 rounded-full bg-surface-100 animate-pulse shrink-0" />
+                            <div className="w-10 h-10 rounded-full bg-surface-100 dark:bg-surface-800 animate-pulse shrink-0" />
                         </div>
                     ))}
                 </div>
@@ -188,47 +188,47 @@ export default function BankVaultPage() {
                                 exit={{ opacity: 0, height: 0, scale: 0.95 }}
                                 className="overflow-hidden"
                             >
-                                <form onSubmit={handleAddAccount} className="bg-white border-2 border-primary-100 rounded-[2rem] p-6 shadow-xl shadow-primary-500/5 mb-2">
+                                <form onSubmit={handleAddAccount} className="bg-white dark:bg-surface-900 border-2 border-primary-100 dark:border-primary-800 rounded-[2rem] p-6 shadow-xl shadow-primary-500/5 mb-2">
                                     <div className="flex items-center justify-between mb-5">
-                                        <h3 className="font-black text-surface-900">New Account</h3>
-                                        <div className="text-[10px] font-black uppercase tracking-widest text-primary-500 bg-primary-50 px-2.5 py-1 rounded-md">
+                                        <h3 className="font-black text-surface-900 dark:text-surface-50">New Account</h3>
+                                        <div className="text-[10px] font-black uppercase tracking-widest text-primary-500 bg-primary-50 dark:bg-primary-950/60 px-2.5 py-1 rounded-md">
                                             {accounts.length}/3 Used
                                         </div>
                                     </div>
 
                                     <div className="space-y-4">
                                         <div>
-                                            <label className="text-[10px] font-black text-surface-500 uppercase tracking-widest mb-1.5 block">Bank Name</label>
+                                            <label className="text-[10px] font-black text-surface-500 dark:text-surface-400 uppercase tracking-widest mb-1.5 block">Bank Name</label>
                                             <div className="relative">
-                                                <Building2 size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-surface-400" />
+                                                <Building2 size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-surface-400 dark:text-surface-500" />
                                                 <input
                                                     type="text"
                                                     required
                                                     value={bankName}
                                                     onChange={(e) => setBankName(e.target.value)}
                                                     placeholder="e.g. Zenith Bank"
-                                                    className="w-full pl-11 pr-4 py-3.5 bg-surface-50 border-2 border-surface-100 rounded-xl text-black font-bold placeholder:text-surface-300 focus:border-primary-500 focus:bg-white transition-colors"
+                                                    className="w-full pl-11 pr-4 py-3.5 bg-surface-50 dark:bg-surface-900 border-2 border-surface-100 dark:border-surface-800 rounded-xl text-black dark:text-surface-50 font-bold placeholder:text-surface-300 dark:placeholder:text-surface-600 focus:border-primary-500 focus:bg-white dark:focus:bg-surface-900 transition-colors"
                                                 />
                                             </div>
                                         </div>
                                         <div>
-                                            <label className="text-[10px] font-black text-surface-500 uppercase tracking-widest mb-1.5 block">Account Name</label>
+                                            <label className="text-[10px] font-black text-surface-500 dark:text-surface-400 uppercase tracking-widest mb-1.5 block">Account Name</label>
                                             <div className="relative">
-                                                <User size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-surface-400" />
+                                                <User size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-surface-400 dark:text-surface-500" />
                                                 <input
                                                     type="text"
                                                     required
                                                     value={accountName}
                                                     onChange={(e) => setAccountName(e.target.value)}
                                                     placeholder="e.g. Amaka's Boutique"
-                                                    className="w-full pl-11 pr-4 py-3.5 bg-surface-50 border-2 border-surface-100 rounded-xl text-black font-bold placeholder:text-surface-300 focus:border-primary-500 focus:bg-white transition-colors"
+                                                    className="w-full pl-11 pr-4 py-3.5 bg-surface-50 dark:bg-surface-900 border-2 border-surface-100 dark:border-surface-800 rounded-xl text-black dark:text-surface-50 font-bold placeholder:text-surface-300 dark:placeholder:text-surface-600 focus:border-primary-500 focus:bg-white dark:focus:bg-surface-900 transition-colors"
                                                 />
                                             </div>
                                         </div>
                                         <div>
-                                            <label className="text-[10px] font-black text-surface-500 uppercase tracking-widest mb-1.5 block">Account Number</label>
+                                            <label className="text-[10px] font-black text-surface-500 dark:text-surface-400 uppercase tracking-widest mb-1.5 block">Account Number</label>
                                             <div className="relative">
-                                                <Hash size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-surface-400" />
+                                                <Hash size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-surface-400 dark:text-surface-500" />
                                                 <input
                                                     type="text"
                                                     inputMode="numeric"

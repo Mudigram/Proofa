@@ -376,7 +376,7 @@ export default function HomePage() {
                   className="bg-white dark:bg-surface-900 border border-surface-200/60 dark:border-surface-800 p-3.5 rounded-2xl shadow-sm flex items-center gap-3.5 hover:shadow-md hover:border-primary-200 dark:hover:border-primary-800 transition-all active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
                 >
                   <div className={`w-12 h-12 rounded-xl flex items-center justify-center p-2 shrink-0 ${doc.type === "receipt" ? "bg-primary-50 dark:bg-primary-950/60 text-primary-600 dark:text-primary-400" :
-                    doc.type === "invoice" ? "bg-secondary-900 text-white" :
+                    doc.type === "invoice" ? "bg-secondary-900 dark:bg-surface-800 text-white" :
                       "bg-surface-100 dark:bg-surface-800 text-surface-900 dark:text-surface-50"
                     }`}>
                     <Image

@@ -47,7 +47,7 @@ export function BankSelector({ onSelect }: BankSelectorProps) {
 
     if (isLoading) {
         return (
-            <div className="flex items-center gap-2 text-surface-400 text-xs font-bold px-2 py-1">
+            <div className="flex items-center gap-2 text-surface-400 dark:text-surface-500 text-xs font-bold px-2 py-1">
                 <Loader2 size={12} className="animate-spin" />
                 LOADING VAULT...
             </div>
@@ -63,7 +63,7 @@ export function BankSelector({ onSelect }: BankSelectorProps) {
             <button
                 type="button"
                 onClick={() => setIsOpen(!isOpen)}
-                className="flex items-center gap-2 text-primary-600 bg-primary-50 px-3 py-2 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-primary-100 transition-colors active:scale-95"
+                className="flex items-center gap-2 text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-950/60 px-3 py-2 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-primary-100 dark:hover:bg-primary-900/60 transition-colors active:scale-95"
             >
                 <WalletCards size={14} />
                 Insert from Vault
@@ -77,7 +77,7 @@ export function BankSelector({ onSelect }: BankSelectorProps) {
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: -10, scale: 0.95 }}
                         transition={{ duration: 0.15 }}
-                        className="absolute top-full left-0 mt-2 w-full max-w-[280px] bg-white border border-surface-200 shadow-xl rounded-2xl overflow-hidden divide-y divide-surface-100"
+                        className="absolute top-full left-0 mt-2 w-full max-w-[280px] bg-white dark:bg-surface-900 border border-surface-200 dark:border-surface-800 shadow-xl rounded-2xl overflow-hidden divide-y divide-surface-100 dark:divide-surface-800"
                     >
                         {accounts.map((acc) => (
                             <button
@@ -87,14 +87,14 @@ export function BankSelector({ onSelect }: BankSelectorProps) {
                                     onSelect(acc.bankName, acc.accountName, acc.accountNumber);
                                     setIsOpen(false);
                                 }}
-                                className="w-full text-left p-3 hover:bg-surface-50 transition-colors group flex items-start justify-between"
+                                className="w-full text-left p-3 hover:bg-surface-50 dark:hover:bg-surface-800 transition-colors group flex items-start justify-between"
                             >
                                 <div className="flex flex-col gap-0.5 overflow-hidden">
-                                    <span className="text-sm font-black text-surface-900 truncate">{acc.bankName}</span>
-                                    <span className="text-xs font-bold text-surface-500 tracking-wider truncate">{acc.accountNumber}</span>
-                                    <span className="text-[10px] font-bold text-surface-400 uppercase tracking-widest truncate">{acc.accountName}</span>
+                                    <span className="text-sm font-black text-surface-900 dark:text-surface-50 truncate">{acc.bankName}</span>
+                                    <span className="text-xs font-bold text-surface-500 dark:text-surface-400 tracking-wider truncate">{acc.accountNumber}</span>
+                                    <span className="text-[10px] font-bold text-surface-400 dark:text-surface-500 uppercase tracking-widest truncate">{acc.accountName}</span>
                                 </div>
-                                <div className="w-6 h-6 rounded-full bg-surface-100 text-surface-300 flex items-center justify-center scale-0 group-hover:scale-100 group-hover:bg-primary-50 group-hover:text-primary-500 transition-all">
+                                <div className="w-6 h-6 rounded-full bg-surface-100 dark:bg-surface-800 text-surface-300 dark:text-surface-600 flex items-center justify-center scale-0 group-hover:scale-100 group-hover:bg-primary-50 dark:group-hover:bg-primary-950/60 group-hover:text-primary-500 transition-all">
                                     <Check size={12} />
                                 </div>
                             </button>

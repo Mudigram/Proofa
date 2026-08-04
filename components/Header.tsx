@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { Crown } from "lucide-react";
-// import { ThemeToggle } from "@/components/ui/ThemeToggle";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
 
 export default function Header() {
     const pathname = usePathname();
@@ -79,7 +79,7 @@ export default function Header() {
 
                 {/* Right side controls - Dark Mode Toggle + Go Pro */}
                 <div className="flex items-center gap-2.5">
-                    
+                    <ThemeToggle />
 
                     {!isPro && !isPricing && (
                         <Link

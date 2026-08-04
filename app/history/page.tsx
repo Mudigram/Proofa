@@ -127,21 +127,21 @@ export default function HistoryPage() {
         return (
             <main className="app-container py-6 pb-24">
                 <header className="mb-8">
-                    <div className="h-8 w-48 bg-surface-200 animate-pulse rounded-lg mb-2" />
-                    <div className="h-4 w-32 bg-surface-100 animate-pulse rounded-md" />
+                    <div className="h-8 w-48 bg-surface-200 dark:bg-surface-700 animate-pulse rounded-lg mb-2" />
+                    <div className="h-4 w-32 bg-surface-100 dark:bg-surface-800 animate-pulse rounded-md" />
                 </header>
                 <div className="grid gap-4">
                     {[1, 2, 3, 4, 5].map((i) => (
-                        <div key={i} className="bg-white border border-surface-200 rounded-[2rem] p-5">
+                        <div key={i} className="bg-white dark:bg-surface-900 border border-surface-200 dark:border-surface-800 rounded-[2rem] p-5">
                             <div className="flex items-center gap-4">
-                                <div className="w-12 h-12 rounded-2xl bg-surface-100 animate-pulse shrink-0" />
+                                <div className="w-12 h-12 rounded-2xl bg-surface-100 dark:bg-surface-800 animate-pulse shrink-0" />
                                 <div className="flex-1">
-                                    <div className="h-3 w-20 bg-surface-100 animate-pulse rounded mb-2" />
-                                    <div className="h-4 w-32 bg-surface-200 animate-pulse rounded" />
+                                    <div className="h-3 w-20 bg-surface-100 dark:bg-surface-800 animate-pulse rounded mb-2" />
+                                    <div className="h-4 w-32 bg-surface-200 dark:bg-surface-700 animate-pulse rounded" />
                                 </div>
                                 <div className="flex flex-col items-end gap-2">
-                                    <div className="h-4 w-16 bg-surface-200 animate-pulse rounded" />
-                                    <div className="w-8 h-8 rounded-full bg-surface-100 animate-pulse" />
+                                    <div className="h-4 w-16 bg-surface-200 dark:bg-surface-700 animate-pulse rounded" />
+                                    <div className="w-8 h-8 rounded-full bg-surface-100 dark:bg-surface-800 animate-pulse" />
                                 </div>
                             </div>
                         </div>
@@ -169,7 +169,7 @@ export default function HistoryPage() {
                 <header className="mb-8 flex items-center justify-between gap-4">
                     <div>
                         <h1 className="text-2xl font-black tracking-tight text-surface-900 dark:text-surface-50">Document History</h1>
-                        <p className="text-sm text-surface-400 font-medium mt-1">
+                        <p className="text-sm text-surface-400 dark:text-surface-500 font-medium mt-1">
                             Your {history.length} most recent documents.
                         </p>
                     </div>
@@ -185,15 +185,15 @@ export default function HistoryPage() {
                 </header>
 
                 {history.length === 0 ? (
-                    <div className="bg-white border-2 border-dashed border-surface-200 rounded-[2.5rem] p-12 text-center">
-                        <div className="w-16 h-16 bg-surface-50 rounded-full flex items-center justify-center mx-auto mb-4 text-surface-300">
+                    <div className="bg-white dark:bg-surface-900 border-2 border-dashed border-surface-200 dark:border-surface-800 rounded-[2.5rem] p-12 text-center">
+                        <div className="w-16 h-16 bg-surface-50 dark:bg-surface-900 rounded-full flex items-center justify-center mx-auto mb-4 text-surface-300">
                             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                 <circle cx="12" cy="12" r="10" />
                                 <polyline points="12 6 12 12 16 14" />
                             </svg>
                         </div>
-                        <h3 className="text-lg font-bold text-surface-900 mb-1">No Documents Yet</h3>
-                        <p className="text-sm text-surface-400 font-medium max-w-[200px] mx-auto">
+                        <h3 className="text-lg font-bold text-surface-900 dark:text-surface-50 mb-1">No Documents Yet</h3>
+                        <p className="text-sm text-surface-400 dark:text-surface-500 font-medium max-w-[200px] mx-auto">
                             Generated documents appear here automatically.
                         </p>
                         <Link
@@ -206,12 +206,12 @@ export default function HistoryPage() {
                 ) : (
                     <>
                         {/* Filter Tabs */}
-                        <div className="flex p-1 bg-surface-100 rounded-2xl border border-surface-200 mb-8 mx-auto max-w-[400px]">
+                        <div className="flex p-1 bg-surface-100 dark:bg-surface-800 rounded-2xl border border-surface-200 dark:border-surface-800 mb-8 mx-auto max-w-[400px]">
                             {(["all", "saved", "drafts"] as const).map((t) => (
                                 <button
                                     key={t}
                                     onClick={() => setFilter(t)}
-                                    className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${filter === t ? "bg-white text-primary-500 shadow-sm" : "text-surface-400"
+                                    className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${filter === t ? "bg-white dark:bg-surface-900 text-primary-500 shadow-sm" : "text-surface-400 dark:text-surface-500"
                                         }`}
                                 >
                                     {t}
@@ -224,14 +224,14 @@ export default function HistoryPage() {
                                 <StaggerItem>
                                     <div className="mb-6 overflow-hidden relative group">
                                         <div className="absolute inset-0 bg-gradient-to-r from-primary-500 to-amber-500 opacity-[0.08]" />
-                                        <div className="relative border-2 border-primary-500/20 bg-white/50 backdrop-blur-sm rounded-[2rem] p-6 flex flex-col md:flex-row items-center gap-6 justify-between shadow-sm">
+                                        <div className="relative border-2 border-primary-500/20 bg-white/50 dark:bg-surface-900/50 backdrop-blur-sm rounded-[2rem] p-6 flex flex-col md:flex-row items-center gap-6 justify-between shadow-sm">
                                             <div className="flex items-center gap-4 text-center md:text-left">
                                                 <div className="w-14 h-14 bg-primary-500 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-primary-500/20 flex-shrink-0">
                                                     <Zap size={24} />
                                                 </div>
                                                 <div>
-                                                    <h3 className="text-sm font-black text-surface-900 uppercase tracking-tight">Remove the watermark</h3>
-                                                    <p className="text-[11px] font-bold text-surface-400 uppercase tracking-widest leading-relaxed max-w-[200px]">Upgrade to Pro to export clean, branded documents.</p>
+                                                    <h3 className="text-sm font-black text-surface-900 dark:text-surface-50 uppercase tracking-tight">Remove the watermark</h3>
+                                                    <p className="text-[11px] font-bold text-surface-400 dark:text-surface-500 uppercase tracking-widest leading-relaxed max-w-[200px]">Upgrade to Pro to export clean, branded documents.</p>
                                                 </div>
                                             </div>
                                             <Link
@@ -247,12 +247,12 @@ export default function HistoryPage() {
                             <div className="grid gap-4">
                                 {filteredHistory.map((doc) => (
                                     <StaggerItem key={doc.id}>
-                                        <div className="group relative bg-white border border-surface-200 rounded-[2rem] p-5 hover:border-primary-500 hover:shadow-xl hover:shadow-primary-500/5 transition-all">
+                                        <div className="group relative bg-white dark:bg-surface-900 border border-surface-200 dark:border-surface-800 rounded-[2rem] p-5 hover:border-primary-500 hover:shadow-xl hover:shadow-primary-500/5 transition-all">
                                             <div className="flex items-center gap-4">
                                                 {/* Type Indicator with Letter */}
-                                                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-lg font-black shrink-0 ${doc.type === "receipt" ? "bg-orange-50 text-orange-600" :
-                                                    doc.type === "invoice" ? "bg-blue-50 text-blue-600" :
-                                                        "bg-purple-50 text-purple-600"
+                                                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-lg font-black shrink-0 ${doc.type === "receipt" ? "bg-orange-50 dark:bg-orange-950/50 text-orange-600 dark:text-orange-400" :
+                                                    doc.type === "invoice" ? "bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400" :
+                                                        "bg-purple-50 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400"
                                                     }`}>
                                                     {doc.type === "receipt" ? "R" : doc.type === "invoice" ? "I" : "S"}
                                                 </div>
@@ -268,16 +268,16 @@ export default function HistoryPage() {
                                                         {!user && (
                                                             <span className="bg-surface-100 text-surface-500 dark:bg-surface-800 dark:text-surface-400 text-[8px] font-black px-1.5 py-0.5 rounded uppercase tracking-widest">Saved Offline</span>
                                                         )}
-                                                        <span className="w-1 h-1 rounded-full bg-surface-200" />
+                                                        <span className="w-1 h-1 rounded-full bg-surface-200 dark:bg-surface-700" />
                                                         <span className="text-[9px] font-black uppercase tracking-widest text-surface-300">{formatDate(doc.createdAt)}</span>
                                                     </div>
-                                                    <h3 className="text-sm font-black text-surface-900 truncate">
+                                                    <h3 className="text-sm font-black text-surface-900 dark:text-surface-50 truncate">
                                                         {getDocTitle(doc)}
                                                     </h3>
                                                 </div>
 
                                                 <div className="flex flex-col items-end gap-1 shrink-0 relative z-20">
-                                                    <p className="text-sm font-black text-surface-900">
+                                                    <p className="text-sm font-black text-surface-900 dark:text-surface-50">
                                                         {formatCurrency(getDocAmount(doc))}
                                                     </p>
                                                     <div className="flex items-center gap-1.5 mt-0.5">
@@ -290,7 +290,7 @@ export default function HistoryPage() {
                                                         </Link>
                                                         <button
                                                             onClick={(e) => openDeleteModal(doc, e)}
-                                                            className="w-8 h-8 rounded-full bg-red-50 text-red-500 flex items-center justify-center hover:bg-red-500 hover:text-white transition-all"
+                                                            className="w-8 h-8 rounded-full bg-red-50 dark:bg-red-950/50 text-red-500 dark:text-red-400 flex items-center justify-center hover:bg-red-500 hover:text-white transition-all"
                                                             title="Delete Document"
                                                         >
                                                             <Trash2 size={14} />
@@ -306,7 +306,7 @@ export default function HistoryPage() {
                                 ))}
                                 {filteredHistory.length === 0 && (
                                     <div className="text-center py-12">
-                                        <p className="text-sm text-surface-400 font-bold uppercase tracking-widest">No {filter} found.</p>
+                                        <p className="text-sm text-surface-400 dark:text-surface-500 font-bold uppercase tracking-widest">No {filter} found.</p>
                                     </div>
                                 )}
                             </div>
@@ -321,11 +321,11 @@ export default function HistoryPage() {
                     title="Delete Document?"
                 >
                     <div className="text-center">
-                        <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6 text-red-500">
+                        <div className="w-16 h-16 bg-red-50 dark:bg-red-950/50 rounded-full flex items-center justify-center mx-auto mb-6 text-red-500 dark:text-red-400">
                             <AlertTriangle size={32} />
                         </div>
-                        <p className="text-surface-500 text-sm font-medium leading-relaxed mb-8">
-                            Are you sure you want to delete <strong className="text-surface-900">"{selectedDoc ? getDocTitle(selectedDoc) : ""}"</strong>? This action cannot be undone.
+                        <p className="text-surface-500 dark:text-surface-400 text-sm font-medium leading-relaxed mb-8">
+                            Are you sure you want to delete <strong className="text-surface-900 dark:text-surface-50">"{selectedDoc ? getDocTitle(selectedDoc) : ""}"</strong>? This action cannot be undone.
                         </p>
                         <div className="flex flex-col gap-3">
                             <button
@@ -336,7 +336,7 @@ export default function HistoryPage() {
                             </button>
                             <button
                                 onClick={() => setIsDeleteModalOpen(false)}
-                                className="w-full bg-white text-surface-400 font-black py-5 rounded-2xl active:scale-[0.98] transition-all uppercase text-xs tracking-widest"
+                                className="w-full bg-white dark:bg-surface-900 text-surface-400 dark:text-surface-500 font-black py-5 rounded-2xl active:scale-[0.98] transition-all uppercase text-xs tracking-widest"
                             >
                                 Keep Document
                             </button>

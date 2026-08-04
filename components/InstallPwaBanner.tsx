@@ -140,30 +140,30 @@ export default function InstallPwaBanner() {
                             initial={{ opacity: 0, scale: 0.9, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                            className="w-full max-w-xs bg-white rounded-3xl p-6 relative z-10 shadow-2xl"
+                            className="w-full max-w-xs bg-white dark:bg-surface-900 rounded-3xl p-6 relative z-10 shadow-2xl"
                         >
                             <div className="flex items-center justify-between mb-4">
-                                <h3 className="text-sm font-bold text-surface-900">Install on iPhone / iPad</h3>
+                                <h3 className="text-sm font-bold text-surface-900 dark:text-surface-50">Install on iPhone / iPad</h3>
                                 <button
                                     onClick={() => setShowIosGuide(false)}
-                                    className="p-1 text-surface-400 hover:text-surface-700"
+                                    className="p-1 text-surface-400 dark:text-surface-500 hover:text-surface-700 dark:hover:text-surface-300"
                                 >
                                     <X size={18} aria-hidden="true" />
                                 </button>
                             </div>
 
-                            <ol className="flex flex-col gap-3 text-xs text-surface-600 mb-5">
+                            <ol className="flex flex-col gap-3 text-xs text-surface-600 dark:text-surface-300 mb-5">
                                 <li className="flex items-center gap-2.5">
-                                    <span className="w-6 h-6 rounded-full bg-primary-50 text-primary-600 font-bold flex items-center justify-center shrink-0">1</span>
-                                    <span>Tap the <strong className="text-surface-900 font-semibold inline-flex items-center gap-1">Share button <Share size={13} /></strong> in Safari.</span>
+                                    <span className="w-6 h-6 rounded-full bg-primary-50 dark:bg-primary-950/60 text-primary-600 dark:text-primary-400 font-bold flex items-center justify-center shrink-0">1</span>
+                                    <span>Tap the <strong className="text-surface-900 dark:text-surface-50 font-semibold inline-flex items-center gap-1">Share button <Share size={13} /></strong> in Safari.</span>
                                 </li>
                                 <li className="flex items-center gap-2.5">
-                                    <span className="w-6 h-6 rounded-full bg-primary-50 text-primary-600 font-bold flex items-center justify-center shrink-0">2</span>
-                                    <span>Scroll down and select <strong className="text-surface-900 font-semibold inline-flex items-center gap-1">Add to Home Screen <PlusSquare size={13} /></strong>.</span>
+                                    <span className="w-6 h-6 rounded-full bg-primary-50 dark:bg-primary-950/60 text-primary-600 dark:text-primary-400 font-bold flex items-center justify-center shrink-0">2</span>
+                                    <span>Scroll down and select <strong className="text-surface-900 dark:text-surface-50 font-semibold inline-flex items-center gap-1">Add to Home Screen <PlusSquare size={13} /></strong>.</span>
                                 </li>
                                 <li className="flex items-center gap-2.5">
-                                    <span className="w-6 h-6 rounded-full bg-primary-50 text-primary-600 font-bold flex items-center justify-center shrink-0">3</span>
-                                    <span>Tap <strong className="text-surface-900 font-semibold">Add</strong> to complete installation.</span>
+                                    <span className="w-6 h-6 rounded-full bg-primary-50 dark:bg-primary-950/60 text-primary-600 dark:text-primary-400 font-bold flex items-center justify-center shrink-0">3</span>
+                                    <span>Tap <strong className="text-surface-900 dark:text-surface-50 font-semibold">Add</strong> to complete installation.</span>
                                 </li>
                             </ol>
 
@@ -172,7 +172,7 @@ export default function InstallPwaBanner() {
                                     setShowIosGuide(false);
                                     setShowBanner(false);
                                 }}
-                                className="w-full bg-surface-900 text-white font-bold py-3 rounded-xl text-xs active:scale-95 transition-all"
+                                className="w-full bg-surface-900 dark:bg-surface-100 text-white dark:text-surface-900 font-bold py-3 rounded-xl text-xs active:scale-95 transition-all"
                             >
                                 Got it
                             </button>

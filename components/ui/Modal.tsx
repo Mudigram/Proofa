@@ -43,14 +43,14 @@ export const Modal = ({ isOpen, onClose, title, children }: ModalProps) => {
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.9, y: 20 }}
                         transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                        className="w-full max-w-sm bg-white rounded-[2.5rem] shadow-2xl relative z-10 overflow-hidden"
+                        className="w-full max-w-sm bg-white dark:bg-surface-900 rounded-[2.5rem] shadow-2xl relative z-10 overflow-hidden"
                     >
                         {/* Header */}
                         <div className="px-8 pt-8 flex items-center justify-between">
-                            <h2 className="text-xl font-black text-surface-900 tracking-tight uppercase">{title}</h2>
+                            <h2 className="text-xl font-black text-surface-900 dark:text-surface-50 tracking-tight uppercase">{title}</h2>
                             <button
                                 onClick={onClose}
-                                className="w-10 h-10 rounded-full bg-surface-50 flex items-center justify-center text-surface-400 hover:text-surface-900 transition-colors"
+                                className="w-10 h-10 rounded-full bg-surface-50 dark:bg-surface-800 flex items-center justify-center text-surface-400 dark:text-surface-500 hover:text-surface-900 dark:hover:text-surface-100 transition-colors"
                             >
                                 <X size={20} />
                             </button>

@@ -15,7 +15,7 @@ export const PasteButton = ({ onPaste }: { onPaste: (text: string) => void }) =>
                     console.error("Failed to read clipboard text: ", err);
                 }
             }}
-            className="p-1.5 text-surface-400 hover:text-primary-500 bg-surface-50 hover:bg-primary-50 rounded-xl transition-all active:scale-95 border border-surface-200 hover:border-primary-100"
+            className="p-1.5 text-surface-400 dark:text-surface-500 hover:text-primary-500 bg-surface-50 dark:bg-surface-800 hover:bg-primary-50 dark:hover:bg-primary-950/60 rounded-xl transition-all active:scale-95 border border-surface-200 dark:border-surface-700 hover:border-primary-100 dark:hover:border-primary-800"
             title="Paste"
         >
             <ClipboardPaste size={16} strokeWidth={2.5} />
@@ -47,7 +47,7 @@ export const Input = ({ label, error, icon, rightElement, onClear, className = "
                 )}
                 <input
                     className={`w-full bg-white dark:bg-surface-900 border border-surface-200 dark:border-surface-800 rounded-2xl py-3.5 ${icon ? "pl-11" : "px-4"
-                        } ${rightElement || showClear ? "pr-12" : "pr-4"} text-surface-900 dark:text-surface-50 placeholder:text-surface-400 dark:placeholder:text-surface-600 focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 transition-all outline-none font-medium shadow-sm active:scale-[0.99] ${className}`}
+                        } ${rightElement || showClear ? "pr-12" : "pr-4"} text-surface-900 dark:text-surface-50 placeholder:text-surface-400 dark:placeholder:text-surface-600 focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 dark:focus:ring-primary-500/30 transition-all outline-none font-medium shadow-sm active:scale-[0.99] ${className}`}
                     {...props}
                 />
                 <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center gap-1.5">
@@ -64,7 +64,7 @@ export const Input = ({ label, error, icon, rightElement, onClear, className = "
                     {rightElement}
                 </div>
             </div>
-            {error && <p className="text-xs text-red-500 font-bold px-1">{error}</p>}
+            {error && <p className="text-xs text-red-500 dark:text-red-400 font-bold px-1">{error}</p>}
         </div>
     );
 };
@@ -141,10 +141,10 @@ export const TextArea = ({ label, error, className = "", ...props }: any) => {
                 {label}
             </label>
             <textarea
-                className={`w-full bg-white dark:bg-surface-900 border border-surface-200 dark:border-surface-800 rounded-2xl p-4 text-surface-900 dark:text-surface-50 placeholder:text-surface-400 dark:placeholder:text-surface-600 focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 transition-all outline-none font-medium shadow-sm min-h-[100px] resize-none active:scale-[0.99] ${className}`}
+                className={`w-full bg-white dark:bg-surface-900 border border-surface-200 dark:border-surface-800 rounded-2xl p-4 text-surface-900 dark:text-surface-50 placeholder:text-surface-400 dark:placeholder:text-surface-600 focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 dark:focus:ring-primary-500/30 transition-all outline-none font-medium shadow-sm min-h-[100px] resize-none active:scale-[0.99] ${className}`}
                 {...props}
             />
-            {error && <p className="text-xs text-red-500 font-bold px-1">{error}</p>}
+            {error && <p className="text-xs text-red-500 dark:text-red-400 font-bold px-1">{error}</p>}
         </div>
     );
 };

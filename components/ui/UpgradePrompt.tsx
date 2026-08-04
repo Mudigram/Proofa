@@ -78,51 +78,51 @@ export function UpgradePrompt({ variant, onClose }: UpgradePromptProps) {
                         animate={{ y: 0, opacity: 1 }}
                         exit={{ y: "100%", opacity: 0 }}
                         transition={{ type: "spring", damping: 28, stiffness: 320 }}
-                        className="relative z-10 w-full max-w-md bg-white rounded-t-[2.5rem] shadow-2xl overflow-hidden"
+                        className="relative z-10 w-full max-w-md bg-white dark:bg-surface-900 rounded-t-[2.5rem] shadow-2xl overflow-hidden"
                     >
                         {/* Drag handle */}
-                        <div className="w-10 h-1.5 bg-surface-200 rounded-full mx-auto mt-4 mb-2" />
+                        <div className="w-10 h-1.5 bg-surface-200 dark:bg-surface-700 rounded-full mx-auto mt-4 mb-2" />
 
                         {/* Dismiss */}
                         <button
                             onClick={onClose}
-                            className="absolute top-5 right-5 w-9 h-9 rounded-full bg-surface-100 flex items-center justify-center text-surface-400 hover:text-surface-700 transition-colors"
+                            className="absolute top-5 right-5 w-9 h-9 rounded-full bg-surface-100 dark:bg-surface-800 flex items-center justify-center text-surface-400 dark:text-surface-500 hover:text-surface-700 dark:hover:text-surface-300 transition-colors"
                         >
                             <X size={18} />
                         </button>
 
                         <div className="px-7 pb-10 pt-4">
                             {/* Pro badge */}
-                            <div className="inline-flex items-center gap-1.5 bg-primary-50 text-primary-600 text-xs font-black uppercase tracking-widest px-3 py-1.5 rounded-full mb-5">
+                            <div className="inline-flex items-center gap-1.5 bg-primary-50 dark:bg-primary-950/60 text-primary-600 dark:text-primary-400 text-xs font-black uppercase tracking-widest px-3 py-1.5 rounded-full mb-5">
                                 <Crown size={12} />
                                 Pro Feature
                             </div>
 
                             {/* Icon + Headline */}
                             <div className="flex items-start gap-4 mb-4">
-                                <div className="w-14 h-14 bg-primary-50 rounded-2xl flex items-center justify-center flex-shrink-0">
+                                <div className="w-14 h-14 bg-primary-50 dark:bg-primary-950/60 rounded-2xl flex items-center justify-center flex-shrink-0">
                                     {content.icon}
                                 </div>
-                                <h2 className="text-2xl font-extrabold text-surface-900 tracking-tight leading-snug mt-1">
+                                <h2 className="text-2xl font-extrabold text-surface-900 dark:text-surface-50 tracking-tight leading-snug mt-1">
                                     {content.headline}
                                 </h2>
                             </div>
 
-                            <p className="text-surface-500 text-sm font-medium leading-relaxed mb-7">
+                            <p className="text-surface-500 dark:text-surface-400 text-sm font-medium leading-relaxed mb-7">
                                 {content.subtext}
                             </p>
 
                             {/* Social proof */}
-                            <div className="bg-surface-50 rounded-2xl px-4 py-3 mb-6 flex items-center gap-3">
+                            <div className="bg-surface-50 dark:bg-surface-900 rounded-2xl px-4 py-3 mb-6 flex items-center gap-3">
                                 <div className="flex -space-x-2">
                                     {["🟠", "🔵", "🟢"].map((c, i) => (
-                                        <div key={i} className="w-7 h-7 rounded-full bg-white border-2 border-surface-100 flex items-center justify-center text-xs">
+                                        <div key={i} className="w-7 h-7 rounded-full bg-white dark:bg-surface-900 border-2 border-surface-100 dark:border-surface-800 flex items-center justify-center text-xs">
                                             {c}
                                         </div>
                                     ))}
                                 </div>
-                                <p className="text-surface-500 text-xs font-medium">
-                                    <span className="font-bold text-surface-800">120+ businesses</span> already look more professional
+                                <p className="text-surface-500 dark:text-surface-400 text-xs font-medium">
+                                    <span className="font-bold text-surface-800 dark:text-surface-100">120+ businesses</span> already look more professional
                                 </p>
                             </div>
 
@@ -149,7 +149,7 @@ export function UpgradePrompt({ variant, onClose }: UpgradePromptProps) {
                                     <Link
                                         href="/auth/login"
                                         onClick={onClose}
-                                        className="w-full bg-surface-100 text-surface-700 font-bold py-3.5 rounded-2xl flex items-center justify-center text-sm active:scale-[0.98] transition-all"
+                                        className="w-full bg-surface-100 dark:bg-surface-800 text-surface-700 dark:text-surface-300 font-bold py-3.5 rounded-2xl flex items-center justify-center text-sm active:scale-[0.98] transition-all"
                                     >
                                         I already have an account
                                     </Link>

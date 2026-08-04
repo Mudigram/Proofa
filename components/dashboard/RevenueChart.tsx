@@ -8,6 +8,7 @@
 
 import { useEffect, useRef } from "react";
 import { DailyRevenue, DashboardPeriod } from "@/lib/types";
+import { useTheme } from "@/context/ThemeContext";
 
 interface RevenueChartProps {
     data: DailyRevenue[];
@@ -31,6 +32,13 @@ function formatCurrency(v: number, currency: string): string {
 export default function RevenueChart({ data, period, currency }: RevenueChartProps) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const chartRef = useRef<any>(null);
+    const { theme } = useTheme();
+
+    // Chart.js paints to a canvas, so CSS `dark:` variants never reach it —
+    // the axis/grid colors have to be resolved in JS from the active theme.
+    const isDark = theme === "dark";
+    const tickColor = isDark ? "#a1a1aa" : "#9ca3af";
+    const gridColor = isDark ? "rgba(255,255,255,0.08)" : "#f3f4f6";
 
     useEffect(() => {
         if (!canvasRef.current || !data.length) return;
@@ -82,18 +90,18 @@ export default function RevenueChart({ data, period, currency }: RevenueChartPro
                             grid: { display: false },
                             ticks: {
                                 font: { size: 10, family: "var(--font-sans)" },
-                                color: "#9ca3af",
+                                color: tickColor,
                                 maxRotation: 0,
                                 autoSkip: true,
                                 maxTicksLimit: 7,
                             },
                         },
                         y: {
-                            grid: { color: "#f3f4f6" },
+                            grid: { color: gridColor },
                             border: { display: false },
                             ticks: {
                                 font: { size: 10, family: "var(--font-sans)" },
-                                color: "#9ca3af",
+                                color: tickColor,
                                 callback: (v) => formatCurrency(Number(v), currency),
                             },
                         },
@@ -103,12 +111,12 @@ export default function RevenueChart({ data, period, currency }: RevenueChartPro
         });
 
         return () => { chartRef.current?.destroy(); };
-    }, [data, period, currency]);
+    }, [data, period, currency, tickColor, gridColor]);
 
     if (!data.length) {
         return (
             <div className="h-[200px] flex items-center justify-center">
-                <p className="text-sm text-surface-400 font-medium">
+                <p className="text-sm text-surface-400 dark:text-surface-500 font-medium">
                     No revenue data for this period
                 </p>
             </div>

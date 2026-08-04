@@ -12,13 +12,13 @@ export default function HowItWorks() {
                 <StaggerContainer>
                     <StaggerItem>
                         <section className="mt-2 mb-10">
-                            <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary-50 text-primary-700 text-[10px] font-black uppercase tracking-wider rounded-lg mb-4 border border-primary-100">
+                            <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary-50 dark:bg-primary-950/60 text-primary-700 dark:text-primary-400 text-[10px] font-black uppercase tracking-wider rounded-lg mb-4 border border-primary-100 dark:border-primary-900">
                                 OUR PROCESS
                             </div>
-                            <h1 className="text-3xl font-black text-surface-900 tracking-tight mb-4 leading-tight">
+                            <h1 className="text-3xl font-black text-surface-900 dark:text-surface-50 tracking-tight mb-4 leading-tight">
                                 Professional documents, <span className="text-primary-500">effortlessly.</span>
                             </h1>
-                            <p className="text-surface-500 text-sm leading-relaxed font-medium">
+                            <p className="text-surface-500 dark:text-surface-400 text-sm leading-relaxed font-medium">
                                 Create and share professional documents <strong>in seconds</strong> with our streamlined 3-step process. Efficiency redefined for modern workflows.
                             </p>
 
@@ -35,7 +35,7 @@ export default function HowItWorks() {
                                 </Link>
                                 <Link
                                     href="/templates"
-                                    className="w-full bg-white border border-surface-200 text-surface-900 font-black py-5 rounded-[2rem] flex items-center justify-center active:scale-[0.98] transition-all uppercase text-xs tracking-widest"
+                                    className="w-full bg-white dark:bg-surface-900 border border-surface-200 dark:border-surface-800 text-surface-900 dark:text-surface-50 font-black py-5 rounded-[2rem] flex items-center justify-center active:scale-[0.98] transition-all uppercase text-xs tracking-widest"
                                 >
                                     View Templates
                                 </Link>
@@ -45,7 +45,7 @@ export default function HowItWorks() {
 
                     {/* Featured Image Placeholder */}
                     <StaggerItem>
-                        <div className="relative aspect-video rounded-[2.5rem] overflow-hidden bg-surface-100 mb-16 shadow-2xl border border-surface-200/50 group">
+                        <div className="relative aspect-video rounded-[2.5rem] overflow-hidden bg-surface-100 dark:bg-surface-800 mb-16 shadow-2xl border border-surface-200/50 dark:border-surface-800 group">
                             <Image
                                 src="/how-it-works-hero.png"
                                 alt="How Proofa Works"
@@ -70,7 +70,7 @@ export default function HowItWorks() {
                     {/* Path Section */}
                     <StaggerItem>
                         <section className="text-center mb-12">
-                            <h2 className="text-2xl font-black text-surface-900 tracking-tight uppercase">
+                            <h2 className="text-2xl font-black text-surface-900 dark:text-surface-50 tracking-tight uppercase">
                                 Your path to efficiency
                             </h2>
                             <div className="w-16 h-1.5 bg-primary-500 mx-auto mt-4 rounded-full" />
@@ -82,12 +82,12 @@ export default function HowItWorks() {
                         <section className="flex flex-col gap-10 relative">
                             {/* Step 1 */}
                             <div className="flex flex-col items-center">
-                                <div className="w-12 h-12 rounded-full bg-primary-500 text-white font-black flex items-center justify-center shadow-xl mb-6 ring-8 ring-primary-50">
+                                <div className="w-12 h-12 rounded-full bg-primary-500 text-white font-black flex items-center justify-center shadow-xl mb-6 ring-8 ring-primary-50 dark:ring-primary-950/40">
                                     1
                                 </div>
-                                <div className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-surface-100 text-center w-full">
-                                    <h3 className="text-xl font-black text-surface-900 mb-3 tracking-tight">Choose Document Type</h3>
-                                    <p className="text-sm text-surface-400 font-medium leading-relaxed">
+                                <div className="bg-white dark:bg-surface-900 p-8 rounded-[2.5rem] shadow-sm border border-surface-100 dark:border-surface-800 text-center w-full">
+                                    <h3 className="text-xl font-black text-surface-900 dark:text-surface-50 mb-3 tracking-tight">Choose Document Type</h3>
+                                    <p className="text-sm text-surface-400 dark:text-surface-400 font-medium leading-relaxed">
                                         Select from our library of proven templates tailored for your specific project needs.
                                     </p>
                                 </div>
@@ -95,12 +95,12 @@ export default function HowItWorks() {
 
                             {/* Step 2 */}
                             <div className="flex flex-col items-center">
-                                <div className="w-12 h-12 rounded-full bg-primary-500 text-white font-black flex items-center justify-center shadow-xl mb-6 ring-8 ring-primary-50">
+                                <div className="w-12 h-12 rounded-full bg-primary-500 text-white font-black flex items-center justify-center shadow-xl mb-6 ring-8 ring-primary-50 dark:ring-primary-950/40">
                                     2
                                 </div>
-                                <div className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-surface-100 text-center w-full">
-                                    <h3 className="text-xl font-black text-surface-900 mb-3 tracking-tight">Fill in Details</h3>
-                                    <p className="text-sm text-surface-400 font-medium leading-relaxed">
+                                <div className="bg-white dark:bg-surface-900 p-8 rounded-[2.5rem] shadow-sm border border-surface-100 dark:border-surface-800 text-center w-full">
+                                    <h3 className="text-xl font-black text-surface-900 dark:text-surface-50 mb-3 tracking-tight">Fill in Details</h3>
+                                    <p className="text-sm text-surface-400 dark:text-surface-400 font-medium leading-relaxed">
                                         Input your specifics. Our smart editor formats everything automatically to professional standards.
                                     </p>
                                 </div>
@@ -108,12 +108,12 @@ export default function HowItWorks() {
 
                             {/* Step 3 */}
                             <div className="flex flex-col items-center">
-                                <div className="w-12 h-12 rounded-full bg-primary-500 text-white font-black flex items-center justify-center shadow-xl mb-6 ring-8 ring-primary-50">
+                                <div className="w-12 h-12 rounded-full bg-primary-500 text-white font-black flex items-center justify-center shadow-xl mb-6 ring-8 ring-primary-50 dark:ring-primary-950/40">
                                     3
                                 </div>
-                                <div className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-surface-100 text-center w-full">
-                                    <h3 className="text-xl font-black text-surface-900 mb-3 tracking-tight">Share to WhatsApp</h3>
-                                    <p className="text-sm text-surface-400 font-medium leading-relaxed">
+                                <div className="bg-white dark:bg-surface-900 p-8 rounded-[2.5rem] shadow-sm border border-surface-100 dark:border-surface-800 text-center w-full">
+                                    <h3 className="text-xl font-black text-surface-900 dark:text-surface-50 mb-3 tracking-tight">Share to WhatsApp</h3>
+                                    <p className="text-sm text-surface-400 dark:text-surface-400 font-medium leading-relaxed">
                                         One tap to send your finalized document directly to stakeholders via WhatsApp.
                                     </p>
                                 </div>
@@ -125,23 +125,23 @@ export default function HowItWorks() {
                     <StaggerItem>
                         <section className="mt-20 mb-12">
                             <div className="text-center mb-10">
-                                <h2 className="text-2xl font-black text-surface-900 tracking-tight uppercase">
+                                <h2 className="text-2xl font-black text-surface-900 dark:text-surface-50 tracking-tight uppercase">
                                     Simple, Transparent Plans
                                 </h2>
-                                <p className="text-sm text-surface-400 font-medium mt-2">
+                                <p className="text-sm text-surface-400 dark:text-surface-400 font-medium mt-2">
                                     Powering your business growth, one document at a time.
                                 </p>
                             </div>
 
                             <div className="flex flex-col gap-6">
                                 {/* Free Plan */}
-                                <div className="bg-white border border-surface-100 p-8 rounded-[2.5rem] shadow-sm relative overflow-hidden">
+                                <div className="bg-white dark:bg-surface-900 border border-surface-100 dark:border-surface-800 p-8 rounded-[2.5rem] shadow-sm relative overflow-hidden">
                                     <div className="flex justify-between items-start mb-6">
                                         <div>
-                                            <h3 className="text-xl font-black text-surface-900 tracking-tight">Proofa Lite</h3>
-                                            <p className="text-[10px] font-black text-surface-300 uppercase tracking-widest mt-1">Free Forever</p>
+                                            <h3 className="text-xl font-black text-surface-900 dark:text-surface-50 tracking-tight">Proofa Lite</h3>
+                                            <p className="text-[10px] font-black text-surface-300 dark:text-surface-500 uppercase tracking-widest mt-1">Free Forever</p>
                                         </div>
-                                        <div className="text-2xl font-black text-surface-900">₦0</div>
+                                        <div className="text-2xl font-black text-surface-900 dark:text-surface-50">₦0</div>
                                     </div>
                                     <ul className="flex flex-col gap-4">
                                         {[
@@ -150,7 +150,7 @@ export default function HowItWorks() {
                                             "10 Document History Limit",
                                             "Free-tier Watermark"
                                         ].map((feature) => (
-                                            <li key={feature} className="flex items-center gap-3 text-sm text-surface-500 font-medium">
+                                            <li key={feature} className="flex items-center gap-3 text-sm text-surface-500 dark:text-surface-400 font-medium">
                                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                                                     <polyline points="20 6 9 17 4 12" />
                                                 </svg>

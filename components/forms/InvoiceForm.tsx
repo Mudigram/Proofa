@@ -245,17 +245,17 @@ export default function InvoiceForm() {
         <PageTransition>
             <div className="flex flex-col gap-6 pb-20">
                 {/* Mobile Tab Switcher */}
-                <div className="flex p-1 bg-surface-100 rounded-2xl border border-surface-200">
+                <div className="flex p-1 bg-surface-100 dark:bg-surface-900 rounded-2xl border border-surface-200 dark:border-surface-800">
                     <button
                         onClick={() => handleModeSwitch("edit")}
-                        className={`flex-1 py-3.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${mode === "edit" ? "bg-white text-primary-500 shadow-sm" : "text-surface-400"
+                        className={`flex-1 py-3.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${mode === "edit" ? "bg-white dark:bg-surface-800 text-primary-500 shadow-sm" : "text-surface-400 dark:text-surface-500"
                             }`}
                     >
                         1. Edit Form
                     </button>
                     <button
                         onClick={() => handleModeSwitch("preview")}
-                        className={`flex-1 py-3.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${mode === "preview" ? "bg-white text-primary-500 shadow-sm" : "text-surface-400"
+                        className={`flex-1 py-3.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${mode === "preview" ? "bg-white dark:bg-surface-800 text-primary-500 shadow-sm" : "text-surface-400 dark:text-surface-500"
                             }`}
                     >
                         2. Live Preview
@@ -283,8 +283,8 @@ export default function InvoiceForm() {
                             </StaggerItem>
 
                             <StaggerItem>
-                                <section className="flex flex-col gap-5 bg-white p-6 rounded-[2rem] border border-surface-100 shadow-sm">
-                                    <h3 className="text-[10px] font-black uppercase tracking-widest text-surface-400 px-1">Business Details</h3>
+                                <section className="flex flex-col gap-5 bg-white dark:bg-surface-900 p-6 rounded-[2rem] border border-surface-100 dark:border-surface-800 shadow-sm">
+                                    <h3 className="text-[10px] font-black uppercase tracking-widest text-surface-400 dark:text-surface-500 px-1">Business Details</h3>
                                     <Input
                                         label="BUSINESS NAME"
                                         placeholder="Your Company"
@@ -303,8 +303,8 @@ export default function InvoiceForm() {
                             </StaggerItem>
 
                             <StaggerItem>
-                                <section className="flex flex-col gap-5 bg-white p-6 rounded-[2rem] border border-surface-100 shadow-sm">
-                                    <h3 className="text-[10px] font-black uppercase tracking-widest text-surface-400 px-1">Client & Invoice Info</h3>
+                                <section className="flex flex-col gap-5 bg-white dark:bg-surface-900 p-6 rounded-[2rem] border border-surface-100 dark:border-surface-800 shadow-sm">
+                                    <h3 className="text-[10px] font-black uppercase tracking-widest text-surface-400 dark:text-surface-500 px-1">Client & Invoice Info</h3>
                                     <div className="flex flex-col gap-4">
                                         <Input
                                             label="CLIENT NAME"
@@ -338,12 +338,12 @@ export default function InvoiceForm() {
                             </StaggerItem>
 
                             <StaggerItem>
-                                <section className="bg-white p-6 rounded-[2rem] border border-surface-100 shadow-sm">
+                                <section className="bg-white dark:bg-surface-900 p-6 rounded-[2rem] border border-surface-100 dark:border-surface-800 shadow-sm">
                                     <div className="flex items-center justify-between mb-4 px-1">
-                                        <h3 className="text-[10px] font-black uppercase tracking-widest text-surface-400">Line Items</h3>
+                                        <h3 className="text-[10px] font-black uppercase tracking-widest text-surface-400 dark:text-surface-500">Line Items</h3>
                                         <button
                                             onClick={addItem}
-                                            className="text-primary-600 text-[10px] font-black uppercase tracking-widest bg-primary-50 px-3 py-1.5 rounded-full"
+                                            className="text-primary-600 dark:text-primary-400 text-[10px] font-black uppercase tracking-widest bg-primary-50 dark:bg-primary-950/60 px-3 py-1.5 rounded-full"
                                         >
                                             + Add Item
                                         </button>
@@ -351,11 +351,11 @@ export default function InvoiceForm() {
 
                                     <div className="flex flex-col gap-4">
                                         {formData.items.map((item, index) => (
-                                            <div key={item.id} className="flex flex-col gap-3 p-4 bg-surface-50 rounded-2xl relative">
+                                            <div key={item.id} className="flex flex-col gap-3 p-4 bg-surface-50 dark:bg-surface-800 rounded-2xl relative">
                                                 {formData.items.length > 1 && (
                                                     <button
                                                         onClick={() => removeItem(item.id)}
-                                                        className="absolute -top-2 -right-2 w-6 h-6 bg-white shadow-sm border border-surface-100 rounded-full flex items-center justify-center text-red-500 hover:bg-red-50 transition-colors z-10"
+                                                        className="absolute -top-2 -right-2 w-6 h-6 bg-white dark:bg-surface-900 shadow-sm border border-surface-100 dark:border-surface-800 rounded-full flex items-center justify-center text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/50 transition-colors z-10"
                                                     >
                                                         &times;
                                                     </button>
@@ -365,7 +365,7 @@ export default function InvoiceForm() {
                                                     placeholder="Item name"
                                                     value={item.name}
                                                     onChange={(e) => updateItem(index, "name", e.target.value)}
-                                                    className="bg-white"
+                                                    className="bg-white dark:bg-surface-900"
                                                 />
                                                 <div className="grid grid-cols-2 gap-3">
                                                     <Input
@@ -373,31 +373,31 @@ export default function InvoiceForm() {
                                                         type="number"
                                                         value={item.quantity}
                                                         onChange={(e) => updateItem(index, "quantity", parseFloat(e.target.value) || 0)}
-                                                        className="bg-white"
+                                                        className="bg-white dark:bg-surface-900"
                                                     />
                                                     <CurrencyInput
                                                         label="PRICE"
                                                         value={item.price}
                                                         onChange={(val) => updateItem(index, "price", val)}
-                                                        className="bg-white"
+                                                        className="bg-white dark:bg-surface-900"
                                                     />
                                                 </div>
                                             </div>
                                         ))}
                                     </div>
-                                    {errors.items && <p className="text-red-500 text-[10px] font-bold mt-2 px-1">{errors.items}</p>}
+                                    {errors.items && <p className="text-red-500 dark:text-red-400 text-[10px] font-bold mt-2 px-1">{errors.items}</p>}
                                 </section>
                             </StaggerItem>
 
                             <StaggerItem>
-                                <section className="flex flex-col gap-5 bg-white p-6 rounded-[2rem] border border-surface-100 shadow-sm transition-all focus-within:ring-2 focus-within:ring-primary-500/10">
+                                <section className="flex flex-col gap-5 bg-white dark:bg-surface-900 p-6 rounded-[2rem] border border-surface-100 dark:border-surface-800 shadow-sm transition-all focus-within:ring-2 focus-within:ring-primary-500/10 dark:focus-within:ring-primary-500/30">
                                     <div className="flex items-center justify-between px-1">
-                                        <h3 className="text-[10px] font-black uppercase tracking-widest text-surface-400">Tax Settings</h3>
+                                        <h3 className="text-[10px] font-black uppercase tracking-widest text-surface-400 dark:text-surface-500">Tax Settings</h3>
                                         <div className="flex items-center gap-2">
                                             <span className="text-[10px] font-black uppercase text-surface-300">Include VAT</span>
                                             <button
                                                 onClick={() => handleChange("includeVat", !formData.includeVat)}
-                                                className={`w-10 h-6 rounded-full transition-all relative ${formData.includeVat ? 'bg-primary-500' : 'bg-surface-200'}`}
+                                                className={`w-10 h-6 rounded-full transition-all relative ${formData.includeVat ? 'bg-primary-500' : 'bg-surface-200 dark:bg-surface-700'}`}
                                             >
                                                 <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${formData.includeVat ? 'left-5' : 'left-1'}`} />
                                             </button>
@@ -411,7 +411,7 @@ export default function InvoiceForm() {
                                                 placeholder="7.5"
                                                 value={formData.vatRate}
                                                 onChange={(e) => handleChange("vatRate", parseFloat(e.target.value) || 0)}
-                                                className="bg-surface-50 border-none"
+                                                className="bg-surface-50 dark:bg-surface-800 border-none"
                                             />
                                         </div>
                                     )}

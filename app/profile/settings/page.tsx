@@ -50,20 +50,20 @@ export default function AccountSettingsPage() {
         return (
             <main className="app-container min-h-screen pb-24 pt-8">
                 <header className="mb-8 flex items-center justify-between relative">
-                    <div className="w-10 h-10 bg-surface-100 animate-pulse rounded-full" />
-                    <div className="h-6 w-40 bg-surface-200 animate-pulse rounded-lg absolute left-1/2 -translate-x-1/2" />
+                    <div className="w-10 h-10 bg-surface-100 dark:bg-surface-800 animate-pulse rounded-full" />
+                    <div className="h-6 w-40 bg-surface-200 dark:bg-surface-700 animate-pulse rounded-lg absolute left-1/2 -translate-x-1/2" />
                     <div className="w-10 h-10" />
                 </header>
 
-                <div className="bg-white border-2 border-surface-100 rounded-[2rem] p-6 shadow-sm">
+                <div className="bg-white dark:bg-surface-900 border-2 border-surface-100 dark:border-surface-800 rounded-[2rem] p-6 shadow-sm">
                     <div className="mb-8 flex justify-center">
-                        <div className="w-24 h-24 bg-surface-100 animate-pulse rounded-full" />
+                        <div className="w-24 h-24 bg-surface-100 dark:bg-surface-800 animate-pulse rounded-full" />
                     </div>
                     <div className="space-y-6">
                         {[1, 2].map(i => (
                             <div key={i} className="space-y-2">
-                                <div className="h-3 w-24 bg-surface-100 animate-pulse rounded" />
-                                <div className="h-14 w-full bg-surface-50 animate-pulse rounded-xl" />
+                                <div className="h-3 w-24 bg-surface-100 dark:bg-surface-800 animate-pulse rounded" />
+                                <div className="h-14 w-full bg-surface-50 dark:bg-surface-800 animate-pulse rounded-xl" />
                             </div>
                         ))}
                     </div>
@@ -78,11 +78,11 @@ export default function AccountSettingsPage() {
         <main className="app-container min-h-screen pb-24 pt-4">
 
             <form onSubmit={handleSave} className="flex flex-col gap-6">
-                <div className="bg-white border-2 border-surface-100 rounded-[2rem] p-6 shadow-sm">
+                <div className="bg-white dark:bg-surface-900 border-2 border-surface-100 dark:border-surface-800 rounded-[2rem] p-6 shadow-sm">
                     <div className="mb-6 flex justify-center">
                         <div className="relative">
-                            <div className="w-24 h-24 bg-gradient-to-br from-primary-100 to-primary-50 rounded-full flex flex-col items-center justify-center shadow-inner border-4 border-white">
-                                <span className="text-3xl font-black text-primary-600">
+                            <div className="w-24 h-24 bg-gradient-to-br from-primary-100 to-primary-50 dark:from-primary-950/60 dark:to-primary-900/40 rounded-full flex flex-col items-center justify-center shadow-inner border-4 border-white dark:border-surface-950">
+                                <span className="text-3xl font-black text-primary-600 dark:text-primary-400">
                                     {businessName?.[0]?.toUpperCase() || <User size={32} />}
                                 </span>
                             </div>
@@ -91,29 +91,29 @@ export default function AccountSettingsPage() {
 
                     <div className="space-y-5">
                         <div className="flex flex-col gap-2">
-                            <label className="text-[10px] font-black text-surface-500 uppercase tracking-widest pl-1">Email Address</label>
+                            <label className="text-[10px] font-black text-surface-500 dark:text-surface-400 uppercase tracking-widest pl-1">Email Address</label>
                             <div className="relative flex items-center">
-                                <Mail size={16} className="absolute left-4 text-surface-400" />
+                                <Mail size={16} className="absolute left-4 text-surface-400 dark:text-surface-500" />
                                 <input
                                     type="email"
                                     value={user?.email || ""}
                                     disabled
-                                    className="w-full pl-11 pr-4 py-3.5 bg-surface-50 border-2 border-transparent rounded-xl text-surface-500 font-bold opacity-70 cursor-not-allowed"
+                                    className="w-full pl-11 pr-4 py-3.5 bg-surface-50 dark:bg-surface-800 border-2 border-transparent rounded-xl text-surface-500 dark:text-surface-400 font-bold opacity-70 cursor-not-allowed"
                                 />
                             </div>
-                            <p className="text-[10px] text-surface-400 font-semibold pl-1">Email cannot be changed right now.</p>
+                            <p className="text-[10px] text-surface-400 dark:text-surface-500 font-semibold pl-1">Email cannot be changed right now.</p>
                         </div>
 
                         <div className="flex flex-col gap-2">
-                            <label className="text-[10px] font-black text-surface-500 uppercase tracking-widest pl-1">Business / Profile Name</label>
+                            <label className="text-[10px] font-black text-surface-500 dark:text-surface-400 uppercase tracking-widest pl-1">Business / Profile Name</label>
                             <div className="relative flex items-center">
-                                <Building2 size={16} className="absolute left-4 text-surface-400" />
+                                <Building2 size={16} className="absolute left-4 text-surface-400 dark:text-surface-500" />
                                 <input
                                     type="text"
                                     value={businessName}
                                     onChange={(e) => setBusinessName(e.target.value)}
                                     placeholder="Your Business Name"
-                                    className="w-full pl-11 pr-4 py-3.5 bg-surface-50 border-2 border-surface-100 rounded-xl text-black font-bold focus:border-primary-500 focus:bg-white transition-colors"
+                                    className="w-full pl-11 pr-4 py-3.5 bg-surface-50 dark:bg-surface-900 border-2 border-surface-100 dark:border-surface-800 rounded-xl text-black dark:text-surface-50 font-bold focus:border-primary-500 focus:bg-white dark:focus:bg-surface-900 transition-colors"
                                     required
                                 />
                             </div>
@@ -122,12 +122,12 @@ export default function AccountSettingsPage() {
                 </div>
 
                 {errorMsg && (
-                    <div className="bg-red-50 border border-red-100 text-red-600 text-sm font-bold px-4 py-3 rounded-xl">
+                    <div className="bg-red-50 dark:bg-red-950/50 border border-red-100 dark:border-red-900 text-red-600 dark:text-red-400 text-sm font-bold px-4 py-3 rounded-xl">
                         {errorMsg}
                     </div>
                 )}
                 {successMsg && (
-                    <div className="bg-green-50 border border-green-100 text-green-600 text-sm font-bold px-4 py-3 rounded-xl">
+                    <div className="bg-green-50 dark:bg-green-950/50 border border-green-100 dark:border-green-900 text-green-600 dark:text-green-400 text-sm font-bold px-4 py-3 rounded-xl">
                         {successMsg}
                     </div>
                 )}

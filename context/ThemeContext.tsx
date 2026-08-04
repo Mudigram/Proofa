@@ -12,43 +12,56 @@ interface ThemeContextType {
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
-export function ThemeProvider({ children }: { children: React.ReactNode }) {
-    const [theme, setThemeState] = useState<Theme>("light");
-    const [mounted, setMounted] = useState(false);
+const STORAGE_KEY = "proofa_theme";
 
+/**
+ * Reads the theme the pre-paint script in app/layout.tsx already applied.
+ * Server render has no DOM, so it falls back to "light" — matching the
+ * script's own fallback, which keeps the first client render consistent.
+ */
+function getInitialTheme(): Theme {
+    if (typeof document === "undefined") return "light";
+    return document.documentElement.classList.contains("dark") ? "dark" : "light";
+}
+
+export function ThemeProvider({ children }: { children: React.ReactNode }) {
+    const [theme, setThemeState] = useState<Theme>(getInitialTheme);
+
+    // The inline script sets the class before paint; this resyncs React state
+    // on mount for the hydration pass, where useState ran against the server HTML.
     useEffect(() => {
-        setMounted(true);
-        try {
-            const storedTheme = localStorage.getItem("proofa_theme") as Theme | null;
-            if (storedTheme === "dark" || storedTheme === "light") {
-                setThemeState(storedTheme);
-                if (storedTheme === "dark") {
-                    document.documentElement.classList.add("dark");
-                } else {
-                    document.documentElement.classList.remove("dark");
-                }
-            } else if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
-                setThemeState("dark");
-                document.documentElement.classList.add("dark");
+        setThemeState(getInitialTheme());
+    }, []);
+
+    // Follow the OS only while the user has made no explicit choice.
+    useEffect(() => {
+        const mq = window.matchMedia("(prefers-color-scheme: dark)");
+        const onChange = (e: MediaQueryListEvent) => {
+            try {
+                if (localStorage.getItem(STORAGE_KEY)) return;
+            } catch {
+                return;
             }
-        } catch (_) {}
+            const next: Theme = e.matches ? "dark" : "light";
+            setThemeState(next);
+            document.documentElement.classList.toggle("dark", next === "dark");
+        };
+        mq.addEventListener("change", onChange);
+        return () => mq.removeEventListener("change", onChange);
     }, []);
 
     const setTheme = (newTheme: Theme) => {
         setThemeState(newTheme);
         try {
-            localStorage.setItem("proofa_theme", newTheme);
-        } catch (_) {}
-        if (newTheme === "dark") {
-            document.documentElement.classList.add("dark");
-        } else {
-            document.documentElement.classList.remove("dark");
+            localStorage.setItem(STORAGE_KEY, newTheme);
+        } catch {
+            // Private mode / storage disabled — theme still applies for this session.
         }
+        document.documentElement.classList.toggle("dark", newTheme === "dark");
     };
 
     const toggleTheme = () => {
-        const next = theme === "light" ? "dark" : "light";
-        setTheme(next);
+        setTheme(theme === "light" ? "dark" : "light");
     };
 
     return (

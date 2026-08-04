@@ -9,8 +9,8 @@ describe('Skeleton component', () => {
 
         expect(skeletonDiv).toBeInTheDocument();
         expect(skeletonDiv).toHaveClass('animate-pulse');
-        expect(skeletonDiv).toHaveClass('bg-slate-200');
-        expect(skeletonDiv).toHaveClass('dark:bg-slate-800');
+        expect(skeletonDiv).toHaveClass('bg-surface-200');
+        expect(skeletonDiv).toHaveClass('dark:bg-surface-800');
         expect(skeletonDiv).toHaveClass('rounded-md');
     });
 

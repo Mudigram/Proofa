@@ -73,7 +73,7 @@ export const metadata: Metadata = {
   },
   appleWebApp: {
     capable: true,
-    statusBarStyle: "default", // Options: "default", "black", "black-translucent"
+    statusBarStyle: "black-translucent",
     title: "Proofa",
   },
   formatDetection: {
@@ -82,7 +82,10 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#e8590c",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#fafafa" },
+    { media: "(prefers-color-scheme: dark)", color: "#09090b" },
+  ],
   viewportFit: "cover",
   width: "device-width",
   initialScale: 1,
@@ -104,7 +107,19 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.variable} ${outfit.variable} ${geistMono.variable} pb-20 bg-white dark:bg-surface-950 text-surface-900 dark:text-surface-50 transition-colors duration-200`}>
+      <head>
+        {/*
+          Applies the stored theme before first paint. Without this the page
+          renders light, then flips to dark once ThemeProvider's effect runs.
+          Kept inline and dependency-free so it executes render-blocking.
+        */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem("proofa_theme");if(t!=="dark"&&t!=="light"){t=window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"}if(t==="dark"){document.documentElement.classList.add("dark")}}catch(e){}})();`,
+          }}
+        />
+      </head>
+      <body className={`${inter.variable} ${outfit.variable} ${geistMono.variable} pb-20 transition-colors duration-200`}>
 
         <ThemeProvider>
           <AuthProvider>

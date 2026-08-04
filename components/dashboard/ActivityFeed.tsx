@@ -11,9 +11,9 @@ interface ActivityFeedProps {
 }
 
 const TYPE_CONFIG = {
-    receipt: { icon: Receipt, label: "Receipt", color: "text-green-600", bg: "bg-green-50" },
-    invoice: { icon: FileText, label: "Invoice", color: "text-blue-600", bg: "bg-blue-50" },
-    order: { icon: ShoppingBag, label: "Order", color: "text-purple-600", bg: "bg-purple-50" },
+    receipt: { icon: Receipt, label: "Receipt", color: "text-green-600 dark:text-green-400", bg: "bg-green-50 dark:bg-green-950/50" },
+    invoice: { icon: FileText, label: "Invoice", color: "text-blue-600 dark:text-blue-400", bg: "bg-blue-50 dark:bg-blue-950/50" },
+    order: { icon: ShoppingBag, label: "Order", color: "text-purple-600 dark:text-purple-400", bg: "bg-purple-50 dark:bg-purple-950/50" },
 };
 
 function formatAmount(amount: number, currency: string): string {
@@ -40,10 +40,10 @@ export default function ActivityFeed({ items }: ActivityFeedProps) {
     if (!items.length) {
         return (
             <div className="py-8 text-center">
-                <p className="text-sm text-surface-600 font-bold">
+                <p className="text-sm text-surface-600 dark:text-surface-300 font-bold">
                     No documents generated yet
                 </p>
-                <p className="text-xs text-surface-500 font-medium mt-1">
+                <p className="text-xs text-surface-500 dark:text-surface-400 font-medium mt-1">
                     Documents your team generates will appear here
                 </p>
             </div>
@@ -51,7 +51,7 @@ export default function ActivityFeed({ items }: ActivityFeedProps) {
     }
 
     return (
-        <div className="flex flex-col divide-y divide-surface-100">
+        <div className="flex flex-col divide-y divide-surface-100 dark:divide-surface-800">
             {items.map((item) => {
                 const cfg = TYPE_CONFIG[item.type];
                 const Icon = cfg.icon;
@@ -66,14 +66,14 @@ export default function ActivityFeed({ items }: ActivityFeedProps) {
                         {/* Main content */}
                         <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-1.5">
-                                <p className="text-xs font-black text-surface-900 truncate">
+                                <p className="text-xs font-black text-surface-900 dark:text-surface-50 truncate">
                                     {item.customerName || "Customer"}
                                 </p>
                                 <span className={`text-[9px] font-black uppercase px-1.5 py-0.5 rounded-full ${cfg.bg} ${cfg.color}`}>
                                     {cfg.label}
                                 </span>
                             </div>
-                            <p className="text-[10px] text-surface-600 font-bold mt-0.5 truncate">
+                            <p className="text-[10px] text-surface-600 dark:text-surface-300 font-bold mt-0.5 truncate">
                                 {item.creatorName
                                     ? `by ${item.creatorName}`
                                     : "by you"
@@ -82,7 +82,7 @@ export default function ActivityFeed({ items }: ActivityFeedProps) {
                         </div>
 
                         {/* Amount */}
-                        <p className="text-sm font-black text-surface-900 flex-shrink-0">
+                        <p className="text-sm font-black text-surface-900 dark:text-surface-50 flex-shrink-0">
                             {formatAmount(item.amount, item.currency)}
                         </p>
                     </div>

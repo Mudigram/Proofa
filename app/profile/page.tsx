@@ -58,7 +58,7 @@ export default function ProfilePage() {
     if (isLoading) {
         return (
             <main className="app-container min-h-screen pb-24 pt-8 flex items-center justify-center">
-                <div className="w-7 h-7 rounded-full border-2 border-surface-200 border-t-primary-500 animate-spin" aria-label="Loading profile" />
+                <div className="w-7 h-7 rounded-full border-2 border-surface-200 dark:border-surface-800 border-t-primary-500 animate-spin" aria-label="Loading profile" />
             </main>
         );
     }
@@ -68,11 +68,11 @@ export default function ProfilePage() {
         return (
             <main className="app-container min-h-screen pb-24 pt-8">
                 <div className="h-full flex flex-col items-center justify-center pt-20 text-center">
-                    <div className="w-20 h-20 bg-surface-100 rounded-full flex items-center justify-center text-surface-600 mb-6">
+                    <div className="w-20 h-20 bg-surface-100 dark:bg-surface-800 rounded-full flex items-center justify-center text-surface-600 dark:text-surface-300 mb-6">
                         <User size={36} aria-hidden="true" />
                     </div>
-                    <h1 className="text-xl font-bold text-surface-900 mb-2 tracking-tight">Merchant Hub</h1>
-                    <p className="text-surface-500 text-xs mb-8 px-8 leading-relaxed">
+                    <h1 className="text-xl font-bold text-surface-900 dark:text-surface-50 mb-2 tracking-tight">Merchant Hub</h1>
+                    <p className="text-surface-500 dark:text-surface-400 text-xs mb-8 px-8 leading-relaxed">
                         Sign in to save your receipts, manage bank details, and upgrade branding.
                     </p>
                     <Link
@@ -83,7 +83,7 @@ export default function ProfilePage() {
                     </Link>
                     <Link
                         href="/auth/login"
-                        className="bg-white text-surface-700 border border-surface-200 font-bold py-3.5 px-8 rounded-xl active:scale-95 transition-all text-xs block w-full max-w-xs mx-auto focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+                        className="bg-white dark:bg-surface-900 text-surface-700 dark:text-surface-300 border border-surface-200 dark:border-surface-800 font-bold py-3.5 px-8 rounded-xl active:scale-95 transition-all text-xs block w-full max-w-xs mx-auto focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
                     >
                         Sign In
                     </Link>
@@ -120,7 +120,7 @@ export default function ProfilePage() {
         <main className="app-container min-h-screen pb-32 pt-8">
             {/* Merchant Header */}
             <header className="mb-6 text-center">
-                <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center mx-auto mb-3 border border-surface-200/60 shadow-sm relative">
+                <div className="w-14 h-14 bg-white dark:bg-surface-900 rounded-2xl flex items-center justify-center mx-auto mb-3 border border-surface-200/60 dark:border-surface-800 shadow-sm relative">
                     <Image
                         src="/Logo/Proofa orange icon.png"
                         alt="Proofa Logo"
@@ -129,15 +129,15 @@ export default function ProfilePage() {
                         className="object-contain"
                         unoptimized
                     />
-                    <span className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 border-2 border-white rounded-full flex items-center justify-center text-[10px] text-white font-bold" title="Engine Active">
+                    <span className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 border-2 border-white dark:border-surface-900 rounded-full flex items-center justify-center text-[10px] text-white font-bold" title="Engine Active">
                         ✓
                     </span>
                 </div>
-                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-primary-50 text-primary-600 rounded-full text-[10px] font-bold uppercase tracking-wider mb-1">
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-primary-50 dark:bg-primary-950/60 text-primary-600 dark:text-primary-400 rounded-full text-[10px] font-bold uppercase tracking-wider mb-1">
                     ⚡ Receipt Engine Active
                 </div>
-                <h1 className="text-2xl font-bold text-surface-900 tracking-tight">Merchant Hub</h1>
-                <p className="text-xs text-surface-400 font-medium mt-0.5">Manage business identity &amp; bank vault</p>
+                <h1 className="text-2xl font-bold text-surface-900 dark:text-surface-50 tracking-tight">Merchant Hub</h1>
+                <p className="text-xs text-surface-400 dark:text-surface-500 font-medium mt-0.5">Manage business identity &amp; bank vault</p>
             </header>
 
             <motion.div
@@ -147,19 +147,19 @@ export default function ProfilePage() {
                 className="flex flex-col gap-4"
             >
                 {/* User / Business Card */}
-                <div className="bg-white rounded-2xl p-5 border border-surface-200/60 shadow-sm flex items-center gap-4 relative overflow-hidden">
-                    <div className="w-14 h-14 bg-surface-100 text-surface-700 rounded-xl flex items-center justify-center shrink-0 font-bold text-xl">
+                <div className="bg-white dark:bg-surface-900 rounded-2xl p-5 border border-surface-200/60 dark:border-surface-800 shadow-sm flex items-center gap-4 relative overflow-hidden">
+                    <div className="w-14 h-14 bg-surface-100 dark:bg-surface-800 text-surface-700 dark:text-surface-300 rounded-xl flex items-center justify-center shrink-0 font-bold text-xl">
                         {profile?.businessName?.[0]?.toUpperCase() || profile?.name?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || <User size={22} aria-hidden="true" />}
                     </div>
                     <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between gap-2">
-                            <h2 className="text-base font-bold text-surface-900 truncate">
+                            <h2 className="text-base font-bold text-surface-900 dark:text-surface-50 truncate">
                                 {profile?.businessName || profile?.name || "Business Owner"}
                             </h2>
                         </div>
                         <button
                             onClick={handleCopyEmail}
-                            className="flex items-center gap-1.5 text-xs text-surface-500 hover:text-surface-700 transition-colors mt-0.5 group text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 rounded"
+                            className="flex items-center gap-1.5 text-xs text-surface-500 dark:text-surface-400 hover:text-surface-700 dark:hover:text-surface-300 transition-colors mt-0.5 group text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 rounded"
                             title="Click to copy email"
                         >
                             <span className="truncate">{user?.email}</span>
@@ -169,49 +169,49 @@ export default function ProfilePage() {
                                 <Copy size={12} className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0" aria-hidden="true" />
                             )}
                         </button>
-                        <div className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-surface-100 text-surface-600 text-[10px] font-bold uppercase tracking-wider rounded mt-1.5">
+                        <div className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-surface-100 dark:bg-surface-800 text-surface-600 dark:text-surface-300 text-[10px] font-bold uppercase tracking-wider rounded mt-1.5">
                             {plan === "business" ? "BUSINESS TIER" : isPro ? "PRO TIER" : "FREE TIER"}
                         </div>
                     </div>
                 </div>
 
                 {/* Setup Readiness Progress Bar */}
-                <div className="bg-white rounded-2xl p-4 border border-surface-200/60 shadow-sm">
+                <div className="bg-white dark:bg-surface-900 rounded-2xl p-4 border border-surface-200/60 dark:border-surface-800 shadow-sm">
                     <div className="flex items-center justify-between mb-2">
-                        <span className="text-xs font-bold text-surface-700">Receipt Readiness</span>
-                        <span className="text-xs font-bold text-emerald-600">{completedSteps}/3 Ready ({setupPercentage}%)</span>
+                        <span className="text-xs font-bold text-surface-700 dark:text-surface-300">Receipt Readiness</span>
+                        <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">{completedSteps}/3 Ready ({setupPercentage}%)</span>
                     </div>
-                    <div className="w-full h-2 bg-surface-100 rounded-full overflow-hidden mb-3">
+                    <div className="w-full h-2 bg-surface-100 dark:bg-surface-800 rounded-full overflow-hidden mb-3">
                         <div
                             className="h-full bg-emerald-500 transition-all duration-500 rounded-full"
                             style={{ width: `${setupPercentage}%` }}
                         />
                     </div>
-                    <div className="flex items-center justify-between text-xs font-medium text-surface-500">
-                        <span className={`flex items-center gap-1 ${hasBusinessName ? "text-emerald-600 font-semibold" : ""}`}>
-                            <CheckCircle2 size={12} className={hasBusinessName ? "text-emerald-500" : "text-surface-300"} aria-hidden="true" /> Business
+                    <div className="flex items-center justify-between text-xs font-medium text-surface-500 dark:text-surface-400">
+                        <span className={`flex items-center gap-1 ${hasBusinessName ? "text-emerald-600 dark:text-emerald-400 font-semibold" : ""}`}>
+                            <CheckCircle2 size={12} className={hasBusinessName ? "text-emerald-500" : "text-surface-300 dark:text-surface-600"} aria-hidden="true" /> Business
                         </span>
-                        <span className={`flex items-center gap-1 ${hasBank ? "text-emerald-600 font-semibold" : ""}`}>
-                            <CheckCircle2 size={12} className={hasBank ? "text-emerald-500" : "text-surface-300"} aria-hidden="true" /> Bank Vault
+                        <span className={`flex items-center gap-1 ${hasBank ? "text-emerald-600 dark:text-emerald-400 font-semibold" : ""}`}>
+                            <CheckCircle2 size={12} className={hasBank ? "text-emerald-500" : "text-surface-300 dark:text-surface-600"} aria-hidden="true" /> Bank Vault
                         </span>
-                        <span className={`flex items-center gap-1 ${hasLogo ? "text-emerald-600 font-semibold" : ""}`}>
-                            <CheckCircle2 size={12} className={hasLogo ? "text-emerald-500" : "text-surface-300"} aria-hidden="true" /> Logo
+                        <span className={`flex items-center gap-1 ${hasLogo ? "text-emerald-600 dark:text-emerald-400 font-semibold" : ""}`}>
+                            <CheckCircle2 size={12} className={hasLogo ? "text-emerald-500" : "text-surface-300 dark:text-surface-600"} aria-hidden="true" /> Logo
                         </span>
                     </div>
                 </div>
 
                 {/* Plan Status Card */}
-                <div className="bg-white rounded-2xl p-5 border border-surface-200/60 shadow-sm flex items-center justify-between gap-4">
+                <div className="bg-white dark:bg-surface-900 rounded-2xl p-5 border border-surface-200/60 dark:border-surface-800 shadow-sm flex items-center justify-between gap-4">
                     <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-1.5 mb-0.5">
-                            <span className="text-xs font-bold text-surface-400 uppercase tracking-wider">Current Plan</span>
+                            <span className="text-xs font-bold text-surface-400 dark:text-surface-500 uppercase tracking-wider">Current Plan</span>
                             {isPro && <Crown size={13} className="text-amber-500 fill-amber-500" aria-hidden="true" />}
                         </div>
-                        <h3 className="text-lg font-bold capitalize tracking-tight text-surface-900">
+                        <h3 className="text-lg font-bold capitalize tracking-tight text-surface-900 dark:text-surface-50">
                             {plan}
                         </h3>
                         {!isPro && (
-                            <p className="text-xs text-surface-500 font-normal mt-0.5">
+                            <p className="text-xs text-surface-500 dark:text-surface-400 font-normal mt-0.5">
                                 Upgrade to add logos, brand colors, and bank vault.
                             </p>
                         )}
@@ -227,7 +227,7 @@ export default function ProfilePage() {
                     ) : (
                         <Link
                             href="/pricing"
-                            className="bg-white border border-surface-200 text-surface-700 hover:bg-surface-50 text-xs font-bold px-4 py-2.5 rounded-xl active:scale-95 transition-all shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+                            className="bg-white dark:bg-surface-900 border border-surface-200 dark:border-surface-800 text-surface-700 dark:text-surface-300 hover:bg-surface-50 dark:hover:bg-surface-800 text-xs font-bold px-4 py-2.5 rounded-xl active:scale-95 transition-all shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
                         >
                             Manage
                         </Link>

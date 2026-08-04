@@ -28,8 +28,8 @@ export function ColorPicker({ value, onChange }: ColorPickerProps) {
                         type="button"
                         onClick={() => onChange(color.hex)}
                         className={`relative flex flex-col items-center justify-center p-3 rounded-2xl border-2 transition-all active:scale-95 ${isSelected
-                                ? "border-surface-900 bg-surface-50 shadow-md"
-                                : "border-surface-100 bg-white hover:border-surface-200"
+                                ? "border-surface-900 dark:border-primary-500 bg-surface-50 dark:bg-surface-800 shadow-md"
+                                : "border-surface-100 dark:border-surface-800 bg-white dark:bg-surface-900 hover:border-surface-200 dark:hover:border-surface-700"
                             }`}
                     >
                         <div
@@ -38,7 +38,7 @@ export function ColorPicker({ value, onChange }: ColorPickerProps) {
                         >
                             {isSelected && <Check size={16} strokeWidth={3} />}
                         </div>
-                        <span className={`text-[10px] uppercase tracking-widest font-bold ${isSelected ? "text-surface-900" : "text-surface-500"}`}>
+                        <span className={`text-[10px] uppercase tracking-widest font-bold ${isSelected ? "text-surface-900 dark:text-surface-50" : "text-surface-500 dark:text-surface-400"}`}>
                             {color.label}
                         </span>
                     </button>

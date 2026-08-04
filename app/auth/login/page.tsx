@@ -71,7 +71,7 @@ export default function LoginPage() {
                 {/* Header */}
                 <div className="text-center mb-8 pt-2">
                     <div className="mx-auto mb-4 flex justify-center">
-                        <div className="w-16 h-16 bg-primary-50 rounded-2xl flex items-center justify-center p-3 border border-primary-100 shadow-sm">
+                        <div className="w-16 h-16 bg-primary-50 dark:bg-primary-950/60 rounded-2xl flex items-center justify-center p-3 border border-primary-100 dark:border-primary-800 shadow-sm">
                             <Image
                                 src="/Logo/Proofa orange icon.png"
                                 alt="Proofa Logo"
@@ -82,14 +82,14 @@ export default function LoginPage() {
                             />
                         </div>
                     </div>
-                    <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-surface-100 rounded-full text-[10px] font-black uppercase tracking-wider text-surface-600 mb-2">
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-surface-100 dark:bg-surface-800 rounded-full text-[10px] font-black uppercase tracking-wider text-surface-600 dark:text-surface-300 mb-2">
                         <ShieldCheck size={12} className="text-primary-500" />
                         Merchant Login
                     </div>
-                    <h1 className="text-2xl font-black text-surface-900 tracking-tight font-heading">
+                    <h1 className="text-2xl font-black text-surface-900 dark:text-surface-50 tracking-tight font-heading">
                         Welcome Back
                     </h1>
-                    <p className="text-surface-500 text-xs mt-1 font-medium">
+                    <p className="text-surface-500 dark:text-surface-400 text-xs mt-1 font-medium">
                         Sign in to access your business vault &amp; history
                     </p>
                 </div>
@@ -99,7 +99,7 @@ export default function LoginPage() {
                     onClick={handleGoogleSignIn}
                     disabled={isLoading}
                     type="button"
-                    className="w-full bg-white border border-surface-200 hover:border-surface-300 text-surface-900 font-bold py-3.5 px-4 rounded-2xl flex items-center justify-center gap-3 shadow-sm active:scale-[0.98] transition-all disabled:opacity-60 mb-5"
+                    className="w-full bg-white dark:bg-surface-800 border border-surface-200 dark:border-surface-700 hover:border-surface-300 dark:hover:border-surface-600 text-surface-900 dark:text-surface-50 font-bold py-3.5 px-4 rounded-2xl flex items-center justify-center gap-3 shadow-sm active:scale-[0.98] transition-all disabled:opacity-60 mb-5"
                 >
                     {isLoading ? (
                         <Loader2 size={18} className="animate-spin text-primary-500" />
@@ -117,22 +117,22 @@ export default function LoginPage() {
                 </button>
 
                 <div className="flex items-center gap-3 mb-5">
-                    <div className="flex-1 h-px bg-surface-200/80" />
-                    <span className="text-surface-400 text-[10px] font-black uppercase tracking-widest">or email</span>
-                    <div className="flex-1 h-px bg-surface-200/80" />
+                    <div className="flex-1 h-px bg-surface-200/80 dark:bg-surface-800" />
+                    <span className="text-surface-400 dark:text-surface-500 text-[10px] font-black uppercase tracking-widest">or email</span>
+                    <div className="flex-1 h-px bg-surface-200/80 dark:bg-surface-800" />
                 </div>
 
                 {/* Form */}
                 <form onSubmit={handleSubmit} className="flex flex-col gap-4">
                     {/* Email */}
                     <div>
-                        <label className="text-[10px] font-black text-surface-700 uppercase tracking-widest mb-1.5 block">
+                        <label className="text-[10px] font-black text-surface-700 dark:text-surface-300 uppercase tracking-widest mb-1.5 block">
                             Email Address
                         </label>
                         <div className="relative">
                             <Mail
                                 size={18}
-                                className="absolute left-4 top-1/2 -translate-y-1/2 text-surface-400"
+                                className="absolute left-4 top-1/2 -translate-y-1/2 text-surface-400 dark:text-surface-500"
                                 aria-hidden="true"
                             />
                             <input
@@ -141,7 +141,7 @@ export default function LoginPage() {
                                 onChange={(e) => setEmail(e.target.value)}
                                 placeholder="you@business.com"
                                 required
-                                className="w-full pl-11 pr-4 py-3.5 bg-white border border-surface-200 rounded-2xl text-surface-900 font-bold placeholder:text-surface-400 focus:outline-none focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 transition-all text-xs shadow-sm"
+                                className="w-full pl-11 pr-4 py-3.5 bg-white dark:bg-surface-800 border border-surface-200 dark:border-surface-700 rounded-2xl text-surface-900 dark:text-surface-50 font-bold placeholder:text-surface-400 dark:placeholder:text-surface-600 focus:outline-none focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 dark:focus:ring-primary-500/30 transition-all text-xs shadow-sm"
                             />
                         </div>
                     </div>
@@ -149,14 +149,14 @@ export default function LoginPage() {
                     {/* Password */}
                     <div>
                         <div className="flex justify-between items-center mb-1.5">
-                            <label className="text-[10px] font-black text-surface-700 uppercase tracking-widest">
+                            <label className="text-[10px] font-black text-surface-700 dark:text-surface-300 uppercase tracking-widest">
                                 Password
                             </label>
                         </div>
                         <div className="relative">
                             <Lock
                                 size={18}
-                                className="absolute left-4 top-1/2 -translate-y-1/2 text-surface-400"
+                                className="absolute left-4 top-1/2 -translate-y-1/2 text-surface-400 dark:text-surface-500"
                                 aria-hidden="true"
                             />
                             <input
@@ -165,12 +165,12 @@ export default function LoginPage() {
                                 onChange={(e) => setPassword(e.target.value)}
                                 placeholder="••••••••"
                                 required
-                                className="w-full pl-11 pr-12 py-3.5 bg-white border border-surface-200 rounded-2xl text-surface-900 font-bold placeholder:text-surface-400 focus:outline-none focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 transition-all text-xs shadow-sm"
+                                className="w-full pl-11 pr-12 py-3.5 bg-white dark:bg-surface-800 border border-surface-200 dark:border-surface-700 rounded-2xl text-surface-900 dark:text-surface-50 font-bold placeholder:text-surface-400 dark:placeholder:text-surface-600 focus:outline-none focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 dark:focus:ring-primary-500/30 transition-all text-xs shadow-sm"
                             />
                             <button
                                 type="button"
                                 onClick={() => setShowPassword((v) => !v)}
-                                className="absolute right-4 top-1/2 -translate-y-1/2 text-surface-400 hover:text-surface-600 transition-colors"
+                                className="absolute right-4 top-1/2 -translate-y-1/2 text-surface-400 dark:text-surface-500 hover:text-surface-600 dark:hover:text-surface-300 transition-colors"
                                 aria-label={showPassword ? "Hide password" : "Show password"}
                             >
                                 {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -183,10 +183,10 @@ export default function LoginPage() {
                         <motion.div
                             initial={{ opacity: 0, y: -4 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className="bg-red-50 border border-red-100 text-red-600 text-xs font-bold px-4 py-3 rounded-xl flex justify-between items-center"
+                            className="bg-red-50 dark:bg-red-950/50 border border-red-100 dark:border-red-900 text-red-600 dark:text-red-400 text-xs font-bold px-4 py-3 rounded-xl flex justify-between items-center"
                         >
                             <span>{error}</span>
-                            <button type="button" onClick={() => setError(null)} className="text-red-400 hover:text-red-600">×</button>
+                            <button type="button" onClick={() => setError(null)} className="text-red-400 hover:text-red-600 dark:hover:text-red-300">×</button>
                         </motion.div>
                     )}
 
@@ -207,14 +207,14 @@ export default function LoginPage() {
                 </form>
 
                 {/* Footer links */}
-                <div className="mt-6 text-center space-y-2.5 pt-4 border-t border-surface-100">
-                    <p className="text-surface-500 text-xs font-medium">
+                <div className="mt-6 text-center space-y-2.5 pt-4 border-t border-surface-100 dark:border-surface-800">
+                    <p className="text-surface-500 dark:text-surface-400 text-xs font-medium">
                         Don&apos;t have an account?{" "}
-                        <Link href="/auth/signup" className="text-primary-600 font-bold hover:underline">
+                        <Link href="/auth/signup" className="text-primary-600 dark:text-primary-400 font-bold hover:underline">
                             Create one free
                         </Link>
                     </p>
-                    <Link href="/" className="text-surface-400 text-xs font-bold hover:text-surface-600 transition-colors block">
+                    <Link href="/" className="text-surface-400 dark:text-surface-500 text-xs font-bold hover:text-surface-600 dark:hover:text-surface-300 transition-colors block">
                         Back to App Workspace →
                     </Link>
                 </div>

@@ -20,6 +20,8 @@
   --color-primary-700: #bc420a;
   --color-primary-800: #9e360d;
   --color-primary-900: #7f2e0e;
+  /* Darkest ember — dark-mode wash backgrounds (badge/icon tiles) */
+  --color-primary-950: #4a1c07;
 
   /* Dashboard Dark Theme Element (Switched from Navy to Rich Charcoal/Black) */
   --color-secondary-900: #1a1a1a;
@@ -61,6 +63,13 @@
 html {
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
+  /* Tells the UA to render native controls (scrollbars, date pickers,
+     select popups) for the active theme. Without this they stay light. */
+  color-scheme: light;
+}
+
+html.dark {
+  color-scheme: dark;
 }
 
 h1,
@@ -117,10 +126,27 @@ html.dark body {
   -webkit-backdrop-filter: blur(12px);
 }
 
+html.dark .glass-effect {
+  background: rgba(24, 24, 27, 0.8);
+}
+
+/* Ambient at rest — depth hint, not anchor. In dark mode the black shadow
+   is invisible against the page, so elevation is carried by a hairline
+   ring of light instead (tonal-first, per DESIGN.md). */
 .shadow-card {
   box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
 }
 
 .shadow-card-hover:hover {
   box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.07), 0 4px 6px -4px rgb(0 0 0 / 0.07);
+}
+
+html.dark .shadow-card {
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.5), 0 2px 4px -2px rgb(0 0 0 / 0.4),
+    0 0 0 1px rgb(255 255 255 / 0.06);
+}
+
+html.dark .shadow-card-hover:hover {
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.6), 0 4px 6px -4px rgb(0 0 0 / 0.5),
+    0 0 0 1px rgb(255 255 255 / 0.1);
 }

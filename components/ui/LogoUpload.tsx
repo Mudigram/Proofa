@@ -60,7 +60,7 @@ export const LogoUpload = ({ value, onChange, label = "Business Logo" }: LogoUpl
         <div className="flex flex-col gap-3">
             <div
                 onClick={handleClick}
-                className={`${value ? "bg-white border-primary-500 shadow-xl shadow-primary-500/5" : "bg-gradient-to-br from-primary-50/50 to-white border-primary-100 hover:border-primary-300"
+                className={`${value ? "bg-white dark:bg-surface-900 border-primary-500 shadow-xl shadow-primary-500/5" : "bg-gradient-to-br from-primary-50/50 to-white dark:from-primary-950/40 dark:to-surface-900 border-primary-100 dark:border-primary-800 hover:border-primary-300"
                     } border-2 border-dashed rounded-[2.5rem] p-8 flex flex-col items-center justify-center gap-4 text-center cursor-pointer active:scale-[0.98] transition-all duration-300 group relative`}
             >
                 <input
@@ -77,11 +77,11 @@ export const LogoUpload = ({ value, onChange, label = "Business Logo" }: LogoUpl
                             src={value}
                             businessName={businessName}
                             size={96}
-                            className="bg-white p-2"
+                            className="bg-white dark:bg-surface-800 p-2"
                         />
                         <button
                             onClick={handleRemoveClick}
-                            className="absolute -top-3 -right-3 bg-white border border-surface-200 text-red-500 p-2 rounded-full shadow-xl hover:bg-red-50 transition-all opacity-0 group-hover/image:opacity-100 scale-90 group-hover/image:scale-100"
+                            className="absolute -top-3 -right-3 bg-white dark:bg-surface-800 border border-surface-200 dark:border-surface-700 text-red-500 p-2 rounded-full shadow-xl hover:bg-red-50 dark:hover:bg-red-950/50 transition-all opacity-0 group-hover/image:opacity-100 scale-90 group-hover/image:scale-100"
                         >
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                                 <line x1="18" y1="6" x2="6" y2="18" />
@@ -90,7 +90,7 @@ export const LogoUpload = ({ value, onChange, label = "Business Logo" }: LogoUpl
                         </button>
                     </div>
                 ) : (
-                    <div className="w-16 h-16 bg-gradient-to-br from-primary-100 to-primary-50 rounded-full flex items-center justify-center text-primary-600 shadow-inner group-hover:scale-110 transition-transform duration-500">
+                    <div className="w-16 h-16 bg-gradient-to-br from-primary-100 to-primary-50 dark:from-primary-950/60 dark:to-primary-900/40 rounded-full flex items-center justify-center text-primary-600 dark:text-primary-400 shadow-inner group-hover:scale-110 transition-transform duration-500">
                         <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
                             <circle cx="12" cy="13" r="4" />
@@ -100,8 +100,8 @@ export const LogoUpload = ({ value, onChange, label = "Business Logo" }: LogoUpl
                 )}
 
                 <div className="flex flex-col gap-1">
-                    <h4 className="font-black text-surface-900 text-base tracking-tight">{label}</h4>
-                    <p className="text-[10px] text-surface-400 font-bold uppercase tracking-[0.2em] max-w-[180px] mx-auto leading-relaxed">
+                    <h4 className="font-black text-surface-900 dark:text-surface-50 text-base tracking-tight">{label}</h4>
+                    <p className="text-[10px] text-surface-400 dark:text-surface-500 font-bold uppercase tracking-[0.2em] max-w-[180px] mx-auto leading-relaxed">
                         {value ? "Tap box to change logo" : "Upload your brand logo"}
                     </p>
                 </div>
@@ -109,15 +109,15 @@ export const LogoUpload = ({ value, onChange, label = "Business Logo" }: LogoUpl
 
             {/* Post-Upload Upsell for Free Users */}
             {!isPro && value && (
-                <Link href="/pricing" className="bg-amber-50 border border-amber-200 rounded-2xl p-3 flex items-center gap-3 active:scale-[0.98] transition-all">
-                    <div className="w-8 h-8 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center flex-shrink-0">
+                <Link href="/pricing" className="bg-amber-50 dark:bg-amber-950/50 border border-amber-200 dark:border-amber-900 rounded-2xl p-3 flex items-center gap-3 active:scale-[0.98] transition-all">
+                    <div className="w-8 h-8 rounded-full bg-amber-100 dark:bg-amber-900/60 text-amber-600 dark:text-amber-400 flex items-center justify-center flex-shrink-0">
                         <Crown size={14} />
                     </div>
                     <div className="flex-1">
-                        <p className="text-xs font-bold text-surface-900">Save logo for next time?</p>
-                        <p className="text-[10px] font-medium text-surface-500 mt-0.5">Upgrade to Pro to auto-fetch your logo</p>
+                        <p className="text-xs font-bold text-surface-900 dark:text-surface-50">Save logo for next time?</p>
+                        <p className="text-[10px] font-medium text-surface-500 dark:text-surface-400 mt-0.5">Upgrade to Pro to auto-fetch your logo</p>
                     </div>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-surface-400">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-surface-400 dark:text-surface-500">
                         <polyline points="9 18 15 12 9 6" />
                     </svg>
                 </Link>

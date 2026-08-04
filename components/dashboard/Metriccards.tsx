@@ -20,7 +20,7 @@ function ChangeBadge({ pct }: { pct: number | null }) {
     if (pct === null) return null;
     const up = pct >= 0;
     return (
-        <span className={`flex items-center gap-0.5 text-[10px] font-black ${up ? "text-green-600" : "text-red-500"}`}>
+        <span className={`flex items-center gap-0.5 text-[10px] font-black ${up ? "text-green-600 dark:text-green-400" : "text-red-500 dark:text-red-400"}`}>
             {up ? <TrendingUp size={10} /> : <TrendingDown size={10} />}
             {Math.abs(pct)}%
         </span>
@@ -41,21 +41,21 @@ export default function MetricCards({ metrics }: MetricCardsProps) {
             label: "Documents",
             value: metrics.totalDocs.toLocaleString(),
             sub: <ChangeBadge pct={metrics.docCountChange} />,
-            icon: <FileText size={16} className="text-surface-600" />,
+            icon: <FileText size={16} className="text-surface-600 dark:text-surface-300" />,
         },
         {
             label: "Avg value",
             value: formatAmount(metrics.avgDocValue, metrics.currency),
-            sub: <span className="text-[10px] text-surface-600 font-bold">per document</span>,
-            icon: <FileText size={16} className="text-surface-600" />,
+            sub: <span className="text-[10px] text-surface-600 dark:text-surface-300 font-bold">per document</span>,
+            icon: <FileText size={16} className="text-surface-600 dark:text-surface-300" />,
         },
         {
             label: "Top type",
             value: metrics.topDocType
                 ? metrics.topDocType.charAt(0).toUpperCase() + metrics.topDocType.slice(1)
                 : "—",
-            sub: <span className="text-[10px] text-surface-600 font-bold">most generated</span>,
-            icon: <FileText size={16} className="text-surface-600" />,
+            sub: <span className="text-[10px] text-surface-600 dark:text-surface-300 font-bold">most generated</span>,
+            icon: <FileText size={16} className="text-surface-600 dark:text-surface-300" />,
         },
     ];
 
@@ -66,17 +66,17 @@ export default function MetricCards({ metrics }: MetricCardsProps) {
                     key={card.label}
                     className={`rounded-2xl p-4 flex flex-col gap-2 ${card.accent
                             ? "bg-primary-500 text-white shadow-md shadow-primary-500/20"
-                            : "bg-surface-50 border border-surface-200/80 shadow-sm"
+                            : "bg-surface-50 dark:bg-surface-900 border border-surface-200/80 dark:border-surface-800 shadow-sm"
                         }`}
                 >
                     <div className="flex items-center justify-between">
-                        <p className={`text-[10px] font-black uppercase tracking-widest ${card.accent ? "text-white/90" : "text-surface-600"
+                        <p className={`text-[10px] font-black uppercase tracking-widest ${card.accent ? "text-white/90" : "text-surface-600 dark:text-surface-300"
                             }`}>
                             {card.label}
                         </p>
                         {!card.accent && card.icon}
                     </div>
-                    <p className={`text-xl font-black leading-none tracking-tight ${card.accent ? "text-white" : "text-surface-900"
+                    <p className={`text-xl font-black leading-none tracking-tight ${card.accent ? "text-white" : "text-surface-900 dark:text-surface-50"
                         }`}>
                         {card.value}
                     </p>

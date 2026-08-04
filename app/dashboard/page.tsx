@@ -30,12 +30,12 @@ const PERIODS: { value: DashboardPeriod; label: string }[] = [
 function UpgradeGate() {
     return (
         <div className="min-h-[60vh] flex flex-col items-center justify-center px-6 text-center gap-6">
-            <div className="w-16 h-16 bg-surface-100 rounded-2xl flex items-center justify-center">
-                <Lock size={28} className="text-surface-400" />
+            <div className="w-16 h-16 bg-surface-100 dark:bg-surface-800 rounded-2xl flex items-center justify-center">
+                <Lock size={28} className="text-surface-400 dark:text-surface-500" />
             </div>
             <div>
                 <h2 className="text-xl font-black uppercase tracking-tight">Revenue Dashboard</h2>
-                <p className="text-sm text-surface-400 font-medium mt-2 leading-relaxed max-w-xs">
+                <p className="text-sm text-surface-400 dark:text-surface-500 font-medium mt-2 leading-relaxed max-w-xs">
                     See your revenue, track your documents, and share daily summaries straight to WhatsApp.
                 </p>
             </div>
@@ -53,10 +53,10 @@ function UpgradeGate() {
 
 function BusinessNudge({ feature }: { feature: string }) {
     return (
-        <div className="flex items-center justify-between bg-surface-50 border border-surface-100 rounded-2xl px-4 py-3">
+        <div className="flex items-center justify-between bg-surface-50 dark:bg-surface-900 border border-surface-100 dark:border-surface-800 rounded-2xl px-4 py-3">
             <div className="flex items-center gap-2">
                 <Crown size={14} className="text-amber-500" />
-                <p className="text-xs font-black text-surface-600">
+                <p className="text-xs font-black text-surface-600 dark:text-surface-300">
                     {feature} — Business only
                 </p>
             </div>
@@ -73,7 +73,7 @@ function BusinessNudge({ feature }: { feature: string }) {
 // ─── Skeleton ─────────────────────────────────────────────────────────────────
 
 function Skeleton({ className }: { className?: string }) {
-    return <div className={`bg-surface-100 rounded-xl animate-pulse ${className}`} />;
+    return <div className={`bg-surface-100 dark:bg-surface-800 rounded-xl animate-pulse ${className}`} />;
 }
 
 function DashboardSkeleton() {
@@ -114,36 +114,36 @@ export default function DashboardPage() {
             {/* Header */}
             <div className="flex items-start justify-between">
                 <div>
-                    <p className="text-[10px] font-black uppercase tracking-widest text-surface-600">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-surface-600 dark:text-surface-300">
                         {isBusiness ? "Business Dashboard" : "Pro Dashboard"}
                     </p>
-                    <h1 className="text-2xl font-black uppercase tracking-tight leading-none mt-1 text-surface-900">
+                    <h1 className="text-2xl font-black uppercase tracking-tight leading-none mt-1 text-surface-900 dark:text-surface-50">
                         {profile?.businessName ?? "My Business"}
                     </h1>
                 </div>
                 <button
                     onClick={refresh}
                     disabled={isLoading}
-                    className="w-9 h-9 bg-surface-100 border border-surface-200 rounded-xl flex items-center justify-center active:scale-95 transition-transform disabled:opacity-50"
+                    className="w-9 h-9 bg-surface-100 dark:bg-surface-800 border border-surface-200 dark:border-surface-800 rounded-xl flex items-center justify-center active:scale-95 transition-transform disabled:opacity-50"
                 >
                     <RefreshCw
                         size={16}
-                        className={`text-surface-600 ${isLoading ? "animate-spin" : ""}`}
+                        className={`text-surface-600 dark:text-surface-300 ${isLoading ? "animate-spin" : ""}`}
                     />
                 </button>
             </div>
 
             {/* Period selector */}
             <div className="relative">
-                <div className={`flex gap-2 bg-surface-100 p-1.5 rounded-2xl border border-surface-200/80 ${!canChangePeriod ? "opacity-75" : ""}`}>
+                <div className={`flex gap-2 bg-surface-100 dark:bg-surface-800 p-1.5 rounded-2xl border border-surface-200/80 dark:border-surface-800 ${!canChangePeriod ? "opacity-75" : ""}`}>
                     {PERIODS.map((p) => (
                         <button
                             key={p.value}
                             onClick={() => setPeriod(p.value)}
                             disabled={!canChangePeriod}
                             className={`flex-1 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${period === p.value
-                                    ? "bg-white text-primary-600 shadow-sm"
-                                    : "text-surface-600 hover:text-surface-900"
+                                    ? "bg-white dark:bg-surface-900 text-primary-600 dark:text-primary-400 shadow-sm"
+                                    : "text-surface-600 dark:text-surface-300 hover:text-surface-900 dark:hover:text-surface-50"
                                 } disabled:cursor-not-allowed`}
                         >
                             {p.label}
@@ -154,7 +154,7 @@ export default function DashboardPage() {
                 {!canChangePeriod && (
                     <div className="flex items-center justify-end gap-1 mt-1.5 pr-1">
                         <Crown size={10} className="text-amber-500" />
-                        <p className="text-[9px] font-black text-surface-600 uppercase tracking-widest">
+                        <p className="text-[9px] font-black text-surface-600 dark:text-surface-300 uppercase tracking-widest">
                             All periods — Business only
                         </p>
                     </div>
@@ -163,8 +163,8 @@ export default function DashboardPage() {
 
             {/* Error */}
             {error && (
-                <div className="bg-red-50 border border-red-100 rounded-2xl px-4 py-3">
-                    <p className="text-xs font-bold text-red-600">{error}</p>
+                <div className="bg-red-50 dark:bg-red-950/50 border border-red-100 dark:border-red-900 rounded-2xl px-4 py-3">
+                    <p className="text-xs font-bold text-red-600 dark:text-red-400">{error}</p>
                 </div>
             )}
 
@@ -177,12 +177,12 @@ export default function DashboardPage() {
                     <MetricCards metrics={data.metrics} />
 
                     {/* Revenue chart */}
-                    <div className="bg-surface-50 border border-surface-200/80 rounded-2xl p-4">
+                    <div className="bg-surface-50 dark:bg-surface-900 border border-surface-200/80 dark:border-surface-800 rounded-2xl p-4">
                         <div className="flex items-center justify-between mb-4">
-                            <p className="text-[10px] font-black uppercase tracking-widest text-surface-600">
+                            <p className="text-[10px] font-black uppercase tracking-widest text-surface-600 dark:text-surface-300">
                                 Revenue — {data.metrics.periodLabel}
                             </p>
-                            <span className="text-[10px] font-black text-surface-600 uppercase bg-surface-200/50 px-2 py-0.5 rounded">
+                            <span className="text-[10px] font-black text-surface-600 dark:text-surface-300 uppercase bg-surface-200/50 dark:bg-surface-700/50 px-2 py-0.5 rounded">
                                 {currency}
                             </span>
                         </div>
@@ -193,7 +193,7 @@ export default function DashboardPage() {
                         />
                         {/* Pro label under chart */}
                         {!isBusiness && (
-                            <p className="text-[10px] text-surface-600 font-semibold text-center mt-3">
+                            <p className="text-[10px] text-surface-600 dark:text-surface-300 font-semibold text-center mt-3">
                                 Showing this month only — upgrade to Business for all periods
                             </p>
                         )}
@@ -201,7 +201,7 @@ export default function DashboardPage() {
 
                     {/* Daily summary share — locked for Pro */}
                     <div className="flex flex-col gap-2">
-                        <p className="text-[10px] font-black uppercase tracking-widest text-surface-600">
+                        <p className="text-[10px] font-black uppercase tracking-widest text-surface-600 dark:text-surface-300">
                             Daily summary
                         </p>
                         {canShareSummary ? (
@@ -209,7 +209,7 @@ export default function DashboardPage() {
                         ) : (
                             <>
                                 {/* Blurred preview of what it looks like */}
-                                <div className="relative rounded-2xl overflow-hidden border border-surface-200">
+                                <div className="relative rounded-2xl overflow-hidden border border-surface-200 dark:border-surface-800">
                                     <div className="pointer-events-none select-none blur-sm opacity-60">
                                         <DailySummaryCard metrics={data.metrics} />
                                     </div>
@@ -233,15 +233,15 @@ export default function DashboardPage() {
                     {/* Activity feed */}
                     <div className="flex flex-col gap-2">
                         <div className="flex items-center justify-between">
-                            <p className="text-[10px] font-black uppercase tracking-widest text-surface-600">
+                            <p className="text-[10px] font-black uppercase tracking-widest text-surface-600 dark:text-surface-300">
                                 Recent activity
                             </p>
-                            <span className="text-[10px] text-surface-600 font-bold">
+                            <span className="text-[10px] text-surface-600 dark:text-surface-300 font-bold">
                                 Last {activityLimit} docs
                                 {!isBusiness && " · Pro limit"}
                             </span>
                         </div>
-                        <div className="bg-white border border-surface-200/80 rounded-2xl px-4">
+                        <div className="bg-white dark:bg-surface-900 border border-surface-200/80 dark:border-surface-800 rounded-2xl px-4">
                             <ActivityFeed items={data.activity} />
                         </div>
                         {/* Upgrade nudge under feed for Pro users */}

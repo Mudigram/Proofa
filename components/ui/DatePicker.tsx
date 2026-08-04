@@ -70,7 +70,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
     return (
         <div className={`flex flex-col gap-1.5 ${className}`}>
             {label && (
-                <label className="text-[10px] font-black uppercase tracking-widest text-surface-400 px-1">
+                <label className="text-[10px] font-black uppercase tracking-widest text-surface-400 dark:text-surface-500 px-1">
                     {label}
                 </label>
             )}
@@ -80,49 +80,49 @@ export const DatePicker: React.FC<DatePickerProps> = ({
                 <button
                     type="button"
                     onClick={() => setIsOpen(!isOpen)}
-                    className="w-full bg-surface-50 border border-surface-200/80 hover:border-primary-400 rounded-xl px-4 py-3 flex items-center justify-between text-left transition-all active:scale-[0.99] focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    className="w-full bg-surface-50 dark:bg-surface-900 border border-surface-200/80 dark:border-surface-800/80 hover:border-primary-400 rounded-xl px-4 py-3 flex items-center justify-between text-left transition-all active:scale-[0.99] focus:outline-none focus:ring-2 focus:ring-primary-500"
                 >
                     <div className="flex items-center gap-3">
-                        <div className="w-7 h-7 rounded-lg bg-primary-50 text-primary-600 flex items-center justify-center shrink-0">
+                        <div className="w-7 h-7 rounded-lg bg-primary-50 dark:bg-primary-950/60 text-primary-600 dark:text-primary-400 flex items-center justify-center shrink-0">
                             <Calendar size={15} aria-hidden="true" />
                         </div>
-                        <span className="text-xs font-bold text-surface-900">
+                        <span className="text-xs font-bold text-surface-900 dark:text-surface-50">
                             {getFormattedDisplay()}
                         </span>
                     </div>
                     <ChevronDown
                         size={15}
-                        className={`text-surface-400 transition-transform ${isOpen ? "rotate-180" : ""}`}
+                        className={`text-surface-400 dark:text-surface-500 transition-transform ${isOpen ? "rotate-180" : ""}`}
                         aria-hidden="true"
                     />
                 </button>
 
                 {/* Brand-Styled Dropdown Popover */}
                 {isOpen && (
-                    <div className="absolute top-full left-0 right-0 mt-2 z-30 bg-white border border-surface-200 rounded-2xl p-3 shadow-xl flex flex-col gap-2 animate-in fade-in zoom-in-95 duration-150">
+                    <div className="absolute top-full left-0 right-0 mt-2 z-30 bg-white dark:bg-surface-900 border border-surface-200 dark:border-surface-800 rounded-2xl p-3 shadow-xl flex flex-col gap-2 animate-in fade-in zoom-in-95 duration-150">
                         {/* Preset Pills */}
                         <div className="flex items-center gap-2">
                             <button
                                 type="button"
                                 onClick={() => handlePreset("today")}
-                                className="flex-1 py-2 px-3 rounded-xl bg-primary-50 hover:bg-primary-100 text-primary-600 text-xs font-bold transition-colors flex items-center justify-center gap-1.5"
+                                className="flex-1 py-2 px-3 rounded-xl bg-primary-50 dark:bg-primary-950/60 hover:bg-primary-100 dark:hover:bg-primary-900/60 text-primary-600 dark:text-primary-400 text-xs font-bold transition-colors flex items-center justify-center gap-1.5"
                             >
                                 Today
                             </button>
                             <button
                                 type="button"
                                 onClick={() => handlePreset("yesterday")}
-                                className="flex-1 py-2 px-3 rounded-xl bg-surface-100 hover:bg-surface-200 text-surface-700 text-xs font-bold transition-colors flex items-center justify-center gap-1.5"
+                                className="flex-1 py-2 px-3 rounded-xl bg-surface-100 dark:bg-surface-800 hover:bg-surface-200 dark:hover:bg-surface-700 text-surface-700 dark:text-surface-300 text-xs font-bold transition-colors flex items-center justify-center gap-1.5"
                             >
                                 Yesterday
                             </button>
                         </div>
 
-                        <div className="h-px bg-surface-100 my-1" />
+                        <div className="h-px bg-surface-100 dark:bg-surface-800 my-1" />
 
                         {/* Native Date Input Styled Container */}
                         <div className="flex flex-col gap-1 px-1">
-                            <span className="text-[10px] font-bold text-surface-400 uppercase tracking-wider">Custom Date</span>
+                            <span className="text-[10px] font-bold text-surface-400 dark:text-surface-500 uppercase tracking-wider">Custom Date</span>
                             <input
                                 type="date"
                                 value={value}
@@ -130,7 +130,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
                                     onChange(e.target.value);
                                     setIsOpen(false);
                                 }}
-                                className="w-full bg-surface-50 border border-surface-200 rounded-xl px-3 py-2 text-xs font-bold text-surface-900 outline-none focus:border-primary-500"
+                                className="w-full bg-surface-50 dark:bg-surface-900 border border-surface-200 dark:border-surface-800 rounded-xl px-3 py-2 text-xs font-bold text-surface-900 dark:text-surface-50 outline-none focus:border-primary-500"
                             />
                         </div>
                     </div>
