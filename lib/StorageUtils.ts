@@ -182,6 +182,7 @@ export async function saveDocument(
         const customer = extractCustomer(data, type);
 
         saveDocumentToCloud({
+            id: doc.id,
             ownerId,
             createdBy: userId,
             type,

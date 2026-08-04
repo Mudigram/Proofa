@@ -12,10 +12,12 @@ import { PageTransition, StaggerContainer, StaggerItem } from "@/components/ui/A
 import { useAuth } from "@/context/AuthContext";
 import { BankSelector } from "@/components/ui/BankSelector";
 import { useToast } from "@/components/ui/Toast";
+import { Zap } from "lucide-react";
 
 export default function OrderForm() {
     const searchParams = useSearchParams();
     const docId = searchParams.get("id");
+    const duplicateId = searchParams.get("duplicateFrom");
     const [currentDocId, setCurrentDocId] = useState<string | null>(docId);
     const { user, profile, isPro } = useAuth();
     const { showToast } = useToast();
@@ -64,14 +66,51 @@ export default function OrderForm() {
                 setCurrentDocId(doc.id);
                 setMode("preview");
             }
+        } else if (duplicateId) {
+            const doc = getDocumentById(duplicateId);
+            if (doc && doc.type === "order") {
+                const data = doc.data as OrderData;
+                setFormData({
+                    ...data,
+                    customerName: "",
+                    customerPhone: undefined,
+                });
+                showToast("Duplicated order items — enter customer details to save", "info");
+            }
         } else if (isPro && profile) {
             // Auto-fill brand defaults for new orders
             setFormData(prev => ({
                 ...prev,
-                logoUrl: profile.logoUrl || prev.logoUrl,
+                logoUrl: prev.logoUrl || profile.logoUrl || undefined,
             }));
         }
-    }, [docId, isPro, profile]);
+    }, [docId, duplicateId, profile, isPro]);
+
+    const handleDemoFill = () => {
+        setFormData({
+            customerName: "Tunde Afolayan",
+            customerPhone: "08033334444",
+            items: [
+                { id: "1", name: "20,000mAh Magnetic Fast Charge Power Bank", quantity: 1, price: 22000 }
+            ],
+            totalAmount: 22000,
+            status: "Paid",
+            deliveryStatus: "Pending",
+            logoUrl: profile?.logoUrl || undefined,
+            bankDetails: {
+                bankName: "Kuda Bank",
+                accountNumber: "2012345678",
+                accountName: profile?.businessName || "Bolu Gadgets",
+                enabled: true,
+            },
+            deliveryInfo: {
+                location: "Surulere, Lagos",
+                cost: 1500,
+                enabled: true,
+            },
+        });
+        showToast("⚡ Sample demo order loaded in 1 tap!", "success");
+    };
 
     const handleChange = (field: keyof OrderData, value: any) => {
         setFormData((prev) => ({ ...prev, [field]: value }));
@@ -219,6 +258,16 @@ export default function OrderForm() {
                 {mode === "edit" ? (
                     <StaggerContainer>
                         <div className="flex flex-col gap-10">
+                            <StaggerItem>
+                                <button
+                                    type="button"
+                                    onClick={handleDemoFill}
+                                    className="w-full py-3 px-4 bg-gradient-to-r from-primary-500 to-amber-500 text-white rounded-2xl font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-md shadow-primary-500/20 active:scale-[0.98] transition-all"
+                                >
+                                    <Zap size={16} className="fill-white" /> ⚡ 1-Tap Fill Sample Demo Data
+                                </button>
+                            </StaggerItem>
+
                             <StaggerItem>
                                 <LogoUpload
                                     value={formData.logoUrl}

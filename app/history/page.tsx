@@ -8,11 +8,11 @@ import { SavedDocument, ReceiptData, InvoiceData, OrderData } from "@/lib/types"
 import { formatCurrency, formatDate } from "@/components/templates/TemplateUtils";
 import { PageTransition, StaggerContainer, StaggerItem } from "@/components/ui/Animations";
 import Link from "next/link";
-import { Trash2, AlertTriangle } from "lucide-react";
+import { Trash2, AlertTriangle, Copy } from "lucide-react";
 import { Modal } from "@/components/ui/Modal";
 import { useToast } from "@/components/ui/Toast";
 import { useAuth } from "@/context/AuthContext";
-import { fetchCloudHistory } from "@/lib/dashboard";
+import { fetchCloudHistory, deleteCloudDocument } from "@/lib/dashboard";
 import { Crown, Zap } from "lucide-react";
 
 export default function HistoryPage() {
@@ -22,7 +22,7 @@ export default function HistoryPage() {
     const [selectedDoc, setSelectedDoc] = useState<SavedDocument | null>(null);
     const [filter, setFilter] = useState<"all" | "saved" | "drafts">("all");
     const { showToast } = useToast();
-    const { user, isPro } = useAuth();
+    const { user, profile, isPro } = useAuth();
 
     const loadHistory = useCallback(async () => {
         const localDocs = getHistory();
@@ -81,11 +81,35 @@ export default function HistoryPage() {
     const confirmDelete = () => {
         if (selectedDoc) {
             deleteDocument(selectedDoc.id);
+            if (user && profile?.id) {
+                deleteCloudDocument(selectedDoc.id, profile.id);
+            }
             setHistory(getHistory());
             setIsDeleteModalOpen(false);
             showToast("Document deleted successfully", "success");
             setSelectedDoc(null);
         }
+    };
+
+    const handleExportDailySummary = () => {
+        const todayStr = new Date().toISOString().split("T")[0];
+        const todayDocs = history.filter((d) => {
+            const dateStr = new Date(d.createdAt).toISOString().split("T")[0];
+            return dateStr === todayStr;
+        });
+
+        const docsToSummarize = todayDocs.length > 0 ? todayDocs : history;
+        const totalRev = docsToSummarize.reduce((acc, d) => acc + extractAmount(d.data, d.type), 0);
+        const receiptCount = docsToSummarize.filter(d => d.type === "receipt").length;
+        const invoiceCount = docsToSummarize.filter(d => d.type === "invoice").length;
+
+        const dateTitle = todayDocs.length > 0 ? "Today's" : "Recent";
+        const formattedRev = formatCurrency(totalRev, profile?.defaultCurrency || "NGN");
+        const message = `📊 *Proofa ${dateTitle} Sales Summary*\n\n💰 Total Revenue: ${formattedRev}\n📄 Receipts: ${receiptCount}\n🧾 Invoices: ${invoiceCount}\n📦 Total Docs: ${docsToSummarize.length}\n\nGenerated via Proofa (proofa.ng)`;
+
+        const url = `https://wa.me/?text=${encodeURIComponent(message)}`;
+        window.open(url, "_blank");
+        showToast("Opened End-of-Day Sales Report for WhatsApp share!", "success");
     };
 
     const getDocTitle = (doc: SavedDocument) => {
@@ -142,11 +166,22 @@ export default function HistoryPage() {
                     </div>
                 )}
 
-                <header className="mb-8">
-                    <h1 className="text-2xl font-black tracking-tight text-surface-900">Document History</h1>
-                    <p className="text-sm text-surface-400 font-medium mt-1">
-                        Your {history.length} most recent documents.
-                    </p>
+                <header className="mb-8 flex items-center justify-between gap-4">
+                    <div>
+                        <h1 className="text-2xl font-black tracking-tight text-surface-900 dark:text-surface-50">Document History</h1>
+                        <p className="text-sm text-surface-400 font-medium mt-1">
+                            Your {history.length} most recent documents.
+                        </p>
+                    </div>
+                    {history.length > 0 && (
+                        <button
+                            onClick={handleExportDailySummary}
+                            className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white text-[10px] font-black uppercase tracking-wider px-3.5 py-2.5 rounded-xl shadow-md active:scale-95 transition-all flex items-center gap-1.5 shrink-0"
+                            title="Share End-of-Day Sales Report to WhatsApp"
+                        >
+                            <Zap size={14} className="fill-white" /> Daily Report
+                        </button>
+                    )}
                 </header>
 
                 {history.length === 0 ? (
@@ -230,6 +265,9 @@ export default function HistoryPage() {
                                                         {(doc.data as any).status === "Draft" && (
                                                             <span className="bg-amber-100 text-amber-700 text-[8px] font-black px-1.5 py-0.5 rounded uppercase tracking-widest">Draft</span>
                                                         )}
+                                                        {!user && (
+                                                            <span className="bg-surface-100 text-surface-500 dark:bg-surface-800 dark:text-surface-400 text-[8px] font-black px-1.5 py-0.5 rounded uppercase tracking-widest">Saved Offline</span>
+                                                        )}
                                                         <span className="w-1 h-1 rounded-full bg-surface-200" />
                                                         <span className="text-[9px] font-black uppercase tracking-widest text-surface-300">{formatDate(doc.createdAt)}</span>
                                                     </div>
@@ -238,17 +276,26 @@ export default function HistoryPage() {
                                                     </h3>
                                                 </div>
 
-                                                <div className="flex flex-col items-end gap-1 shrink-0">
+                                                <div className="flex flex-col items-end gap-1 shrink-0 relative z-20">
                                                     <p className="text-sm font-black text-surface-900">
                                                         {formatCurrency(getDocAmount(doc))}
                                                     </p>
-                                                    <button
-                                                        onClick={(e) => openDeleteModal(doc, e)}
-                                                        className="w-8 h-8 rounded-full bg-red-50 text-red-500 flex items-center justify-center hover:bg-red-500 hover:text-white transition-all relative z-20"
-                                                        title="Delete Document"
-                                                    >
-                                                        <Trash2 size={14} />
-                                                    </button>
+                                                    <div className="flex items-center gap-1.5 mt-0.5">
+                                                        <Link
+                                                            href={`/${doc.type}?duplicateFrom=${doc.id}`}
+                                                            className="w-8 h-8 rounded-full bg-surface-100 dark:bg-surface-800 text-surface-600 dark:text-surface-300 flex items-center justify-center hover:bg-primary-50 dark:hover:bg-primary-950/60 hover:text-primary-600 transition-all"
+                                                            title="Duplicate as New Sale"
+                                                        >
+                                                            <Copy size={14} />
+                                                        </Link>
+                                                        <button
+                                                            onClick={(e) => openDeleteModal(doc, e)}
+                                                            className="w-8 h-8 rounded-full bg-red-50 text-red-500 flex items-center justify-center hover:bg-red-500 hover:text-white transition-all"
+                                                            title="Delete Document"
+                                                        >
+                                                            <Trash2 size={14} />
+                                                        </button>
+                                                    </div>
                                                 </div>
                                             </div>
 

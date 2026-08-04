@@ -1,13 +1,14 @@
 "use client";
 
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import Image from "next/image";
 import { useProGate } from "@/hooks/useProGate";
-import { Crown } from "lucide-react";
+import { Crown, AlertTriangle } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "./Toast";
 import { BrandLogo } from "./BrandLogo";
+import { Modal } from "./Modal";
 
 interface LogoUploadProps {
     value?: string;
@@ -20,6 +21,7 @@ export const LogoUpload = ({ value, onChange, label = "Business Logo" }: LogoUpl
     const { isPro, gate } = useProGate();
     const { profile } = useAuth();
     const { showToast } = useToast();
+    const [isConfirmRemoveOpen, setIsConfirmRemoveOpen] = useState(false);
     const businessName = profile?.businessName || "Your Business";
 
     const handleClick = () => {
@@ -44,9 +46,14 @@ export const LogoUpload = ({ value, onChange, label = "Business Logo" }: LogoUpl
         reader.readAsDataURL(file);
     };
 
-    const handleRemove = (e: React.MouseEvent) => {
+    const handleRemoveClick = (e: React.MouseEvent) => {
         e.stopPropagation();
+        setIsConfirmRemoveOpen(true);
+    };
+
+    const confirmRemove = () => {
         onChange(undefined);
+        setIsConfirmRemoveOpen(false);
     };
 
     return (
@@ -73,7 +80,7 @@ export const LogoUpload = ({ value, onChange, label = "Business Logo" }: LogoUpl
                             className="bg-white p-2"
                         />
                         <button
-                            onClick={handleRemove}
+                            onClick={handleRemoveClick}
                             className="absolute -top-3 -right-3 bg-white border border-surface-200 text-red-500 p-2 rounded-full shadow-xl hover:bg-red-50 transition-all opacity-0 group-hover/image:opacity-100 scale-90 group-hover/image:scale-100"
                         >
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
@@ -115,6 +122,39 @@ export const LogoUpload = ({ value, onChange, label = "Business Logo" }: LogoUpl
                     </svg>
                 </Link>
             )}
+
+            {/* Delete Logo Confirmation Modal */}
+            <Modal
+                isOpen={isConfirmRemoveOpen}
+                onClose={() => setIsConfirmRemoveOpen(false)}
+                title="Remove Business Logo?"
+            >
+                <div className="flex flex-col gap-4">
+                    <div className="flex items-center gap-3 p-3 bg-red-50 text-red-700 rounded-xl">
+                        <AlertTriangle size={24} className="shrink-0" />
+                        <p className="text-xs font-semibold">
+                            Are you sure you want to remove your business logo? This will remove your branding from newly generated documents.
+                        </p>
+                    </div>
+
+                    <div className="flex gap-3 mt-2">
+                        <button
+                            type="button"
+                            onClick={() => setIsConfirmRemoveOpen(false)}
+                            className="flex-1 py-3 bg-surface-100 text-surface-700 font-bold rounded-xl active:scale-95 transition-all text-xs"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            type="button"
+                            onClick={confirmRemove}
+                            className="flex-1 py-3 bg-red-600 text-white font-bold rounded-xl shadow-md shadow-red-600/20 active:scale-95 transition-all text-xs"
+                        >
+                            Yes, Remove
+                        </button>
+                    </div>
+                </div>
+            </Modal>
         </div>
     );
 };

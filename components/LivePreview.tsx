@@ -5,7 +5,7 @@ import { TemplateName, DocumentType } from "@/lib/types";
 import MinimalistTemplate from "./templates/Minimalist";
 import BoldTemplate from "./templates/Bold";
 import ClassicTemplate from "./templates/Classic";
-import { Loader2 } from "lucide-react";
+import { Loader2, Check } from "lucide-react";
 import { FaWhatsapp } from "react-icons/fa";
 import { captureElementAsImage, downloadImage, downloadAsPDF } from "@/lib/ExportUtils";
 import { shareToWhatsApp, shareViaWebShare, prebakeShareFile, canShareFiles } from "@/lib/ShareUtils";
@@ -15,6 +15,8 @@ import { useProGate } from "@/hooks/useProGate";
 import { GamificationModal } from "@/components/ui/GamificationModal";
 import { useAuth } from "@/context/AuthContext";
 import { UpgradePrompt } from "@/components/ui/UpgradePrompt";
+import { useRouter } from "next/navigation";
+import { ReceiptData } from "@/lib/types";
 
 interface LivePreviewProps {
     data: any;
@@ -130,6 +132,38 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
             (e) => console.error("[LivePreview] persistDocument failed:", e)
         );
     }, [data, type, activeTemplate, user, ownerId, authIsPro, profile, docId]);
+
+    const router = useRouter();
+
+    const handleConvertToReceipt = async () => {
+        const currency = profile?.defaultCurrency ?? "NGN";
+        const receiptData: ReceiptData = {
+            businessName: data?.businessName || profile?.businessName || "Your Business",
+            customerName: data?.customerName || data?.clientName || "",
+            customerPhone: data?.customerPhone || data?.clientPhone || "",
+            items: data?.items || [],
+            amount: data?.amount || data?.totalAmount || 0,
+            status: "Paid",
+            paymentMethod: "Transfer",
+            date: new Date().toISOString().split("T")[0],
+            logoUrl: data?.logoUrl || profile?.logoUrl || undefined,
+            bankDetails: data?.bankDetails || { bankName: "", accountNumber: "", accountName: "", enabled: false },
+            deliveryInfo: data?.deliveryInfo || { location: "", cost: 0, enabled: false },
+        };
+
+        const doc = await saveDocument(
+            receiptData,
+            "receipt",
+            activeTemplate,
+            user?.id ?? null,
+            ownerId,
+            authIsPro,
+            currency
+        );
+
+        showToast("Converted to official Paid Receipt!", "success");
+        router.push(`/receipt?id=${doc.id}`);
+    };
 
     // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -448,6 +482,15 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
                             <span className="text-[8px] font-black uppercase text-surface-400">{isExporting ? "..." : "Image"}</span>
                         </button>
                     </div>
+
+                    {(type === "invoice" || type === "order") && (
+                        <button
+                            onClick={handleConvertToReceipt}
+                            className="w-full py-3.5 px-4 bg-emerald-500 hover:bg-emerald-600 text-white rounded-2xl font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-md shadow-emerald-500/20 active:scale-[0.98] transition-all mt-3"
+                        >
+                            <Check size={16} strokeWidth={3} /> Convert to Official Paid Receipt
+                        </button>
+                    )}
                 </div>
             </div>
 

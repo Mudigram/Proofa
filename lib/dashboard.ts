@@ -206,6 +206,7 @@ export async function fetchDashboardData(
 
 /** Called by StorageUtils after every export for Pro + Business users */
 export async function saveDocumentToCloud(params: {
+    id?: string;
     ownerId: string;
     createdBy: string;
     type: string;
@@ -216,7 +217,7 @@ export async function saveDocumentToCloud(params: {
     customerPhone?: string;
     data: unknown;
 }): Promise<boolean> {
-    const { error } = await supabase.from("documents").insert({
+    const payload: Record<string, any> = {
         owner_id: params.ownerId,
         created_by: params.createdBy,
         type: params.type,
@@ -226,9 +227,28 @@ export async function saveDocumentToCloud(params: {
         customer_name: params.customerName ?? null,
         customer_phone: params.customerPhone ?? null,
         data: params.data,
-    });
+        updated_at: new Date().toISOString(),
+    };
+
+    if (params.id) {
+        payload.id = params.id;
+    }
+
+    const { error } = await supabase.from("documents").upsert(payload);
 
     if (error) console.error("[Dashboard] Cloud save failed:", error);
+    return !error;
+}
+
+/** Soft deletes a document in Supabase by setting deleted_at timestamp */
+export async function deleteCloudDocument(id: string, ownerId: string): Promise<boolean> {
+    const { error } = await supabase
+        .from("documents")
+        .update({ deleted_at: new Date().toISOString() })
+        .eq("id", id)
+        .eq("owner_id", ownerId);
+
+    if (error) console.error("[Dashboard] Cloud delete failed:", error);
     return !error;
 }
 

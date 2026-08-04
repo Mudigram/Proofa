@@ -13,10 +13,12 @@ import { useAuth } from "@/context/AuthContext";
 import { formatCurrency, formatDate } from "@/components/templates/TemplateUtils";
 import { useToast } from "@/components/ui/Toast";
 import { DatePicker } from "@/components/ui/DatePicker";
+import { Zap } from "lucide-react";
 
 export default function InvoiceForm() {
     const searchParams = useSearchParams();
     const docId = searchParams.get("id");
+    const duplicateId = searchParams.get("duplicateFrom");
     const [currentDocId, setCurrentDocId] = useState<string | null>(docId);
     const { user, profile, isPro } = useAuth();
 
@@ -74,6 +76,19 @@ export default function InvoiceForm() {
                 setCurrentDocId(doc.id);
                 setMode("preview");
             }
+        } else if (duplicateId) {
+            const doc = getDocumentById(duplicateId);
+            if (doc && doc.type === "invoice") {
+                const data = doc.data as InvoiceData;
+                setFormData({
+                    ...data,
+                    clientName: "",
+                    clientPhone: undefined,
+                    invoiceNumber: "INV-" + Math.floor(Math.random() * 9000 + 1000),
+                    issueDate: new Date().toISOString().split("T")[0],
+                });
+                showToast("Duplicated invoice items — enter client details to save", "info");
+            }
         } else if (isPro && profile) {
             // Auto-fill brand defaults for Pro users
             setFormData(prev => ({
@@ -82,7 +97,39 @@ export default function InvoiceForm() {
                 logoUrl: prev.logoUrl || profile.logoUrl || undefined,
             }));
         }
-    }, [docId, profile, isPro]);
+    }, [docId, duplicateId, profile, isPro]);
+
+    const handleDemoFill = () => {
+        setFormData({
+            businessName: profile?.businessName || "Amaka Couture",
+            businessAddress: "Suite 4, Ikeja City Mall, Lagos",
+            clientName: "Dr. Mrs. Folake",
+            clientPhone: "08098765432",
+            invoiceNumber: "INV-" + Math.floor(Math.random() * 9000 + 1000),
+            issueDate: new Date().toISOString().split("T")[0],
+            dueDate: new Date(Date.now() + 7 * 86400000).toISOString().split("T")[0],
+            items: [
+                { id: "1", name: "Custom Ankara Ready-to-Wear Gown", quantity: 2, price: 35000 }
+            ],
+            status: "Due",
+            notes: "Payment is due within 7 days. Bank details provided below.",
+            logoUrl: profile?.logoUrl || undefined,
+            includeVat: true,
+            vatRate: 7.5,
+            bankDetails: {
+                bankName: "Zenith Bank",
+                accountNumber: "1012345678",
+                accountName: profile?.businessName || "Amaka Couture",
+                enabled: true,
+            },
+            deliveryInfo: {
+                location: "Ikeja, Lagos",
+                cost: 2500,
+                enabled: true,
+            },
+        });
+        showToast("⚡ Sample demo invoice loaded in 1 tap!", "success");
+    };
 
     const handleChange = (field: keyof InvoiceData, value: any) => {
         setFormData((prev) => ({ ...prev, [field]: value }));
@@ -218,6 +265,16 @@ export default function InvoiceForm() {
                 {mode === "edit" ? (
                     <StaggerContainer>
                         <div className="flex flex-col gap-8">
+                            <StaggerItem>
+                                <button
+                                    type="button"
+                                    onClick={handleDemoFill}
+                                    className="w-full py-3 px-4 bg-gradient-to-r from-primary-500 to-amber-500 text-white rounded-2xl font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-md shadow-primary-500/20 active:scale-[0.98] transition-all"
+                                >
+                                    <Zap size={16} className="fill-white" /> ⚡ 1-Tap Fill Sample Demo Data
+                                </button>
+                            </StaggerItem>
+
                             <StaggerItem>
                                 <LogoUpload
                                     value={formData.logoUrl}

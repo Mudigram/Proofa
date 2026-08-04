@@ -28,9 +28,12 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
     error?: string;
     icon?: React.ReactNode;
     rightElement?: React.ReactNode;
+    onClear?: () => void;
 }
 
-export const Input = ({ label, error, icon, rightElement, className = "", ...props }: InputProps) => {
+export const Input = ({ label, error, icon, rightElement, onClear, className = "", ...props }: InputProps) => {
+    const showClear = typeof props.value === "string" && props.value.length > 0 && !props.disabled && !!onClear;
+
     return (
         <div className="flex flex-col gap-1.5 w-full">
             <label className="text-sm font-bold text-surface-700 dark:text-surface-300 tracking-tight px-1 uppercase tracking-widest text-[10px]">
@@ -44,14 +47,22 @@ export const Input = ({ label, error, icon, rightElement, className = "", ...pro
                 )}
                 <input
                     className={`w-full bg-white dark:bg-surface-900 border border-surface-200 dark:border-surface-800 rounded-2xl py-3.5 ${icon ? "pl-11" : "px-4"
-                        } ${rightElement ? "pr-12" : "pr-4"} text-surface-900 dark:text-surface-50 placeholder:text-surface-400 dark:placeholder:text-surface-600 focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 transition-all outline-none font-medium shadow-sm active:scale-[0.99] ${className}`}
+                        } ${rightElement || showClear ? "pr-12" : "pr-4"} text-surface-900 dark:text-surface-50 placeholder:text-surface-400 dark:placeholder:text-surface-600 focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 transition-all outline-none font-medium shadow-sm active:scale-[0.99] ${className}`}
                     {...props}
                 />
-                {rightElement && (
-                    <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center">
-                        {rightElement}
-                    </div>
-                )}
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center gap-1.5">
+                    {showClear && (
+                        <button
+                            type="button"
+                            onClick={onClear}
+                            className="w-5 h-5 rounded-full bg-surface-200 dark:bg-surface-800 text-surface-500 hover:text-surface-700 dark:hover:text-surface-200 flex items-center justify-center transition-colors text-xs font-bold"
+                            title="Clear field"
+                        >
+                            &times;
+                        </button>
+                    )}
+                    {rightElement}
+                </div>
             </div>
             {error && <p className="text-xs text-red-500 font-bold px-1">{error}</p>}
         </div>

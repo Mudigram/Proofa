@@ -38,12 +38,15 @@ export function useProGate(): ProGateResult {
         (variant: UpgradeVariant = "generic"): boolean => {
             if (isPro) return true;
 
-            // Respect session-level dismissals (don't re-prompt same session)
+            // Respect session-level dismissals (don't re-prompt repeatedly in same session)
             const dismissKey = `proofa_upgrade_dismissed_${variant}`;
             const wasDismissed = sessionStorage.getItem(dismissKey) === "1";
-            if (wasDismissed) return true;
 
-            setActiveVariant(variant);
+            if (!wasDismissed) {
+                setActiveVariant(variant);
+            }
+
+            // Free users are always blocked from gated Pro actions
             return false;
         },
         [isPro]

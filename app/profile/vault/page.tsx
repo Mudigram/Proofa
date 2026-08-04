@@ -5,9 +5,10 @@ import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import { ChevronLeft, Plus, Trash2, WalletCards, Building2, User, Hash, Loader2, Lock } from "lucide-react";
+import { ChevronLeft, Plus, Trash2, WalletCards, Building2, User, Hash, Loader2, Lock, AlertTriangle, Pencil } from "lucide-react";
 import { SavedBankAccount } from "@/lib/types";
-import { getBankAccounts, addBankAccount, deleteBankAccount } from "@/lib/bank";
+import { getBankAccounts, addBankAccount, deleteBankAccount, updateBankAccount } from "@/lib/bank";
+import { Modal } from "@/components/ui/Modal";
 
 export default function BankVaultPage() {
     const { user, isPro, isAuthenticated, isLoading: authLoading } = useAuth();
@@ -17,10 +18,12 @@ export default function BankVaultPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isDeleting, setIsDeleting] = useState<string | null>(null);
+    const [deleteTargetAccount, setDeleteTargetAccount] = useState<SavedBankAccount | null>(null);
     const [error, setError] = useState<string | null>(null);
 
     // Form state
     const [isAdding, setIsAdding] = useState(false);
+    const [editingId, setEditingId] = useState<string | null>(null);
     const [bankName, setBankName] = useState("");
     const [accountName, setAccountName] = useState("");
     const [accountNumber, setAccountNumber] = useState("");
@@ -48,6 +51,14 @@ export default function BankVaultPage() {
         setIsLoading(false);
     };
 
+    const startEditing = (account: SavedBankAccount) => {
+        setEditingId(account.id);
+        setBankName(account.bankName);
+        setAccountName(account.accountName);
+        setAccountNumber(account.accountNumber);
+        setIsAdding(true);
+    };
+
     const handleAddAccount = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!user) return;
@@ -55,11 +66,15 @@ export default function BankVaultPage() {
         setError(null);
         setIsSubmitting(true);
 
-        const { error } = await addBankAccount(user.id, {
+        const payload = {
             bankName: bankName.trim(),
             accountName: accountName.trim(),
             accountNumber: accountNumber.trim(),
-        });
+        };
+
+        const { error } = editingId
+            ? await updateBankAccount(editingId, user.id, payload)
+            : await addBankAccount(user.id, payload);
 
         if (error) {
             setError(error.message);
@@ -68,6 +83,7 @@ export default function BankVaultPage() {
         }
 
         // Reset form and reload
+        setEditingId(null);
         setBankName("");
         setAccountName("");
         setAccountNumber("");
@@ -215,11 +231,14 @@ export default function BankVaultPage() {
                                                 <Hash size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-surface-400" />
                                                 <input
                                                     type="text"
+                                                    inputMode="numeric"
+                                                    pattern="[0-9]*"
+                                                    maxLength={10}
                                                     required
                                                     value={accountNumber}
-                                                    onChange={(e) => setAccountNumber(e.target.value)}
+                                                    onChange={(e) => setAccountNumber(e.target.value.replace(/[^0-9]/g, "").slice(0, 10))}
                                                     placeholder="e.g. 1012345678"
-                                                    className="w-full pl-11 pr-4 py-3.5 bg-surface-50 border-2 border-surface-100 rounded-xl text-black font-bold placeholder:text-surface-300 focus:border-primary-500 focus:bg-white transition-colors"
+                                                    className="w-full pl-11 pr-4 py-3.5 bg-surface-50 border-2 border-surface-100 rounded-xl text-black font-bold placeholder:text-surface-300 focus:border-primary-500 focus:bg-white transition-colors font-mono"
                                                 />
                                             </div>
                                         </div>
@@ -280,18 +299,67 @@ export default function BankVaultPage() {
                                         <p className="text-surface-500 text-xs font-semibold truncate uppercase">{account.accountName}</p>
                                     </div>
                                 </div>
-                                <button
-                                    onClick={() => handleDelete(account.id)}
-                                    disabled={isDeleting === account.id}
-                                    className="w-10 h-10 bg-red-50 text-red-500 rounded-full flex items-center justify-center ml-4 shrink-0 hover:bg-red-100 active:scale-90 transition-all disabled:opacity-50"
-                                >
-                                    {isDeleting === account.id ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
-                                </button>
+                                <div className="flex items-center gap-2 ml-4 shrink-0">
+                                    <button
+                                        onClick={() => startEditing(account)}
+                                        className="w-10 h-10 bg-surface-100 dark:bg-surface-800 text-surface-600 dark:text-surface-300 rounded-full flex items-center justify-center hover:bg-primary-50 hover:text-primary-600 active:scale-90 transition-all"
+                                        title="Edit Account"
+                                    >
+                                        <Pencil size={16} />
+                                    </button>
+                                    <button
+                                        onClick={() => setDeleteTargetAccount(account)}
+                                        disabled={isDeleting === account.id}
+                                        className="w-10 h-10 bg-red-50 text-red-500 rounded-full flex items-center justify-center hover:bg-red-100 active:scale-90 transition-all disabled:opacity-50"
+                                        title="Delete Account"
+                                    >
+                                        {isDeleting === account.id ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
+                                    </button>
+                                </div>
                             </motion.div>
                         ))
                     )}
                 </div>
             )}
+
+            {/* Delete Account Confirmation Modal */}
+            <Modal
+                isOpen={!!deleteTargetAccount}
+                onClose={() => setDeleteTargetAccount(null)}
+                title="Remove Bank Account?"
+            >
+                <div className="flex flex-col gap-4">
+                    <div className="flex items-center gap-3 p-3 bg-red-50 text-red-700 rounded-xl">
+                        <AlertTriangle size={24} className="shrink-0" />
+                        <p className="text-xs font-semibold">
+                            Are you sure you want to remove <strong className="font-bold">{deleteTargetAccount?.bankName} ({deleteTargetAccount?.accountNumber})</strong>? This action cannot be undone.
+                        </p>
+                    </div>
+
+                    <div className="flex gap-3 mt-2">
+                        <button
+                            type="button"
+                            onClick={() => setDeleteTargetAccount(null)}
+                            className="flex-1 py-3 bg-surface-100 text-surface-700 font-bold rounded-xl active:scale-95 transition-all text-xs"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            type="button"
+                            onClick={async () => {
+                                if (deleteTargetAccount) {
+                                    const targetId = deleteTargetAccount.id;
+                                    setDeleteTargetAccount(null);
+                                    await handleDelete(targetId);
+                                }
+                            }}
+                            className="flex-1 py-3 bg-red-600 text-white font-bold rounded-xl shadow-md shadow-red-600/20 active:scale-95 transition-all text-xs"
+                        >
+                            Yes, Remove
+                        </button>
+                    </div>
+                </div>
+            </Modal>
         </main>
     );
 }

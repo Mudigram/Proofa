@@ -75,3 +75,24 @@ export async function deleteBankAccount(id: string, userId: string): Promise<{ e
 
     return { error: error ? { message: error.message } : null };
 }
+
+/**
+ * Update an existing bank account
+ */
+export async function updateBankAccount(
+    id: string,
+    userId: string,
+    account: Omit<SavedBankAccount, "id" | "userId" | "createdAt">
+): Promise<{ error: BankError | null }> {
+    const { error } = await supabase
+        .from("bank_accounts")
+        .update({
+            bank_name: account.bankName,
+            account_name: account.accountName,
+            account_number: account.accountNumber,
+        })
+        .eq("id", id)
+        .eq("user_id", userId);
+
+    return { error: error ? { message: error.message } : null };
+}

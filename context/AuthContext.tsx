@@ -51,14 +51,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // ── Fetch profile from Supabase ──────────────────────────────────────────
     const fetchProfile = useCallback(async (authUser: User) => {
-        const data = await getUserProfile(authUser.id);
-        if (data) {
-            // Merge in the email and name from auth.users (since it's not in the new profiles table)
-            data.email = authUser.email;
-            data.name = authUser.user_metadata?.name || null;
-            setProfile(data);
-        } else {
-            setProfile(null);
+        try {
+            const data = await getUserProfile(authUser.id);
+            if (data) {
+                // Merge in the email and name from auth.users
+                data.email = authUser.email;
+                data.name = authUser.user_metadata?.name || null;
+                setProfile(data);
+                if (typeof window !== "undefined") {
+                    localStorage.setItem("proofa_cached_profile", JSON.stringify(data));
+                }
+            } else if (typeof window !== "undefined") {
+                const cached = localStorage.getItem("proofa_cached_profile");
+                if (cached) {
+                    setProfile(JSON.parse(cached));
+                } else {
+                    setProfile(null);
+                }
+            }
+        } catch {
+            if (typeof window !== "undefined") {
+                const cached = localStorage.getItem("proofa_cached_profile");
+                if (cached) {
+                    try { setProfile(JSON.parse(cached)); } catch { setProfile(null); }
+                } else {
+                    setProfile(null);
+                }
+            }
         }
     }, []);
 
@@ -92,9 +111,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }, [fetchProfile]);
 
     // ── Derived state ────────────────────────────────────────────────────────
+    const isTempPro = typeof window !== "undefined" && localStorage.getItem("proofa_temp_pro") === "1";
     const isBusiness = profile?.isBusiness || profile?.subscriptionPlan === "business";
-    const plan: SubscriptionPlan = isBusiness ? "business" : (profile?.subscriptionPlan ?? "free");
-    const isPro = plan === "pro" || plan === "business";
+    const plan: SubscriptionPlan = isBusiness ? "business" : (isTempPro ? "pro" : (profile?.subscriptionPlan ?? "free"));
+    const isPro = plan === "pro" || plan === "business" || isTempPro;
 
     // ── Actions ──────────────────────────────────────────────────────────────
     const refreshProfile = useCallback(async () => {
@@ -103,6 +123,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const handleSignOut = useCallback(async () => {
         await supabase.auth.signOut();
+        if (typeof window !== "undefined") {
+            localStorage.removeItem("proofa_cached_profile");
+            localStorage.removeItem("proofa_temp_pro");
+            localStorage.removeItem("proofa_bank_vault");
+        }
         setSession(null);
         setUser(null);
         setProfile(null);

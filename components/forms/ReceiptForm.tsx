@@ -12,10 +12,12 @@ import { PageTransition, StaggerContainer, StaggerItem } from "@/components/ui/A
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/components/ui/Toast";
 import { DatePicker } from "@/components/ui/DatePicker";
+import { Zap } from "lucide-react";
 
 export default function ReceiptForm() {
     const searchParams = useSearchParams();
     const docId = searchParams.get("id");
+    const duplicateId = searchParams.get("duplicateFrom");
     const [currentDocId, setCurrentDocId] = useState<string | null>(docId);
     const { user, profile, isPro } = useAuth();
 
@@ -59,6 +61,20 @@ export default function ReceiptForm() {
                 });
                 setMode("preview");
             }
+        } else if (duplicateId) {
+            const doc = getDocumentById(duplicateId);
+            if (doc && doc.type === "receipt") {
+                const data = doc.data as ReceiptData;
+                setFormData({
+                    ...data,
+                    customerName: "",
+                    customerPhone: "",
+                    items: data.items || [],
+                    bankDetails: data.bankDetails || { bankName: "", accountNumber: "", accountName: "", enabled: false },
+                    deliveryInfo: data.deliveryInfo || { location: "", cost: 0, enabled: false },
+                });
+                showToast("Duplicated receipt items — enter customer details to save", "info");
+            }
         } else if (isPro && profile) {
             // Auto-fill brand defaults for Pro users on NEW documents
             setFormData(prev => ({
@@ -67,7 +83,35 @@ export default function ReceiptForm() {
                 logoUrl: prev.logoUrl || profile.logoUrl || undefined,
             }));
         }
-    }, [docId, profile, isPro]);
+    }, [docId, duplicateId, profile, isPro]);
+
+    const handleDemoFill = () => {
+        setFormData({
+            businessName: profile?.businessName || "Lagos Kicks Ltd",
+            customerName: "Chinedu Walk-in",
+            customerPhone: "08012345678",
+            items: [
+                { id: "1", name: "Nike Air Jordan 4 Retro (White/Cement)", quantity: 1, price: 45000, category: "Product" }
+            ],
+            amount: 45000,
+            status: "Paid",
+            paymentMethod: "Transfer",
+            date: new Date().toISOString().split("T")[0],
+            logoUrl: profile?.logoUrl || undefined,
+            bankDetails: {
+                bankName: "GTBank",
+                accountNumber: "0123456789",
+                accountName: profile?.businessName || "Lagos Kicks Ltd",
+                enabled: true,
+            },
+            deliveryInfo: {
+                location: "V.I. Lagos",
+                cost: 2000,
+                enabled: true,
+            },
+        });
+        showToast("⚡ Sample demo receipt loaded in 1 tap!", "success");
+    };
 
     const validate = () => {
         const newErrors: Record<string, string> = {};
@@ -235,6 +279,16 @@ export default function ReceiptForm() {
                     <StaggerContainer>
                         <div className="flex flex-col gap-8">
                             <StaggerItem>
+                                <button
+                                    type="button"
+                                    onClick={handleDemoFill}
+                                    className="w-full py-3 px-4 bg-gradient-to-r from-primary-500 to-amber-500 text-white rounded-2xl font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-md shadow-primary-500/20 active:scale-[0.98] transition-all"
+                                >
+                                    <Zap size={16} className="fill-white" /> ⚡ 1-Tap Fill Sample Demo Data
+                                </button>
+                            </StaggerItem>
+
+                            <StaggerItem>
                                 <LogoUpload
                                     value={formData.logoUrl}
                                     onChange={(url) => handleChange("logoUrl", url)}
@@ -257,13 +311,28 @@ export default function ReceiptForm() {
                             <StaggerItem>
                                 <section className="flex flex-col gap-6 bg-white p-7 rounded-[2.5rem] border border-surface-200/80 shadow-sm">
 
-                                    <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-surface-400 px-1">Customer / Client</h3>
+                                    <div className="flex items-center justify-between px-1">
+                                        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-surface-400">Customer / Client</h3>
+                                    </div>
+                                    <div className="flex gap-1.5 overflow-x-auto no-scrollbar pb-1">
+                                        {["Walk-in Customer", "VIP Client", "Repeat Buyer"].map((pill) => (
+                                            <button
+                                                key={pill}
+                                                type="button"
+                                                onClick={() => handleChange("customerName", pill)}
+                                                className="text-[9px] font-black uppercase tracking-wider bg-surface-100 dark:bg-surface-800 text-surface-600 dark:text-surface-300 px-2.5 py-1.5 rounded-lg hover:bg-primary-50 hover:text-primary-600 transition-all shrink-0 active:scale-95"
+                                            >
+                                                + {pill}
+                                            </button>
+                                        ))}
+                                    </div>
                                     <div className="flex flex-col gap-4">
                                         <Input
                                             label="NAME (OPTIONAL)"
                                             placeholder="Who paid you?"
                                             value={formData.customerName || ""}
                                             onChange={(e) => handleChange("customerName", e.target.value)}
+                                            onClear={() => handleChange("customerName", "")}
                                             className="bg-white"
                                             rightElement={<PasteButton onPaste={(text) => handleChange("customerName", text)} />}
                                         />
@@ -303,11 +372,24 @@ export default function ReceiptForm() {
                                                         &times;
                                                     </button>
                                                 )}
+                                                <div className="flex gap-1.5 overflow-x-auto no-scrollbar pb-1">
+                                                    {["Fashion Apparel", "Footwear & Kicks", "Beauty & Skincare", "Gadget / Tech", "Food & Drink"].map((pill) => (
+                                                        <button
+                                                            key={pill}
+                                                            type="button"
+                                                            onClick={() => updateItem(index, "name", pill)}
+                                                            className="text-[9px] font-black uppercase tracking-wider bg-white dark:bg-surface-800 text-surface-500 border border-surface-200 dark:border-surface-700 px-2 py-1 rounded-lg hover:border-primary-500 hover:text-primary-600 transition-all shrink-0 active:scale-95"
+                                                        >
+                                                            + {pill}
+                                                        </button>
+                                                    ))}
+                                                </div>
                                                 <Input
                                                     label="ITEM NAME"
                                                     placeholder="e.g. Graphic Design Service"
                                                     value={item.name}
                                                     onChange={(e) => updateItem(index, "name", e.target.value)}
+                                                    onClear={() => updateItem(index, "name", "")}
                                                     className="bg-white border-none"
                                                 />
                                                 <div className="flex flex-col gap-1.5">
