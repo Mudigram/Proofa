@@ -22,7 +22,7 @@
 */
 "use client";
 
-import React, { useState } from "react";
+import React, { Suspense, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import {
@@ -324,6 +324,14 @@ function TestimonialCard({
 // ─────────────────────────────────────────────────────────────────────────────
 
 export default function PricingPage() {
+  return (
+    <Suspense fallback={null}>
+      <PricingPageContent />
+    </Suspense>
+  );
+}
+
+function PricingPageContent() {
   const { profile, isAuthenticated, plan, refreshProfile } = useAuth();
   const { initializePayment, loading: paystackLoading } = usePaystack();
   const { showToast } = useToast();
