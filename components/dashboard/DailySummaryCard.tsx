@@ -46,6 +46,12 @@ export default function DailySummaryCard({ metrics }: DailySummaryCardProps) {
         }
     };
 
+    const handleTextShare = () => {
+        const text = `📊 *Proofa Daily Sales Summary*\n📅 ${today}\n🏢 Store: ${profile?.businessName ?? "My Business"}\n💰 *Total Revenue:* ${formatAmount(metrics.totalRevenue, metrics.currency)}\n📄 *Docs Issued:* ${metrics.totalDocs}\n📈 *Avg Doc Value:* ${formatAmount(metrics.avgDocValue, metrics.currency)}\n\nGenerated via Proofa Business (https://proofa.ng)`;
+        const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
+        window.open(url, "_blank");
+    };
+
     return (
         <div className="flex flex-col gap-3">
             <div
@@ -99,20 +105,29 @@ export default function DailySummaryCard({ metrics }: DailySummaryCardProps) {
 
                 <div className="flex items-center justify-between pt-3 border-t border-white/10">
                     <p className="text-[9px] text-white/30 font-bold uppercase tracking-widest">
-                        Powered by Proofa
+                        Powered by Proofa Business
                     </p>
                     <p className="text-[9px] text-white/30 font-bold">proofa.ng</p>
                 </div>
             </div>
 
-            <button
-                onClick={handleShare}
-                disabled={sharing}
-                className="w-full flex items-center justify-center gap-2 bg-[#25D366] text-white py-3 rounded-2xl text-xs font-black uppercase tracking-widest active:scale-[0.98] transition-all disabled:opacity-60"
-            >
-                {sharing ? <Loader2 size={16} className="animate-spin" /> : <Share2 size={16} />}
-                {sharing ? "Preparing..." : "Share to WhatsApp"}
-            </button>
+            <div className="grid grid-cols-2 gap-2">
+                <button
+                    onClick={handleShare}
+                    disabled={sharing}
+                    className="flex items-center justify-center gap-2 bg-[#25D366] text-white py-3 rounded-2xl text-[11px] font-black uppercase tracking-wider active:scale-[0.98] transition-all disabled:opacity-60"
+                >
+                    {sharing ? <Loader2 size={15} className="animate-spin" /> : <Share2 size={15} />}
+                    {sharing ? "Preparing..." : "Share Image"}
+                </button>
+                <button
+                    onClick={handleTextShare}
+                    className="flex items-center justify-center gap-2 bg-surface-100 dark:bg-surface-800 text-surface-800 dark:text-surface-100 border border-surface-200 dark:border-surface-700 py-3 rounded-2xl text-[11px] font-black uppercase tracking-wider active:scale-[0.98] transition-all"
+                >
+                    <Share2 size={15} className="text-[#25D366]" />
+                    Share Text
+                </button>
+            </div>
         </div>
     );
 }

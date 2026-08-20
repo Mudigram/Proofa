@@ -5,7 +5,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { User, LogOut, ChevronRight, Crown, Settings, WalletCards, ShieldCheck, HelpCircle, MessageCircle, CheckCircle2, Copy, Check, Moon } from "lucide-react";
+import { User, Users, LogOut, ChevronRight, Crown, Settings, WalletCards, ShieldCheck, HelpCircle, MessageCircle, CheckCircle2, Copy, Check, Moon } from "lucide-react";
 import Image from "next/image";
 import { Modal } from "@/components/ui/Modal";
 import { useToast } from "@/components/ui/Toast";
@@ -244,6 +244,19 @@ export default function ProfilePage() {
                             <div className="flex-1 min-w-0">
                                 <h4 className="font-semibold text-surface-900 text-sm">Bank Vault</h4>
                                 <p className="text-xs text-surface-500 mt-0.5 truncate">{bankSnippet}</p>
+                            </div>
+                            <ChevronRight size={16} className="text-surface-300" aria-hidden="true" />
+                        </Link>
+
+                        <div className="h-px bg-surface-100 mx-3" />
+
+                        <Link href="/profile/customers" className="flex items-center p-3.5 hover:bg-surface-50 rounded-xl transition-colors group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500">
+                            <div className="w-9 h-9 bg-surface-100 text-surface-700 rounded-lg flex items-center justify-center mr-3.5 shrink-0 group-hover:bg-primary-50 group-hover:text-primary-600 transition-colors">
+                                <Users size={18} aria-hidden="true" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                                <h4 className="font-semibold text-surface-900 text-sm">Address Book & Catalog</h4>
+                                <p className="text-xs text-surface-500 mt-0.5 truncate">Saved Clients & Items</p>
                             </div>
                             <ChevronRight size={16} className="text-surface-300" aria-hidden="true" />
                         </Link>

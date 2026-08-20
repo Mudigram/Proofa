@@ -213,13 +213,23 @@ export interface TeamMember {
 
 export interface Customer {
     id: string;
-    ownerId: string;
+    ownerId?: string;
     name: string;
-    phone: string | null;
-    email: string | null;
-    docCount: number;
-    createdAt: string;
-    updatedAt: string;
+    phone?: string | null;
+    email?: string | null;
+    address?: string | null;
+    docCount?: number;
+    createdAt?: string;
+    updatedAt?: string;
+}
+
+export interface CatalogItem {
+    id: string;
+    ownerId?: string;
+    name: string;
+    price: number;
+    category?: "Service" | "Product" | "Expense";
+    createdAt?: string;
 }
 
 // ─── Dashboard ───────────────────────────────────────────────────────────────

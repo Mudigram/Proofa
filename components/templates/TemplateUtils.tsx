@@ -7,6 +7,7 @@ export interface TemplateProps {
     data: any;
     type: DocumentType;
     isPro?: boolean;
+    hasTrial?: boolean;
     currencyCode?: string;
 }
 
@@ -50,8 +51,8 @@ export const formatDate = (dateStr: string) => {
     }
 };
 
-export const Watermark = ({ isPro }: { isPro?: boolean }) => {
-    if (isPro) return null;
+export const Watermark = ({ isPro, hasTrial }: { isPro?: boolean; hasTrial?: boolean }) => {
+    if (isPro || hasTrial) return null;
     return (
         <div className="absolute inset-1 pointer-events-none select-none overflow-hidden z-[1] opacity-[0.08]">
             <div className="absolute inset-[-50%] flex flex-col items-center justify-center gap-16 rotate-[-25deg]">
@@ -69,8 +70,8 @@ export const Watermark = ({ isPro }: { isPro?: boolean }) => {
     );
 };
 
-export const Branding = ({ isPro }: { isPro?: boolean }) => {
-    if (isPro) return null;
+export const Branding = ({ isPro, hasTrial }: { isPro?: boolean; hasTrial?: boolean }) => {
+    if (isPro || hasTrial) return null;
     return (
         <div className="mt-2 pt-2 border-t border-surface-100 flex items-center justify-center gap-2 opacity-80 grayscale">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">

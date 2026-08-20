@@ -32,7 +32,7 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
     const [pendingExportAction, setPendingExportAction] = useState<(() => void) | null>(null);
     const [hasSharedForFreeExport, setHasSharedForFreeExport] = useState(false);
     const [isPremium, setIsPremium] = useState(false);
-    const { isPro, gate, activeVariant, closePrompt } = useProGate();
+    const { isPro, hasFreeExportsLeft, freeExportsLeft, gate, activeVariant, closePrompt } = useProGate();
     const { user, profile, isPro: authIsPro } = useAuth();
 
     // Resolve ownerId: staff members use teamOwnerId, owners use their own id
@@ -59,7 +59,7 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
     const isLocked = currentTemplateConfig?.premium && !isPremium;
 
     const renderTemplate = () => {
-        const props = { data, type, isPro, currencyCode: profile?.defaultCurrency || "NGN" };
+        const props = { data, type, isPro, hasTrial: hasFreeExportsLeft, currencyCode: profile?.defaultCurrency || "NGN" };
         switch (activeTemplate) {
             case "minimalist": return <MinimalistTemplate {...props} />;
             case "bold": return <BoldTemplate {...props} />;

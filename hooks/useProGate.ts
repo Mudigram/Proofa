@@ -18,9 +18,13 @@ interface ProGateResult {
     isPro: boolean;
     /** Whether the current user is signed in */
     isAuthenticated: boolean;
+    /** Remaining watermark-free trial exports for free users */
+    freeExportsLeft: number;
+    /** Whether free user still has trial clean exports left */
+    hasFreeExportsLeft: boolean;
     /**
      * Call this before any Pro-only action.
-     * Returns `true` if allowed (user is Pro).
+     * Returns `true` if allowed (user is Pro or has free export credits).
      * Returns `false` and triggers the upgrade modal if not.
      */
     gate: (variant?: UpgradeVariant) => boolean;
@@ -31,12 +35,20 @@ interface ProGateResult {
 }
 
 export function useProGate(): ProGateResult {
-    const { isPro, isAuthenticated } = useAuth();
+    const { isPro, isAuthenticated, freeExportsLeft, hasFreeExportsLeft, consumeFreeExport } = useAuth();
     const [activeVariant, setActiveVariant] = useState<UpgradeVariant | null>(null);
 
     const gate = useCallback(
         (variant: UpgradeVariant = "generic"): boolean => {
             if (isPro) return true;
+
+            // Allow clean export if free trial exports remain
+            if (variant === "export") {
+                if (hasFreeExportsLeft) {
+                    consumeFreeExport();
+                    return true;
+                }
+            }
 
             // Respect session-level dismissals (don't re-prompt repeatedly in same session)
             const dismissKey = `proofa_upgrade_dismissed_${variant}`;
@@ -46,10 +58,10 @@ export function useProGate(): ProGateResult {
                 setActiveVariant(variant);
             }
 
-            // Free users are always blocked from gated Pro actions
+            // Free users are blocked when out of trial exports or tapping gated features
             return false;
         },
-        [isPro]
+        [isPro, hasFreeExportsLeft, consumeFreeExport]
     );
 
     const closePrompt = useCallback(() => {
@@ -60,5 +72,5 @@ export function useProGate(): ProGateResult {
         setActiveVariant(null);
     }, [activeVariant]);
 
-    return { isPro, isAuthenticated, gate, activeVariant, closePrompt };
+    return { isPro, isAuthenticated, freeExportsLeft, hasFreeExportsLeft, gate, activeVariant, closePrompt };
 }

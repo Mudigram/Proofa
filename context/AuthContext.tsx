@@ -31,6 +31,12 @@ interface AuthContextValue {
     isBusiness: boolean;
     /** Current plan tier */
     plan: SubscriptionPlan;
+    /** Free trial clean exports remaining for non-Pro users */
+    freeExportsLeft: number;
+    /** Whether free user has trial clean exports left */
+    hasFreeExportsLeft: boolean;
+    /** Consume 1 free clean export trial credit */
+    consumeFreeExport: () => number;
     /** Re-fetch the profile (e.g. after plan upgrade) */
     refreshProfile: () => Promise<void>;
     /** Sign out and reset state */
@@ -111,10 +117,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }, [fetchProfile]);
 
     // ── Derived state ────────────────────────────────────────────────────────
-    const isTempPro = typeof window !== "undefined" && localStorage.getItem("proofa_temp_pro") === "1";
-    const isBusiness = profile?.isBusiness || profile?.subscriptionPlan === "business";
-    const plan: SubscriptionPlan = isBusiness ? "business" : (isTempPro ? "pro" : (profile?.subscriptionPlan ?? "free"));
-    const isPro = plan === "pro" || plan === "business" || isTempPro;
+    const isBusiness = Boolean(profile?.isBusiness || profile?.subscriptionPlan === "business");
+    const plan: SubscriptionPlan = isBusiness ? "business" : (profile?.subscriptionPlan ?? "free");
+    const isPro = plan === "pro" || plan === "business";
+
+    // ── Free Clean Export Trial Counter ──────────────────────────────────────
+    const MAX_FREE_EXPORTS = 5;
+    const [freeExportCount, setFreeExportCount] = useState<number>(0);
+
+    useEffect(() => {
+        if (typeof window !== "undefined") {
+            const count = parseInt(localStorage.getItem("proofa_free_exports_count") || "0", 10);
+            setFreeExportCount(isNaN(count) ? 0 : count);
+        }
+    }, []);
+
+    const consumeFreeExport = useCallback(() => {
+        if (typeof window !== "undefined") {
+            const newCount = freeExportCount + 1;
+            localStorage.setItem("proofa_free_exports_count", newCount.toString());
+            setFreeExportCount(newCount);
+            return newCount;
+        }
+        return freeExportCount;
+    }, [freeExportCount]);
+
+    const freeExportsLeft = Math.max(0, MAX_FREE_EXPORTS - freeExportCount);
+    const hasFreeExportsLeft = !isPro && freeExportsLeft > 0;
 
     // ── Actions ──────────────────────────────────────────────────────────────
     const refreshProfile = useCallback(async () => {
@@ -141,6 +170,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isPro,
         isBusiness,
         plan,
+        freeExportsLeft,
+        hasFreeExportsLeft,
+        consumeFreeExport,
         refreshProfile,
         signOut: handleSignOut,
     };

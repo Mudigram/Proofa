@@ -53,8 +53,8 @@ const PLANS = [
     monthlyPrice: 5000,
     annualPrice: 50000,
     annualSave: 10000,
-    badge: "Coming Soon",
-    comingSoon: true,
+    badge: "For Teams",
+    comingSoon: false,
     headline: "Built for teams.",
     features: [
       "Everything in Pro",

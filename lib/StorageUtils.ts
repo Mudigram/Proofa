@@ -11,6 +11,7 @@
 import { SavedDocument, DocumentType, TemplateName } from "@/lib/types";
 import { ReceiptData, InvoiceData, OrderData } from "@/lib/types";
 import { saveDocumentToCloud } from "@/lib/dashboard";
+import { saveCustomer, saveCatalogItem } from "@/lib/CustomerCatalogUtils";
 
 const STORAGE_KEY = "proofa_documents";
 const MAX_LOCAL = 20;
@@ -174,6 +175,30 @@ export async function saveDocument(
         };
         const updated = [doc, ...existing].slice(0, MAX_LOCAL);
         persistDocuments(updated);
+    }
+
+    // Auto-save Customer and Line Items to saved address book & catalog
+    try {
+        const customer = extractCustomer(data, type);
+        if (customer.name && customer.name.trim()) {
+            saveCustomer({
+                name: customer.name,
+                phone: customer.phone || null,
+            });
+        }
+        if (Array.isArray(data.items)) {
+            data.items.forEach(item => {
+                if (item.name && item.name.trim()) {
+                    saveCatalogItem({
+                        name: item.name,
+                        price: Number(item.price) || 0,
+                        category: item.category || "Product",
+                    });
+                }
+            });
+        }
+    } catch (err) {
+        console.error("[StorageUtils] Auto-save customer/catalog error:", err);
     }
 
     // ── 2. Save to Supabase for Pro + Business users ──────────────────────────
