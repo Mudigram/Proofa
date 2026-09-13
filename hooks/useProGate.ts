@@ -42,12 +42,14 @@ export function useProGate(): ProGateResult {
         (variant: UpgradeVariant = "generic"): boolean => {
             if (isPro) return true;
 
-            // Allow clean export if free trial exports remain
+            // Free exports are NEVER blocked.
+            // If clean trial credits remain, consume 1 credit.
+            // When credits are exhausted, exports proceed with the Proofa watermark.
             if (variant === "export") {
                 if (hasFreeExportsLeft) {
                     consumeFreeExport();
-                    return true;
                 }
+                return true;
             }
 
             // Respect session-level dismissals (don't re-prompt repeatedly in same session)
@@ -58,7 +60,7 @@ export function useProGate(): ProGateResult {
                 setActiveVariant(variant);
             }
 
-            // Free users are blocked when out of trial exports or tapping gated features
+            // Gated Pro-only features (e.g. logo, custom colors) remain gated
             return false;
         },
         [isPro, hasFreeExportsLeft, consumeFreeExport]

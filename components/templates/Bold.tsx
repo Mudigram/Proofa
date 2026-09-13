@@ -11,7 +11,7 @@ import {
 } from "./TemplateUtils";
 import { ReceiptData, InvoiceData, OrderData } from "@/lib/types";
 
-export default function BoldTemplate({ data, type, isPro, currencyCode }: TemplateProps) {
+export default function BoldTemplate({ data, type, isPro, hasTrial, currencyCode }: TemplateProps) {
     const isReceipt = type === "receipt";
     const isInvoice = type === "invoice";
     const isOrder = type === "order";
@@ -277,7 +277,7 @@ export default function BoldTemplate({ data, type, isPro, currencyCode }: Templa
                 </div>
             </div>
 
-            <Watermark isPro={isPro} />
+            <Watermark isPro={isPro} hasTrial={hasTrial} />
         </div>
     );
 }

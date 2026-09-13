@@ -7,7 +7,7 @@ import { BankSelector } from "@/components/ui/BankSelector";
 import LivePreview from "@/components/LivePreview";
 import { InvoiceData, LineItem } from "@/lib/types";
 import { useSearchParams } from "next/navigation";
-import { getDocumentById, saveDocument } from "@/lib/StorageUtils";
+import { getDocumentById, saveDocument, getGuestBizProfile } from "@/lib/StorageUtils";
 import { PageTransition, StaggerContainer, StaggerItem } from "@/components/ui/Animations";
 import { useAuth } from "@/context/AuthContext";
 import { formatCurrency, formatDate } from "@/components/templates/TemplateUtils";
@@ -89,13 +89,28 @@ export default function InvoiceForm() {
                 });
                 showToast("Duplicated invoice items — enter client details to save", "info");
             }
-        } else if (isPro && profile) {
-            // Auto-fill brand defaults for Pro users
-            setFormData(prev => ({
-                ...prev,
-                businessName: prev.businessName || profile.businessName || "",
-                logoUrl: prev.logoUrl || profile.logoUrl || undefined,
-            }));
+        } else {
+            // Auto-fill brand defaults: Pro profile first, or fallback to saved guest business profile
+            if (profile?.businessName || profile?.logoUrl) {
+                setFormData(prev => ({
+                    ...prev,
+                    businessName: prev.businessName || profile.businessName || "",
+                    logoUrl: prev.logoUrl || profile.logoUrl || undefined,
+                }));
+            } else {
+                const guestProfile = getGuestBizProfile();
+                if (guestProfile) {
+                    setFormData(prev => ({
+                        ...prev,
+                        businessName: prev.businessName || guestProfile.businessName || "",
+                        businessAddress: prev.businessAddress || guestProfile.businessAddress || "",
+                        logoUrl: prev.logoUrl || guestProfile.logoUrl || undefined,
+                        bankDetails: (guestProfile.bankDetails && guestProfile.bankDetails.enabled && !prev.bankDetails?.bankName)
+                            ? guestProfile.bankDetails
+                            : prev.bankDetails,
+                    }));
+                }
+            }
         }
     }, [docId, duplicateId, profile, isPro]);
 

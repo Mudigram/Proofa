@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { TemplateName, DocumentType } from "@/lib/types";
 import MinimalistTemplate from "./templates/Minimalist";
 import BoldTemplate from "./templates/Bold";
@@ -225,6 +225,36 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
         setIsExporting(false);
     };
 
+    const customerPhone = data?.customerPhone || data?.clientPhone;
+    const directWaNumber = useMemo(() => {
+        if (!customerPhone) return null;
+        const clean = String(customerPhone).replace(/\D/g, "");
+        if (clean.length === 11 && clean.startsWith("0")) return `234${clean.slice(1)}`;
+        if (clean.length === 10) return `234${clean}`;
+        if (clean.length >= 12 && clean.startsWith("234")) return clean;
+        return clean.length >= 10 ? clean : null;
+    }, [customerPhone]);
+
+    const handleDirectWhatsAppChat = async () => {
+        if (!directWaNumber) return;
+        setIsExporting(true);
+        persistDocument();
+
+        // Ensure fresh image is downloaded to device
+        const dataUrl = await getFreshDataUrl();
+        if (dataUrl) {
+            downloadImage(dataUrl, `Proofa-${type}-${Date.now()}.png`);
+        }
+
+        const customerName = data?.customerName || data?.clientName || "Customer";
+        const bizName = data?.businessName || profile?.businessName || "our store";
+        const text = encodeURIComponent(`Hello ${customerName}! Here is your official ${type === "receipt" ? "receipt" : type === "invoice" ? "invoice" : "order summary"} from ${bizName}. 🧾`);
+
+        window.open(`https://wa.me/${directWaNumber}?text=${text}`, "_blank");
+        showToast("Image saved! Opening WhatsApp chat with customer...", "success");
+        setIsExporting(false);
+    };
+
     const handleShare = async () => {
         if (blockIfLocked()) return;
         if (!gate("export")) return;
@@ -400,6 +430,18 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
 
                 {/* Action bar */}
                 <div className="flex flex-col gap-3 px-2">
+
+                    {/* Direct Customer WhatsApp CTA if phone number is provided */}
+                    {directWaNumber && (
+                        <button
+                            onClick={handleDirectWhatsAppChat}
+                            disabled={isExporting}
+                            className="w-full flex items-center justify-center gap-2.5 bg-surface-900 dark:bg-surface-800 text-white py-3.5 px-5 rounded-2xl shadow-md active:scale-[0.98] transition-all text-xs font-black uppercase tracking-wider border border-surface-700/50"
+                        >
+                            <FaWhatsapp className="text-emerald-400 text-lg" />
+                            <span>Direct Chat with {data?.customerName || data?.clientName || customerPhone}</span>
+                        </button>
+                    )}
 
                     {/* WhatsApp CTA */}
                     <button

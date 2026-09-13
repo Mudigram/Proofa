@@ -332,7 +332,7 @@ export default function PricingPage() {
 }
 
 function PricingPageContent() {
-  const { profile, isAuthenticated, plan, refreshProfile } = useAuth();
+  const { profile, isAuthenticated, plan, refreshProfile, activateTempPro } = useAuth();
   const { initializePayment, loading: paystackLoading } = usePaystack();
   const { showToast } = useToast();
   const router = useRouter();
@@ -438,11 +438,8 @@ function PricingPageContent() {
           </div>
           <button
             onClick={() => {
-              if (typeof window !== "undefined") {
-                localStorage.setItem("proofa_temp_pro", "1");
-              }
+              activateTempPro();
               setPromoClaimed(true);
-              refreshProfile();
               showToast("⚡ Pop-up Vendor 30-Day Pro Pass Unlocked!", "success");
             }}
             className="bg-white text-primary-600 hover:bg-amber-50 font-black text-xs uppercase tracking-widest px-6 py-3.5 rounded-2xl shadow-md active:scale-95 transition-all shrink-0 w-full sm:w-auto text-center"

@@ -99,6 +99,7 @@ import { ThemeProvider } from "@/context/ThemeContext";
 import NetworkToast from "@/components/NetworkToast";
 import ServiceWorkerRegister from "@/components/ServiceWorkerRegister";
 import InstallPwaBanner from "@/components/InstallPwaBanner";
+import { InAppBrowserBanner } from "@/components/ui/InAppBrowserBanner";
 
 export default function RootLayout({
   children,
@@ -126,6 +127,7 @@ export default function RootLayout({
             <ToastProvider>
               <ServiceWorkerRegister />
               <NetworkToast />
+              <InAppBrowserBanner />
               <InstallPwaBanner />
               <Header />
               {children}

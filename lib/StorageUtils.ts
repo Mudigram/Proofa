@@ -58,6 +58,46 @@ export function saveUserName(name: string): void {
     localStorage.setItem(USER_NAME_KEY, name.trim() || "User");
 }
 
+// ─── Guest Business Profile (localStorage persistence for pop-ups & guests) ──
+const GUEST_BIZ_KEY = "proofa_guest_biz_profile";
+
+export interface GuestBizProfile {
+    businessName?: string;
+    businessAddress?: string;
+    logoUrl?: string;
+    bankDetails?: {
+        bankName: string;
+        accountNumber: string;
+        accountName: string;
+        enabled: boolean;
+    };
+}
+
+export function getGuestBizProfile(): GuestBizProfile | null {
+    if (typeof window === "undefined") return null;
+    try {
+        const raw = localStorage.getItem(GUEST_BIZ_KEY);
+        return raw ? JSON.parse(raw) : null;
+    } catch {
+        return null;
+    }
+}
+
+export function saveGuestBizProfile(updates: Partial<GuestBizProfile>): void {
+    if (typeof window === "undefined") return;
+    try {
+        const existing = getGuestBizProfile() || {};
+        const merged: GuestBizProfile = {
+            ...existing,
+            ...(updates.businessName ? { businessName: updates.businessName.trim() } : {}),
+            ...(updates.businessAddress ? { businessAddress: updates.businessAddress.trim() } : {}),
+            ...(updates.logoUrl ? { logoUrl: updates.logoUrl } : {}),
+            ...(updates.bankDetails?.bankName ? { bankDetails: updates.bankDetails } : {}),
+        };
+        localStorage.setItem(GUEST_BIZ_KEY, JSON.stringify(merged));
+    } catch {}
+}
+
 // ─── Extract amount from any document type ───────────────────────────────────
 
 // ─── Extract amount from any document type ───────────────────────────────────
@@ -200,6 +240,19 @@ export async function saveDocument(
     } catch (err) {
         console.error("[StorageUtils] Auto-save customer/catalog error:", err);
     }
+
+    // Auto-save business identity for guest convenience across receipts
+    try {
+        const anyData = data as any;
+        if (anyData.businessName || anyData.bankDetails?.bankName || anyData.logoUrl) {
+            saveGuestBizProfile({
+                businessName: anyData.businessName,
+                businessAddress: anyData.businessAddress,
+                logoUrl: anyData.logoUrl,
+                bankDetails: anyData.bankDetails,
+            });
+        }
+    } catch {}
 
     // ── 2. Save to Supabase for Pro + Business users ──────────────────────────
     if (isPro && userId && ownerId) {

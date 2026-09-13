@@ -39,6 +39,8 @@ interface AuthContextValue {
     consumeFreeExport: () => number;
     /** Re-fetch the profile (e.g. after plan upgrade) */
     refreshProfile: () => Promise<void>;
+    /** Activate temporary Pro pass (e.g. 30-day pop-up event promo) */
+    activateTempPro: () => void;
     /** Sign out and reset state */
     signOut: () => Promise<void>;
 }
@@ -116,10 +118,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return () => subscription.unsubscribe();
     }, [fetchProfile]);
 
+    // ── Pop-Up Promo / Temporary Pro ─────────────────────────────────────────
+    const [hasTempPro, setHasTempPro] = useState(false);
+
+    useEffect(() => {
+        if (typeof window !== "undefined") {
+            setHasTempPro(localStorage.getItem("proofa_temp_pro") === "1");
+        }
+    }, []);
+
+    const activateTempPro = useCallback(() => {
+        if (typeof window !== "undefined") {
+            localStorage.setItem("proofa_temp_pro", "1");
+            setHasTempPro(true);
+        }
+    }, []);
+
     // ── Derived state ────────────────────────────────────────────────────────
     const isBusiness = Boolean(profile?.isBusiness || profile?.subscriptionPlan === "business");
-    const plan: SubscriptionPlan = isBusiness ? "business" : (profile?.subscriptionPlan ?? "free");
-    const isPro = plan === "pro" || plan === "business";
+    const plan: SubscriptionPlan = isBusiness
+        ? "business"
+        : (profile?.subscriptionPlan === "pro" || hasTempPro ? "pro" : (profile?.subscriptionPlan ?? "free"));
+    const isPro = plan === "pro" || plan === "business" || hasTempPro;
 
     // ── Free Clean Export Trial Counter ──────────────────────────────────────
     const MAX_FREE_EXPORTS = 5;
@@ -147,6 +167,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // ── Actions ──────────────────────────────────────────────────────────────
     const refreshProfile = useCallback(async () => {
+        if (typeof window !== "undefined") {
+            setHasTempPro(localStorage.getItem("proofa_temp_pro") === "1");
+        }
         if (user) await fetchProfile(user);
     }, [user, fetchProfile]);
 
@@ -157,6 +180,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             localStorage.removeItem("proofa_temp_pro");
             localStorage.removeItem("proofa_bank_vault");
         }
+        setHasTempPro(false);
         setSession(null);
         setUser(null);
         setProfile(null);
@@ -174,6 +198,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         hasFreeExportsLeft,
         consumeFreeExport,
         refreshProfile,
+        activateTempPro,
         signOut: handleSignOut,
     };
 

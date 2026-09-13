@@ -12,7 +12,7 @@ import {
 } from "./TemplateUtils";
 import { ReceiptData, InvoiceData, OrderData } from "@/lib/types";
 
-export default function ClassicTemplate({ data, type, isPro, currencyCode }: TemplateProps) {
+export default function ClassicTemplate({ data, type, isPro, hasTrial, currencyCode }: TemplateProps) {
     const isReceipt = type === "receipt";
     const isInvoice = type === "invoice";
     const isOrder = type === "order";
@@ -153,10 +153,10 @@ export default function ClassicTemplate({ data, type, isPro, currencyCode }: Tem
             {/* 7. FOOTER */}
             <div className="mt-auto pt-2 flex justify-between items-center text-[8px] uppercase tracking-tighter text-zinc-400">
                 <p>{data.terms || "Goods sold are not returnable."}</p>
-                <Branding isPro={isPro} />
+                <Branding isPro={isPro} hasTrial={hasTrial} />
             </div>
 
-            <Watermark isPro={isPro} />
+            <Watermark isPro={isPro} hasTrial={hasTrial} />
         </div>
     );
 }
