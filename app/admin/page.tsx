@@ -1,27 +1,10 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import Link from "next/link";
-import {
-    ShieldCheck,
-    Users,
-    Crown,
-    FileText,
-    TrendingUp,
-    Copy,
-    Check,
-    Search,
-    RefreshCw,
-    Mail,
-    ArrowUpRight,
-    Lock,
-    Building2,
-    Calendar,
-    DollarSign,
-    LogOut,
-    ExternalLink
-} from "lucide-react";
 import { useToast } from "@/components/ui/Toast";
+
+// ── Types ────────────────────────────────────────────────────────────────────
 
 interface UserRecord {
     id: string;
@@ -57,19 +40,31 @@ interface StatsData {
     totalVolumeUSD: number;
 }
 
-export default function AdminDashboardPage() {
+type TabType = "users" | "insights" | "outreach";
+type SortOption = "newest" | "oldest" | "most_docs" | "highest_volume";
+
+export default function AdminPage() {
     const { showToast } = useToast();
+
+    // Auth & Loading
     const [adminKey, setAdminKey] = useState("");
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+
+    // Data
     const [stats, setStats] = useState<StatsData | null>(null);
     const [users, setUsers] = useState<UserRecord[]>([]);
-    const [searchQuery, setSearchQuery] = useState("");
-    const [planFilter, setPlanFilter] = useState<"all" | "free" | "pro" | "business">("all");
-    const [copiedCategory, setCopiedCategory] = useState<string | null>(null);
     const [lastRefreshed, setLastRefreshed] = useState<Date | null>(null);
 
-    // ── Fetch Data ─────────────────────────────────────────────────────────────
+    // UI State
+    const [activeTab, setActiveTab] = useState<TabType>("users");
+    const [searchQuery, setSearchQuery] = useState("");
+    const [planFilter, setPlanFilter] = useState<"all" | "paid" | "free">("all");
+    const [sortBy, setSortBy] = useState<SortOption>("newest");
+    const [selectedUser, setSelectedUser] = useState<UserRecord | null>(null);
+    const [copiedKey, setCopiedKey] = useState<string | null>(null);
+
+    // ── Data Fetching ────────────────────────────────────────────────────────
     const fetchData = useCallback(async (key: string) => {
         setIsLoading(true);
         try {
@@ -91,19 +86,18 @@ export default function AdminDashboardPage() {
                 setLastRefreshed(new Date());
                 sessionStorage.setItem("proofa_admin_token", key);
             } else {
-                showToast(data.error || "Invalid admin key", "error");
+                showToast(data.error || "Authentication failed", "error");
                 sessionStorage.removeItem("proofa_admin_token");
                 setIsAuthenticated(false);
             }
         } catch (error) {
             console.error("Admin fetch error:", error);
-            showToast("Failed to load admin data", "error");
+            showToast("Failed to retrieve admin telemetry", "error");
         } finally {
             setIsLoading(false);
         }
     }, [showToast]);
 
-    // Check stored session token on mount
     useEffect(() => {
         const storedKey = sessionStorage.getItem("proofa_admin_token");
         if (storedKey) {
@@ -124,377 +118,778 @@ export default function AdminDashboardPage() {
         setIsAuthenticated(false);
         setStats(null);
         setUsers([]);
-        showToast("Logged out from Admin HQ", "info");
+        setSelectedUser(null);
+        showToast("Session terminated", "info");
     };
 
-    // ── Copy Emails Helper ─────────────────────────────────────────────────────
-    const copyEmails = (filter?: "pro" | "free") => {
-        let filtered = users.filter(u => u.email && u.email !== "No email");
-        if (filter === "pro") {
-            filtered = filtered.filter(u => u.plan === "pro" || u.plan === "business");
-        } else if (filter === "free") {
-            filtered = filtered.filter(u => u.plan === "free");
-        }
+    // ── Export CSV Helper ────────────────────────────────────────────────────
+    const exportCSV = () => {
+        if (!users.length) return;
+        const headers = ["ID", "Email", "Business Name", "Plan", "Status", "Docs Created", "Volume (NGN)", "Joined Date", "Last Active"];
+        const rows = users.map(u => [
+            u.id,
+            `"${u.email}"`,
+            `"${u.businessName || u.name || ''}"`,
+            u.plan,
+            u.subscriptionStatus,
+            u.docCount,
+            u.totalVolume,
+            `"${u.createdAt}"`,
+            `"${u.lastSignInAt || ''}"`,
+        ]);
 
-        const emailList = filtered.map(u => u.email).join(", ");
-        if (!emailList) {
-            showToast("No emails found for this segment", "info");
-            return;
-        }
-
-        navigator.clipboard.writeText(emailList);
-        const label = filter ? `${filter.toUpperCase()} users` : "all users";
-        setCopiedCategory(filter || "all");
-        showToast(`Copied ${filtered.length} emails (${label}) to clipboard! 📋`, "success");
-        setTimeout(() => setCopiedCategory(null), 2500);
+        const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", `proofa_customers_${new Date().toISOString().split("T")[0]}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        showToast("Customer database exported to CSV", "success");
     };
 
-    // ── Filtered Users ─────────────────────────────────────────────────────────
-    const filteredUsers = users.filter((u) => {
-        const matchesPlan =
-            planFilter === "all" ||
-            (planFilter === "pro" && (u.plan === "pro" || u.plan === "business")) ||
-            u.plan === planFilter;
+    // ── Copy Helper ──────────────────────────────────────────────────────────
+    const copyToClipboard = (text: string, id: string, message = "Copied to clipboard") => {
+        navigator.clipboard.writeText(text);
+        setCopiedKey(id);
+        showToast(message, "success");
+        setTimeout(() => setCopiedKey(null), 2000);
+    };
 
-        const q = searchQuery.toLowerCase();
-        const matchesSearch =
-            !searchQuery ||
-            u.email.toLowerCase().includes(q) ||
-            (u.businessName && u.businessName.toLowerCase().includes(q)) ||
-            (u.name && u.name.toLowerCase().includes(q));
+    // ── Filtered & Sorted Users ──────────────────────────────────────────────
+    const filteredUsers = useMemo(() => {
+        return users
+            .filter(u => {
+                const isPaid = u.plan === "pro" || u.plan === "business";
+                if (planFilter === "paid" && !isPaid) return false;
+                if (planFilter === "free" && isPaid) return false;
 
-        return matchesPlan && matchesSearch;
-    });
+                if (!searchQuery.trim()) return true;
+                const q = searchQuery.toLowerCase().trim();
+                return (
+                    u.email.toLowerCase().includes(q) ||
+                    (u.businessName && u.businessName.toLowerCase().includes(q)) ||
+                    (u.name && u.name.toLowerCase().includes(q)) ||
+                    u.id.toLowerCase().includes(q)
+                );
+            })
+            .sort((a, b) => {
+                if (sortBy === "newest") return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+                if (sortBy === "oldest") return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+                if (sortBy === "most_docs") return b.docCount - a.docCount;
+                if (sortBy === "highest_volume") return b.totalVolume - a.totalVolume;
+                return 0;
+            });
+    }, [users, planFilter, searchQuery, sortBy]);
 
-    // ── Render: Locked Screen ──────────────────────────────────────────────────
+    // ── Authentication Screen (Minimalist Slate) ─────────────────────────────
     if (!isAuthenticated) {
         return (
-            <main className="app-container min-h-screen py-20 flex items-center justify-center px-4">
-                <div className="w-full max-w-sm bg-white dark:bg-surface-900 border border-surface-200 dark:border-surface-800 rounded-3xl p-8 shadow-xl text-center">
-                    <div className="w-16 h-16 bg-primary-50 dark:bg-primary-950/50 text-primary-500 rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-sm">
-                        <Lock size={28} />
-                    </div>
-                    <h1 className="text-xl font-black uppercase tracking-tight text-surface-900 dark:text-surface-50 mb-1">
-                        Proofa HQ Admin
-                    </h1>
-                    <p className="text-xs text-surface-500 dark:text-surface-400 font-medium mb-6">
-                        Enter your administrative passkey to access platform analytics and customer directory.
-                    </p>
+            <div className="min-h-screen bg-[#FBFBFA] dark:bg-[#0C0C0C] text-[#111111] dark:text-[#EAEAEA] flex flex-col justify-between p-6 sm:p-12 font-sans selection:bg-[#EAEAEA] dark:selection:bg-[#222]">
+                <div className="flex items-center justify-between border-b border-[#EAEAEA] dark:border-[#1F1F1F] pb-4">
+                    <span className="font-mono text-xs tracking-widest text-[#787774] uppercase">
+                        PROOFA INTERNAL // ACCESS GATEWAY
+                    </span>
+                    <Link href="/" className="font-mono text-xs text-[#787774] hover:text-[#111] dark:hover:text-white transition-colors">
+                        ← PROOFA.NG
+                    </Link>
+                </div>
 
-                    <form onSubmit={handleLogin} className="flex flex-col gap-3">
-                        <input
-                            type="password"
-                            placeholder="Enter Admin Key"
-                            value={adminKey}
-                            onChange={(e) => setAdminKey(e.target.value)}
-                            className="w-full bg-surface-50 dark:bg-surface-800 border border-surface-200 dark:border-surface-700 rounded-2xl px-4 py-3 text-sm font-semibold text-center tracking-widest focus:outline-none focus:ring-2 focus:ring-primary-500"
-                            autoFocus
-                        />
-                        <button
-                            type="submit"
-                            disabled={isLoading}
-                            className="w-full py-3.5 bg-primary-500 hover:bg-primary-600 active:scale-95 text-white font-black text-xs uppercase tracking-wider rounded-2xl shadow-md transition-all flex items-center justify-center gap-2"
-                        >
-                            {isLoading ? <RefreshCw size={16} className="animate-spin" /> : "Unlock Dashboard"}
-                        </button>
-                    </form>
+                <div className="max-w-md w-full mx-auto my-auto py-12">
+                    <div className="border border-[#EAEAEA] dark:border-[#1F1F1F] bg-white dark:bg-[#141414] p-8 sm:p-10 rounded-lg">
+                        <div className="mb-8">
+                            <span className="inline-block px-2.5 py-1 rounded text-[10px] font-mono tracking-widest uppercase bg-[#EDF3EC] dark:bg-[#152617] text-[#346538] dark:text-[#86EFAC] mb-3">
+                                SECURE TELEMETRY
+                            </span>
+                            <h1 className="text-2xl font-bold tracking-tight text-[#111] dark:text-[#FFF]">
+                                System Terminal
+                            </h1>
+                            <p className="text-xs text-[#787774] mt-1.5 leading-relaxed">
+                                Enter administrative passkey to authenticate session and access customer operations.
+                            </p>
+                        </div>
 
-                    <div className="mt-6 pt-5 border-t border-surface-100 dark:border-surface-800">
-                        <Link href="/" className="text-xs text-surface-400 hover:text-surface-600 dark:hover:text-surface-200 font-bold">
-                            ← Return to Proofa
-                        </Link>
+                        <form onSubmit={handleLogin} className="space-y-4">
+                            <div>
+                                <label className="block text-[11px] font-mono text-[#787774] uppercase tracking-wider mb-2">
+                                    ACCESS_KEY
+                                </label>
+                                <input
+                                    type="password"
+                                    placeholder="••••••••••••••••"
+                                    value={adminKey}
+                                    onChange={(e) => setAdminKey(e.target.value)}
+                                    className="w-full bg-[#F7F6F3] dark:bg-[#1A1A1A] border border-[#EAEAEA] dark:border-[#262626] rounded px-3.5 py-2.5 text-xs font-mono tracking-widest text-[#111] dark:text-white focus:outline-none focus:border-[#111] dark:focus:border-white transition-colors"
+                                    autoFocus
+                                />
+                            </div>
+
+                            <button
+                                type="submit"
+                                disabled={isLoading}
+                                className="w-full bg-[#111111] hover:bg-[#333333] dark:bg-[#EEEEEE] dark:hover:bg-[#CCCCCC] dark:text-[#111] text-white text-xs font-medium py-3 rounded active:scale-[0.98] transition-all disabled:opacity-50"
+                            >
+                                {isLoading ? "VERIFYING..." : "AUTHENTICATE"}
+                            </button>
+                        </form>
                     </div>
                 </div>
-            </main>
+
+                <div className="text-center border-t border-[#EAEAEA] dark:border-[#1F1F1F] pt-4">
+                    <span className="font-mono text-[10px] text-[#A1A1AA]">
+                        PROOFA TECHNOLOGIES LTD · CONFIDENTIAL & PROPRIETARY
+                    </span>
+                </div>
+            </div>
         );
     }
 
-    // ── Render: Authenticated Admin Dashboard ──────────────────────────────────
+    // ── Main Admin Panel View ────────────────────────────────────────────────
     return (
-        <main className="app-container min-h-screen py-8 pb-32 max-w-5xl mx-auto px-4">
-            {/* Top Navigation & Status Bar */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-                <div>
-                    <div className="flex items-center gap-2 mb-1">
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400">
-                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                            Live Telemetry
+        <div className="min-h-screen bg-[#FBFBFA] dark:bg-[#0C0C0C] text-[#111111] dark:text-[#EAEAEA] font-sans selection:bg-[#EAEAEA] dark:selection:bg-[#222]">
+            {/* Top Workspace Bar */}
+            <header className="sticky top-0 z-40 bg-white/90 dark:bg-[#121212]/90 backdrop-blur-md border-b border-[#EAEAEA] dark:border-[#1F1F1F] px-6 lg:px-12 py-3.5 transition-colors">
+                <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-4">
+                        <Link href="/" className="font-bold text-sm tracking-tight text-[#111] dark:text-white flex items-center gap-2">
+                            <span className="w-2.5 h-2.5 rounded-full bg-[#e8590c] inline-block" />
+                            Proofa Terminal
+                        </Link>
+                        <span className="hidden sm:inline-block text-[#D4D4D8] dark:text-[#333]">/</span>
+                        <span className="hidden sm:inline-block font-mono text-[11px] text-[#787774] tracking-wider uppercase">
+                            Overview & Customer Registry
                         </span>
+                    </div>
+
+                    <div className="flex items-center gap-3">
                         {lastRefreshed && (
-                            <span className="text-[11px] text-surface-400 font-medium">
-                                Updated {lastRefreshed.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            <span className="hidden md:inline-block font-mono text-[11px] text-[#787774]">
+                                SYNC: {lastRefreshed.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
                             </span>
                         )}
+
+                        <button
+                            onClick={() => fetchData(adminKey)}
+                            disabled={isLoading}
+                            className="border border-[#EAEAEA] dark:border-[#262626] hover:bg-[#F7F6F3] dark:hover:bg-[#1F1F1F] text-[#111] dark:text-white px-3 py-1.5 rounded text-xs font-mono transition-colors active:scale-[0.98]"
+                        >
+                            {isLoading ? "SYNCING..." : "REFRESH"}
+                        </button>
+
+                        <button
+                            onClick={handleLogout}
+                            className="bg-[#FDEBEC] dark:bg-[#2D1618] hover:bg-[#FCD8DA] text-[#9F2F2D] dark:text-[#F87171] px-3 py-1.5 rounded text-xs font-mono transition-colors active:scale-[0.98]"
+                        >
+                            LOCK
+                        </button>
                     </div>
-                    <h1 className="text-2xl sm:text-3xl font-black uppercase tracking-tight text-surface-900 dark:text-surface-50">
-                        Proofa Command Center
-                    </h1>
+                </div>
+            </header>
+
+            {/* Main Content Area */}
+            <main className="max-w-7xl mx-auto px-6 lg:px-12 py-8 space-y-8">
+
+                {/* Header Title & Tab Navigation */}
+                <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-[#EAEAEA] dark:border-[#1F1F1F] pb-6">
+                    <div>
+                        <div className="flex items-center gap-2 mb-1.5">
+                            <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#346538] dark:bg-[#86EFAC]" />
+                            <span className="font-mono text-[10px] tracking-widest text-[#787774] uppercase">
+                                PRODUCTION CLUSTER // ONLINE
+                            </span>
+                        </div>
+                        <h1 className="text-3xl font-extrabold tracking-tight text-[#111] dark:text-white">
+                            Executive Telemetry
+                        </h1>
+                    </div>
+
+                    {/* Tabs */}
+                    <div className="flex items-center gap-1 border border-[#EAEAEA] dark:border-[#222] bg-[#F7F6F3] dark:bg-[#161616] p-1 rounded-md">
+                        <button
+                            onClick={() => setActiveTab("users")}
+                            className={`px-3.5 py-1.5 rounded text-xs font-medium transition-colors ${
+                                activeTab === "users"
+                                    ? "bg-white dark:bg-[#222] text-[#111] dark:text-white shadow-sm"
+                                    : "text-[#787774] hover:text-[#111] dark:hover:text-white"
+                            }`}
+                        >
+                            Customers ({users.length})
+                        </button>
+                        <button
+                            onClick={() => setActiveTab("insights")}
+                            className={`px-3.5 py-1.5 rounded text-xs font-medium transition-colors ${
+                                activeTab === "insights"
+                                    ? "bg-white dark:bg-[#222] text-[#111] dark:text-white shadow-sm"
+                                    : "text-[#787774] hover:text-[#111] dark:hover:text-white"
+                            }`}
+                        >
+                            Product Telemetry
+                        </button>
+                        <button
+                            onClick={() => setActiveTab("outreach")}
+                            className={`px-3.5 py-1.5 rounded text-xs font-medium transition-colors ${
+                                activeTab === "outreach"
+                                    ? "bg-white dark:bg-[#222] text-[#111] dark:text-white shadow-sm"
+                                    : "text-[#787774] hover:text-[#111] dark:hover:text-white"
+                            }`}
+                        >
+                            Outreach & CRM
+                        </button>
+                    </div>
                 </div>
 
-                <div className="flex items-center gap-2">
-                    <button
-                        onClick={() => fetchData(adminKey)}
-                        disabled={isLoading}
-                        className="px-3.5 py-2 rounded-xl bg-surface-100 dark:bg-surface-800 hover:bg-surface-200 dark:hover:bg-surface-700 text-surface-700 dark:text-surface-300 text-xs font-bold flex items-center gap-2 transition-all active:scale-95"
-                    >
-                        <RefreshCw size={14} className={isLoading ? "animate-spin" : ""} />
-                        Refresh
-                    </button>
-                    <button
-                        onClick={handleLogout}
-                        className="px-3.5 py-2 rounded-xl bg-red-50 dark:bg-red-950/40 hover:bg-red-100 text-red-600 dark:text-red-400 text-xs font-bold flex items-center gap-1.5 transition-all active:scale-95"
-                    >
-                        <LogOut size={14} />
-                        Exit
-                    </button>
-                </div>
-            </div>
-
-            {/* Quick Stats Grid */}
-            {stats && (
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-8">
-                    {/* Stat 1: Total Users */}
-                    <div className="bg-white dark:bg-surface-900 border border-surface-200/80 dark:border-surface-800 rounded-3xl p-5 shadow-sm">
-                        <div className="flex items-center justify-between mb-3">
-                            <span className="text-[10px] font-black uppercase tracking-widest text-surface-400">
-                                Total Users
-                            </span>
-                            <div className="w-8 h-8 rounded-xl bg-blue-50 dark:bg-blue-950/50 text-blue-500 flex items-center justify-center">
-                                <Users size={16} />
+                {/* ── BENTO TELEMETRY GRID ───────────────────────────────────── */}
+                {stats && (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        {/* Box 1: Registered Accounts */}
+                        <div className="bg-white dark:bg-[#141414] border border-[#EAEAEA] dark:border-[#222] rounded-lg p-6 flex flex-col justify-between">
+                            <div>
+                                <span className="font-mono text-[10px] tracking-widest text-[#787774] uppercase block mb-1">
+                                    REGISTERED MERCHANTS
+                                </span>
+                                <div className="text-3xl font-extrabold font-mono text-[#111] dark:text-white tabular-nums">
+                                    {stats.totalUsers}
+                                </div>
+                            </div>
+                            <div className="mt-4 pt-3 border-t border-[#EAEAEA] dark:border-[#222] flex items-center justify-between font-mono text-[11px] text-[#787774]">
+                                <span>+ {stats.newUsers7d} past 7d</span>
+                                <span>+ {stats.newUsers30d} past 30d</span>
                             </div>
                         </div>
-                        <p className="text-2xl sm:text-3xl font-black text-surface-900 dark:text-surface-50 leading-none">
-                            {stats.totalUsers}
-                        </p>
-                        <p className="text-xs text-surface-500 font-medium mt-2 flex items-center gap-1">
-                            <span className="text-emerald-500 font-bold">+{stats.newUsers7d}</span> past 7 days
-                        </p>
+
+                        {/* Box 2: Paid Subscriptions */}
+                        <div className="bg-white dark:bg-[#141414] border border-[#EAEAEA] dark:border-[#222] rounded-lg p-6 flex flex-col justify-between">
+                            <div>
+                                <span className="font-mono text-[10px] tracking-widest text-[#787774] uppercase block mb-1">
+                                    PAID SUBSCRIBERS
+                                </span>
+                                <div className="text-3xl font-extrabold font-mono text-[#111] dark:text-white tabular-nums flex items-baseline gap-2">
+                                    {stats.planCounts.pro + stats.planCounts.business}
+                                    <span className="text-xs font-normal text-[#787774]">accounts</span>
+                                </div>
+                            </div>
+                            <div className="mt-4 pt-3 border-t border-[#EAEAEA] dark:border-[#222] flex items-center justify-between font-mono text-[11px]">
+                                <span className="text-[#956400] dark:text-[#FDE68A]">{stats.planCounts.pro} Pro (₦2.5k)</span>
+                                <span className="text-[#5B3E8C] dark:text-[#C4B5FD]">{stats.planCounts.business} Business</span>
+                            </div>
+                        </div>
+
+                        {/* Box 3: Monthly Run Rate */}
+                        <div className="bg-white dark:bg-[#141414] border border-[#EAEAEA] dark:border-[#222] rounded-lg p-6 flex flex-col justify-between">
+                            <div>
+                                <span className="font-mono text-[10px] tracking-widest text-[#787774] uppercase block mb-1">
+                                    ESTIMATED MRR
+                                </span>
+                                <div className="text-3xl font-extrabold font-mono text-[#111] dark:text-white tabular-nums">
+                                    ₦{stats.estimatedMRR.toLocaleString()}
+                                </div>
+                            </div>
+                            <div className="mt-4 pt-3 border-t border-[#EAEAEA] dark:border-[#222] flex items-center justify-between font-mono text-[11px] text-[#787774]">
+                                <span>Annual run rate:</span>
+                                <span className="text-[#111] dark:text-white font-bold">₦{(stats.estimatedMRR * 12).toLocaleString()}</span>
+                            </div>
+                        </div>
+
+                        {/* Box 4: Document Throughput */}
+                        <div className="bg-white dark:bg-[#141414] border border-[#EAEAEA] dark:border-[#222] rounded-lg p-6 flex flex-col justify-between">
+                            <div>
+                                <span className="font-mono text-[10px] tracking-widest text-[#787774] uppercase block mb-1">
+                                    DOCUMENT THROUGHPUT
+                                </span>
+                                <div className="text-3xl font-extrabold font-mono text-[#111] dark:text-white tabular-nums">
+                                    {stats.totalDocs}
+                                </div>
+                            </div>
+                            <div className="mt-4 pt-3 border-t border-[#EAEAEA] dark:border-[#222] flex items-center justify-between font-mono text-[11px] text-[#787774]">
+                                <span>{stats.docTypeCounts.receipt} receipts</span>
+                                <span>{stats.docTypeCounts.invoice} invoices</span>
+                            </div>
+                        </div>
                     </div>
+                )}
 
-                    {/* Stat 2: Paying Subscriptions */}
-                    <div className="bg-white dark:bg-surface-900 border border-surface-200/80 dark:border-surface-800 rounded-3xl p-5 shadow-sm">
-                        <div className="flex items-center justify-between mb-3">
-                            <span className="text-[10px] font-black uppercase tracking-widest text-surface-400">
-                                Paid Subscriptions
-                            </span>
-                            <div className="w-8 h-8 rounded-xl bg-amber-50 dark:bg-amber-950/50 text-amber-500 flex items-center justify-center">
-                                <Crown size={16} />
+                {/* ── TAB 1: USERS DIRECTORY ─────────────────────────────────── */}
+                {activeTab === "users" && (
+                    <div className="space-y-4">
+                        {/* Toolbar: Search, Filters, Export */}
+                        <div className="bg-white dark:bg-[#141414] border border-[#EAEAEA] dark:border-[#222] rounded-lg p-4 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+                            {/* Search */}
+                            <div className="relative flex-1">
+                                <input
+                                    type="text"
+                                    placeholder="Filter by name, business, email, or user ID..."
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    className="w-full bg-[#F7F6F3] dark:bg-[#1A1A1A] border border-[#EAEAEA] dark:border-[#262626] rounded px-3.5 py-2 text-xs font-mono text-[#111] dark:text-white placeholder-[#A1A1AA] focus:outline-none focus:border-[#111] dark:focus:border-white transition-colors"
+                                />
+                                {searchQuery && (
+                                    <button
+                                        onClick={() => setSearchQuery("")}
+                                        className="absolute right-3 top-2.5 font-mono text-[10px] text-[#787774] hover:text-[#111]"
+                                    >
+                                        CLEAR
+                                    </button>
+                                )}
+                            </div>
+
+                            {/* Plan Pill Filters */}
+                            <div className="flex items-center gap-1 border border-[#EAEAEA] dark:border-[#262626] rounded p-0.5 bg-[#F7F6F3] dark:bg-[#1A1A1A]">
+                                {(["all", "paid", "free"] as const).map((tier) => (
+                                    <button
+                                        key={tier}
+                                        onClick={() => setPlanFilter(tier)}
+                                        className={`px-3 py-1.5 rounded text-[11px] font-mono uppercase tracking-wider transition-colors ${
+                                            planFilter === tier
+                                                ? "bg-white dark:bg-[#262626] text-[#111] dark:text-white font-bold shadow-xs"
+                                                : "text-[#787774] hover:text-[#111] dark:hover:text-white"
+                                        }`}
+                                    >
+                                        {tier}
+                                    </button>
+                                ))}
+                            </div>
+
+                            {/* Sort Selector */}
+                            <select
+                                value={sortBy}
+                                onChange={(e) => setSortBy(e.target.value as SortOption)}
+                                className="bg-[#F7F6F3] dark:bg-[#1A1A1A] border border-[#EAEAEA] dark:border-[#262626] rounded px-3 py-2 text-xs font-mono text-[#111] dark:text-white focus:outline-none"
+                            >
+                                <option value="newest">Sort: Newest</option>
+                                <option value="oldest">Sort: Oldest</option>
+                                <option value="most_docs">Sort: Most Docs</option>
+                                <option value="highest_volume">Sort: Highest Volume</option>
+                            </select>
+
+                            {/* Action: Export CSV */}
+                            <button
+                                onClick={exportCSV}
+                                className="border border-[#EAEAEA] dark:border-[#262626] bg-white dark:bg-[#161616] hover:bg-[#F7F6F3] dark:hover:bg-[#202020] text-[#111] dark:text-white px-3 py-2 rounded text-xs font-mono flex items-center justify-center gap-1.5 transition-colors active:scale-[0.98]"
+                            >
+                                <span>EXPORT CSV</span>
+                            </button>
+                        </div>
+
+                        {/* Customer Table */}
+                        <div className="bg-white dark:bg-[#141414] border border-[#EAEAEA] dark:border-[#222] rounded-lg overflow-hidden">
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-left border-collapse">
+                                    <thead>
+                                        <tr className="border-b border-[#EAEAEA] dark:border-[#222] bg-[#F7F6F3] dark:bg-[#161616] text-[10px] font-mono tracking-widest uppercase text-[#787774]">
+                                            <th className="py-3 px-5">Customer / Entity</th>
+                                            <th className="py-3 px-4">Tier</th>
+                                            <th className="py-3 px-4 text-right">Throughput</th>
+                                            <th className="py-3 px-4 text-right">Gross Volume</th>
+                                            <th className="py-3 px-4">Registration</th>
+                                            <th className="py-3 px-4">Last Activity</th>
+                                            <th className="py-3 px-5 text-right">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-[#EAEAEA] dark:divide-[#1F1F1F] text-xs">
+                                        {filteredUsers.length === 0 ? (
+                                            <tr>
+                                                <td colSpan={7} className="py-16 text-center text-[#787774] font-mono">
+                                                    NO MATCHING RECORDS LOCATED IN REGISTRY
+                                                </td>
+                                            </tr>
+                                        ) : (
+                                            filteredUsers.map((u) => {
+                                                const isPro = u.plan === "pro";
+                                                const isBusiness = u.plan === "business";
+
+                                                const badgeBg = isBusiness
+                                                    ? "bg-[#F4F0FB] dark:bg-[#221C30] text-[#5B3E8C] dark:text-[#C4B5FD]"
+                                                    : isPro
+                                                    ? "bg-[#FBF3DB] dark:bg-[#2D2310] text-[#956400] dark:text-[#FDE68A]"
+                                                    : "bg-[#F4F4F5] dark:bg-[#1F1F23] text-[#52525B] dark:text-[#A1A1AA]";
+
+                                                return (
+                                                    <tr
+                                                        key={u.id}
+                                                        onClick={() => setSelectedUser(u)}
+                                                        className="hover:bg-[#FBFBFA] dark:hover:bg-[#1A1A1A] cursor-pointer transition-colors"
+                                                    >
+                                                        {/* User / Entity */}
+                                                        <td className="py-3.5 px-5">
+                                                            <div className="flex flex-col">
+                                                                <span className="font-bold text-[#111] dark:text-white">
+                                                                    {u.businessName || u.name || "Sole Vendor"}
+                                                                </span>
+                                                                <span className="font-mono text-[11px] text-[#787774]">
+                                                                    {u.email}
+                                                                </span>
+                                                            </div>
+                                                        </td>
+
+                                                        {/* Tier */}
+                                                        <td className="py-3.5 px-4">
+                                                            <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-mono tracking-wider uppercase font-bold ${badgeBg}`}>
+                                                                {u.plan}
+                                                            </span>
+                                                        </td>
+
+                                                        {/* Docs */}
+                                                        <td className="py-3.5 px-4 text-right font-mono tabular-nums text-[#111] dark:text-white font-medium">
+                                                            {u.docCount} docs
+                                                        </td>
+
+                                                        {/* Volume */}
+                                                        <td className="py-3.5 px-4 text-right font-mono tabular-nums text-[#111] dark:text-white">
+                                                            ₦{u.totalVolume.toLocaleString()}
+                                                        </td>
+
+                                                        {/* Registration */}
+                                                        <td className="py-3.5 px-4 font-mono text-[11px] text-[#787774]">
+                                                            {new Date(u.createdAt).toLocaleDateString("en-GB", {
+                                                                day: "numeric",
+                                                                month: "short",
+                                                                year: "numeric",
+                                                            })}
+                                                        </td>
+
+                                                        {/* Last Activity */}
+                                                        <td className="py-3.5 px-4 font-mono text-[11px] text-[#787774]">
+                                                            {u.lastSignInAt
+                                                                ? new Date(u.lastSignInAt).toLocaleDateString("en-GB", {
+                                                                      day: "numeric",
+                                                                      month: "short",
+                                                                  })
+                                                                : "Never"}
+                                                        </td>
+
+                                                        {/* Quick Direct Email */}
+                                                        <td className="py-3.5 px-5 text-right" onClick={(e) => e.stopPropagation()}>
+                                                            <a
+                                                                href={`mailto:${u.email}?subject=Quick question from Proofa&body=Hi ${u.businessName || 'there'},%0D%0A%0D%0AI noticed you recently used Proofa for your business receipts. How has the experience been so far?%0D%0A%0D%0ABest,%0D%0AProofa Operations`}
+                                                                className="inline-block border border-[#EAEAEA] dark:border-[#262626] hover:bg-[#111] hover:text-white dark:hover:bg-white dark:hover:text-[#111] text-[#787774] px-2.5 py-1 rounded font-mono text-[11px] transition-colors"
+                                                            >
+                                                                CONTACT
+                                                            </a>
+                                                        </td>
+                                                    </tr>
+                                                );
+                                            })
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div className="p-3 border-t border-[#EAEAEA] dark:border-[#222] bg-[#F7F6F3] dark:bg-[#161616] flex items-center justify-between font-mono text-[11px] text-[#787774]">
+                                <span>SHOWING {filteredUsers.length} OF {users.length} RECORDS</span>
+                                <span>CLICK ROW TO INSPECT METADATA</span>
                             </div>
                         </div>
-                        <p className="text-2xl sm:text-3xl font-black text-surface-900 dark:text-surface-50 leading-none">
-                            {stats.planCounts.pro + stats.planCounts.business}
-                        </p>
-                        <p className="text-xs text-surface-500 font-medium mt-2">
-                            {stats.planCounts.pro} Pro · {stats.planCounts.business} Business
-                        </p>
                     </div>
+                )}
 
-                    {/* Stat 3: Estimated MRR */}
-                    <div className="bg-white dark:bg-surface-900 border border-surface-200/80 dark:border-surface-800 rounded-3xl p-5 shadow-sm">
-                        <div className="flex items-center justify-between mb-3">
-                            <span className="text-[10px] font-black uppercase tracking-widest text-surface-400">
-                                Estimated MRR
+                {/* ── TAB 2: PRODUCT TELEMETRY & INSIGHTS ────────────────────── */}
+                {activeTab === "insights" && stats && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {/* Document Type Distribution */}
+                        <div className="bg-white dark:bg-[#141414] border border-[#EAEAEA] dark:border-[#222] rounded-lg p-6">
+                            <span className="font-mono text-[10px] tracking-widest text-[#787774] uppercase block mb-1">
+                                FORMAT DISTRIBUTION
                             </span>
-                            <div className="w-8 h-8 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-500 flex items-center justify-center">
-                                <TrendingUp size={16} />
+                            <h3 className="text-lg font-bold text-[#111] dark:text-white mb-6">
+                                Documents by Category
+                            </h3>
+
+                            <div className="space-y-4">
+                                <div>
+                                    <div className="flex items-center justify-between text-xs font-mono mb-1.5">
+                                        <span>Receipts (Sales proof)</span>
+                                        <span className="font-bold">{stats.docTypeCounts.receipt} ({stats.totalDocs ? Math.round((stats.docTypeCounts.receipt / stats.totalDocs) * 100) : 0}%)</span>
+                                    </div>
+                                    <div className="w-full h-2 bg-[#F4F4F5] dark:bg-[#222] rounded-full overflow-hidden">
+                                        <div
+                                            className="h-full bg-[#e8590c]"
+                                            style={{ width: `${stats.totalDocs ? (stats.docTypeCounts.receipt / stats.totalDocs) * 100 : 0}%` }}
+                                        />
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <div className="flex items-center justify-between text-xs font-mono mb-1.5">
+                                        <span>Invoices (Billable)</span>
+                                        <span className="font-bold">{stats.docTypeCounts.invoice} ({stats.totalDocs ? Math.round((stats.docTypeCounts.invoice / stats.totalDocs) * 100) : 0}%)</span>
+                                    </div>
+                                    <div className="w-full h-2 bg-[#F4F4F5] dark:bg-[#222] rounded-full overflow-hidden">
+                                        <div
+                                            className="h-full bg-[#1F6C9F]"
+                                            style={{ width: `${stats.totalDocs ? (stats.docTypeCounts.invoice / stats.totalDocs) * 100 : 0}%` }}
+                                        />
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <div className="flex items-center justify-between text-xs font-mono mb-1.5">
+                                        <span>Order Summaries</span>
+                                        <span className="font-bold">{stats.docTypeCounts.order} ({stats.totalDocs ? Math.round((stats.docTypeCounts.order / stats.totalDocs) * 100) : 0}%)</span>
+                                    </div>
+                                    <div className="w-full h-2 bg-[#F4F4F5] dark:bg-[#222] rounded-full overflow-hidden">
+                                        <div
+                                            className="h-full bg-[#346538]"
+                                            style={{ width: `${stats.totalDocs ? (stats.docTypeCounts.order / stats.totalDocs) * 100 : 0}%` }}
+                                        />
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                        <p className="text-2xl sm:text-3xl font-black text-surface-900 dark:text-surface-50 leading-none">
-                            ₦{stats.estimatedMRR.toLocaleString()}
-                        </p>
-                        <p className="text-xs text-surface-500 font-medium mt-2">
-                            Recurring monthly run rate
-                        </p>
+
+                        {/* Revenue Currency Breakdown */}
+                        <div className="bg-white dark:bg-[#141414] border border-[#EAEAEA] dark:border-[#222] rounded-lg p-6">
+                            <span className="font-mono text-[10px] tracking-widest text-[#787774] uppercase block mb-1">
+                                CURRENCY SEGREGATION
+                            </span>
+                            <h3 className="text-lg font-bold text-[#111] dark:text-white mb-6">
+                                Total Processed by Currency
+                            </h3>
+
+                            <div className="space-y-4">
+                                <div className="p-4 rounded border border-[#EAEAEA] dark:border-[#222] bg-[#F7F6F3] dark:bg-[#181818]">
+                                    <div className="flex items-center justify-between">
+                                        <span className="font-mono text-xs text-[#787774]">NGN Volume</span>
+                                        <span className="font-mono text-sm font-bold text-[#111] dark:text-white">
+                                            ₦{stats.totalVolumeNGN.toLocaleString()}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div className="p-4 rounded border border-[#EAEAEA] dark:border-[#222] bg-[#F7F6F3] dark:bg-[#181818]">
+                                    <div className="flex items-center justify-between">
+                                        <span className="font-mono text-xs text-[#787774]">USD Volume</span>
+                                        <span className="font-mono text-sm font-bold text-[#111] dark:text-white">
+                                            ${stats.totalVolumeUSD.toLocaleString()}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
+                )}
 
-                    {/* Stat 4: Total Documents */}
-                    <div className="bg-white dark:bg-surface-900 border border-surface-200/80 dark:border-surface-800 rounded-3xl p-5 shadow-sm">
-                        <div className="flex items-center justify-between mb-3">
-                            <span className="text-[10px] font-black uppercase tracking-widest text-surface-400">
-                                Docs Generated
-                            </span>
-                            <div className="w-8 h-8 rounded-xl bg-purple-50 dark:bg-purple-950/50 text-purple-500 flex items-center justify-center">
-                                <FileText size={16} />
+                {/* ── TAB 3: OUTREACH & CRM ───────────────────────────────────── */}
+                {activeTab === "outreach" && (
+                    <div className="space-y-6">
+                        {/* Segment Copy Strip */}
+                        <div className="bg-white dark:bg-[#141414] border border-[#EAEAEA] dark:border-[#222] rounded-lg p-6">
+                            <h3 className="text-base font-bold text-[#111] dark:text-white mb-1">
+                                Segment Email Broadcast Exporter
+                            </h3>
+                            <p className="text-xs text-[#787774] mb-4">
+                                Copy clean comma-separated email lists to paste directly into your email client, BCC field, or newsletter provider.
+                            </p>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                <button
+                                    onClick={() => {
+                                        const emails = users.map(u => u.email).filter(Boolean).join(", ");
+                                        copyToClipboard(emails, "all_emails", `Copied ${users.length} emails to clipboard`);
+                                    }}
+                                    className="border border-[#EAEAEA] dark:border-[#262626] hover:bg-[#F7F6F3] dark:hover:bg-[#1A1A1A] p-4 rounded text-left transition-colors"
+                                >
+                                    <span className="font-mono text-[10px] text-[#787774] block uppercase">ALL REGISTERED</span>
+                                    <span className="font-bold text-sm block my-1">{users.length} Recipient(s)</span>
+                                    <span className="font-mono text-[11px] text-[#e8590c]">
+                                        {copiedKey === "all_emails" ? "✓ COPIED" : "COPY LIST →"}
+                                    </span>
+                                </button>
+
+                                <button
+                                    onClick={() => {
+                                        const emails = users.filter(u => u.plan === "pro" || u.plan === "business").map(u => u.email).filter(Boolean).join(", ");
+                                        copyToClipboard(emails, "paid_emails", `Copied paid users to clipboard`);
+                                    }}
+                                    className="border border-[#EAEAEA] dark:border-[#262626] hover:bg-[#F7F6F3] dark:hover:bg-[#1A1A1A] p-4 rounded text-left transition-colors"
+                                >
+                                    <span className="font-mono text-[10px] text-[#787774] block uppercase">PAID (PRO & BIZ)</span>
+                                    <span className="font-bold text-sm block my-1">{(stats?.planCounts.pro || 0) + (stats?.planCounts.business || 0)} Customer(s)</span>
+                                    <span className="font-mono text-[11px] text-[#e8590c]">
+                                        {copiedKey === "paid_emails" ? "✓ COPIED" : "COPY LIST →"}
+                                    </span>
+                                </button>
+
+                                <button
+                                    onClick={() => {
+                                        const emails = users.filter(u => u.plan === "free").map(u => u.email).filter(Boolean).join(", ");
+                                        copyToClipboard(emails, "free_emails", `Copied free users to clipboard`);
+                                    }}
+                                    className="border border-[#EAEAEA] dark:border-[#262626] hover:bg-[#F7F6F3] dark:hover:bg-[#1A1A1A] p-4 rounded text-left transition-colors"
+                                >
+                                    <span className="font-mono text-[10px] text-[#787774] block uppercase">FREE TRIAL USERS</span>
+                                    <span className="font-bold text-sm block my-1">{stats?.planCounts.free || 0} User(s)</span>
+                                    <span className="font-mono text-[11px] text-[#e8590c]">
+                                        {copiedKey === "free_emails" ? "✓ COPIED" : "COPY LIST →"}
+                                    </span>
+                                </button>
                             </div>
                         </div>
-                        <p className="text-2xl sm:text-3xl font-black text-surface-900 dark:text-surface-50 leading-none">
-                            {stats.totalDocs}
-                        </p>
-                        <p className="text-xs text-surface-500 font-medium mt-2">
-                            {stats.docTypeCounts.receipt} receipts · {stats.docTypeCounts.invoice} invoices
-                        </p>
+
+                        {/* Direct Outreach Templates */}
+                        <div className="bg-white dark:bg-[#141414] border border-[#EAEAEA] dark:border-[#222] rounded-lg p-6">
+                            <h3 className="text-base font-bold text-[#111] dark:text-white mb-1">
+                                High-Conversion Outreach Blueprints
+                            </h3>
+                            <p className="text-xs text-[#787774] mb-6">
+                                Click to copy pre-formatted outreach copy formulated for Nigerian SME retention and upgrades.
+                            </p>
+
+                            <div className="space-y-4">
+                                <div className="border border-[#EAEAEA] dark:border-[#262626] rounded p-4">
+                                    <div className="flex items-center justify-between mb-2">
+                                        <span className="font-mono text-[11px] font-bold text-[#111] dark:text-white uppercase">
+                                            Template A: 1-on-1 Founder Check-In (For New Signups)
+                                        </span>
+                                        <button
+                                            onClick={() => copyToClipboard(
+                                                `Subject: Quick question from Proofa founder\n\nHi [Name],\n\nI noticed you signed up for Proofa recently for your business. I'm the founder and I personally check in with our first users.\n\nAre you having any trouble sending your receipts or adding your bank account details? If there's any feature you wish Proofa had, just reply to this email directly.\n\nBest,\nProofa Team`,
+                                                "template_a",
+                                                "Copied Template A"
+                                            )}
+                                            className="font-mono text-[11px] text-[#e8590c] hover:underline"
+                                        >
+                                            {copiedKey === "template_a" ? "✓ COPIED" : "COPY TEMPLATE"}
+                                        </button>
+                                    </div>
+                                    <p className="text-xs font-mono text-[#787774] leading-relaxed">
+                                        Subject: Quick question from Proofa founder...
+                                    </p>
+                                </div>
+
+                                <div className="border border-[#EAEAEA] dark:border-[#262626] rounded p-4">
+                                    <div className="flex items-center justify-between mb-2">
+                                        <span className="font-mono text-[11px] font-bold text-[#111] dark:text-white uppercase">
+                                            Template B: Free → Pro Conversion Nudge (Active Free Users)
+                                        </span>
+                                        <button
+                                            onClick={() => copyToClipboard(
+                                                `Subject: Upgrade your business branding on Proofa\n\nHi [Name],\n\nWe noticed you've been actively issuing receipts on Proofa! Your business looks much more official.\n\nIf you'd like to completely remove the Proofa watermark, add your custom business logo, and unlock unlimited HD WhatsApp exports, you can upgrade to Proofa Pro for just ₦2,500/month here:\nhttps://www.proofa.ng/pricing\n\nKeep up the great work!\nProofa Team`,
+                                                "template_b",
+                                                "Copied Template B"
+                                            )}
+                                            className="font-mono text-[11px] text-[#e8590c] hover:underline"
+                                        >
+                                            {copiedKey === "template_b" ? "✓ COPIED" : "COPY TEMPLATE"}
+                                        </button>
+                                    </div>
+                                    <p className="text-xs font-mono text-[#787774] leading-relaxed">
+                                        Subject: Upgrade your business branding on Proofa...
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+            </main>
+
+            {/* ── CUSTOMER INSPECTION DRAWER ─────────────────────────────────── */}
+            {selectedUser && (
+                <div className="fixed inset-0 z-50 flex justify-end bg-black/40 backdrop-blur-xs transition-opacity animate-in fade-in duration-200">
+                    <div className="w-full max-w-lg bg-white dark:bg-[#121212] border-l border-[#EAEAEA] dark:border-[#222] h-full overflow-y-auto p-8 shadow-2xl flex flex-col justify-between">
+                        <div>
+                            {/* Drawer Header */}
+                            <div className="flex items-center justify-between border-b border-[#EAEAEA] dark:border-[#222] pb-4 mb-6">
+                                <span className="font-mono text-[10px] tracking-widest text-[#787774] uppercase">
+                                    CUSTOMER PROFILE RECORD
+                                </span>
+                                <button
+                                    onClick={() => setSelectedUser(null)}
+                                    className="font-mono text-xs text-[#787774] hover:text-[#111] dark:hover:text-white"
+                                >
+                                    [CLOSE ✕]
+                                </button>
+                            </div>
+
+                            {/* Identity Title */}
+                            <div className="mb-6">
+                                <h2 className="text-2xl font-bold tracking-tight text-[#111] dark:text-white">
+                                    {selectedUser.businessName || selectedUser.name || "Sole Vendor"}
+                                </h2>
+                                <p className="font-mono text-xs text-[#787774] mt-1">
+                                    {selectedUser.email}
+                                </p>
+                            </div>
+
+                            {/* Details Grid */}
+                            <div className="space-y-4">
+                                <div className="border border-[#EAEAEA] dark:border-[#222] rounded p-4 bg-[#F7F6F3] dark:bg-[#181818]">
+                                    <span className="font-mono text-[10px] text-[#787774] uppercase block mb-1">USER_ID</span>
+                                    <div className="flex items-center justify-between font-mono text-xs text-[#111] dark:text-white">
+                                        <span className="truncate max-w-[280px]">{selectedUser.id}</span>
+                                        <button
+                                            onClick={() => copyToClipboard(selectedUser.id, "user_id_copy", "User ID copied")}
+                                            className="text-[10px] text-[#e8590c] hover:underline uppercase ml-2 shrink-0"
+                                        >
+                                            {copiedKey === "user_id_copy" ? "COPIED" : "COPY"}
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div className="border border-[#EAEAEA] dark:border-[#222] rounded p-4">
+                                        <span className="font-mono text-[10px] text-[#787774] uppercase block mb-1">SUBSCRIPTION</span>
+                                        <span className="font-mono text-sm font-bold uppercase text-[#111] dark:text-white">
+                                            {selectedUser.plan}
+                                        </span>
+                                    </div>
+                                    <div className="border border-[#EAEAEA] dark:border-[#222] rounded p-4">
+                                        <span className="font-mono text-[10px] text-[#787774] uppercase block mb-1">DOCUMENTS CREATED</span>
+                                        <span className="font-mono text-sm font-bold text-[#111] dark:text-white">
+                                            {selectedUser.docCount} docs
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div className="border border-[#EAEAEA] dark:border-[#222] rounded p-4">
+                                        <span className="font-mono text-[10px] text-[#787774] uppercase block mb-1">VOLUME RECORDED</span>
+                                        <span className="font-mono text-sm font-bold text-[#111] dark:text-white">
+                                            ₦{selectedUser.totalVolume.toLocaleString()}
+                                        </span>
+                                    </div>
+                                    <div className="border border-[#EAEAEA] dark:border-[#222] rounded p-4">
+                                        <span className="font-mono text-[10px] text-[#787774] uppercase block mb-1">STATUS</span>
+                                        <span className="font-mono text-xs font-bold uppercase text-[#346538] dark:text-[#86EFAC]">
+                                            {selectedUser.subscriptionStatus}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div className="border border-[#EAEAEA] dark:border-[#222] rounded p-4">
+                                    <span className="font-mono text-[10px] text-[#787774] uppercase block mb-1">REGISTRATION TIMESTAMP</span>
+                                    <span className="font-mono text-xs text-[#111] dark:text-white">
+                                        {new Date(selectedUser.createdAt).toUTCString()}
+                                    </span>
+                                </div>
+
+                                <div className="border border-[#EAEAEA] dark:border-[#222] rounded p-4">
+                                    <span className="font-mono text-[10px] text-[#787774] uppercase block mb-1">LAST SIGN IN</span>
+                                    <span className="font-mono text-xs text-[#111] dark:text-white">
+                                        {selectedUser.lastSignInAt ? new Date(selectedUser.lastSignInAt).toUTCString() : "Never authenticated via password"}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Action buttons at drawer footer */}
+                        <div className="pt-6 border-t border-[#EAEAEA] dark:border-[#222] space-y-2">
+                            <a
+                                href={`mailto:${selectedUser.email}?subject=Hello from Proofa&body=Hi ${selectedUser.businessName || 'there'},`}
+                                className="w-full bg-[#111111] hover:bg-[#333333] dark:bg-[#EEEEEE] dark:hover:bg-[#CCCCCC] dark:text-[#111] text-white text-xs font-medium py-3 rounded flex items-center justify-center gap-2 transition-colors"
+                            >
+                                SEND DIRECT EMAIL
+                            </a>
+                            <button
+                                onClick={() => setSelectedUser(null)}
+                                className="w-full border border-[#EAEAEA] dark:border-[#222] hover:bg-[#F7F6F3] dark:hover:bg-[#1A1A1A] text-xs font-mono py-2.5 rounded transition-colors text-[#787774]"
+                            >
+                                DISMISS
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}
-
-            {/* Marketing & Email Action Strip */}
-            <div className="bg-surface-900 text-white rounded-3xl p-6 mb-8 shadow-lg flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-                <div>
-                    <h3 className="text-base font-black uppercase tracking-wider text-white">
-                        Marketing & Customer Outreach
-                    </h3>
-                    <p className="text-xs text-white/70 mt-1 max-w-xl">
-                        Copy customer emails with one tap to send feature announcements, onboarding tips, or personal check-in emails.
-                    </p>
-                </div>
-
-                <div className="flex flex-wrap items-center gap-2">
-                    <button
-                        onClick={() => copyEmails()}
-                        className="px-3.5 py-2.5 bg-white/10 hover:bg-white/20 active:scale-95 text-white rounded-xl text-xs font-bold flex items-center gap-2 transition-all"
-                    >
-                        {copiedCategory === "all" ? <Check size={14} className="text-emerald-400" /> : <Copy size={14} />}
-                        Copy All ({users.length})
-                    </button>
-                    <button
-                        onClick={() => copyEmails("pro")}
-                        className="px-3.5 py-2.5 bg-primary-500 hover:bg-primary-600 active:scale-95 text-white rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-2 shadow-sm transition-all"
-                    >
-                        {copiedCategory === "pro" ? <Check size={14} /> : <Crown size={14} />}
-                        Copy Paid ({(stats?.planCounts.pro || 0) + (stats?.planCounts.business || 0)})
-                    </button>
-                    <button
-                        onClick={() => copyEmails("free")}
-                        className="px-3.5 py-2.5 bg-white/10 hover:bg-white/20 active:scale-95 text-white rounded-xl text-xs font-bold flex items-center gap-2 transition-all"
-                    >
-                        {copiedCategory === "free" ? <Check size={14} className="text-emerald-400" /> : <Mail size={14} />}
-                        Copy Free ({stats?.planCounts.free || 0})
-                    </button>
-                </div>
-            </div>
-
-            {/* Customer Directory Header & Controls */}
-            <div className="bg-white dark:bg-surface-900 border border-surface-200/80 dark:border-surface-800 rounded-3xl p-5 mb-4 shadow-sm">
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-                    <div className="relative flex-1">
-                        <Search size={16} className="absolute left-3.5 top-3.5 text-surface-400" />
-                        <input
-                            type="text"
-                            placeholder="Search by email, business name, or founder..."
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full bg-surface-50 dark:bg-surface-800 border border-surface-200 dark:border-surface-700 rounded-2xl pl-10 pr-4 py-2.5 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-primary-500"
-                        />
-                    </div>
-
-                    <div className="flex bg-surface-100 dark:bg-surface-800 p-1 rounded-2xl shrink-0">
-                        {(["all", "free", "pro"] as const).map((filter) => (
-                            <button
-                                key={filter}
-                                onClick={() => setPlanFilter(filter)}
-                                className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all ${
-                                    planFilter === filter
-                                        ? "bg-white dark:bg-surface-900 text-primary-600 dark:text-primary-400 shadow-sm"
-                                        : "text-surface-500 hover:text-surface-800"
-                                }`}
-                            >
-                                {filter === "pro" ? "Pro & Team" : filter}
-                            </button>
-                        ))}
-                    </div>
-                </div>
-            </div>
-
-            {/* Users Table */}
-            <div className="bg-white dark:bg-surface-900 border border-surface-200/80 dark:border-surface-800 rounded-3xl overflow-hidden shadow-sm">
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse">
-                        <thead>
-                            <tr className="border-b border-surface-100 dark:border-surface-800 bg-surface-50/60 dark:bg-surface-800/40 text-[10px] font-black uppercase tracking-wider text-surface-400">
-                                <th className="py-3.5 px-5">User & Business</th>
-                                <th className="py-3.5 px-4">Tier</th>
-                                <th className="py-3.5 px-4 text-center">Docs</th>
-                                <th className="py-3.5 px-4">Joined</th>
-                                <th className="py-3.5 px-4">Last Active</th>
-                                <th className="py-3.5 px-5 text-right">Reach Out</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-surface-100 dark:divide-surface-800 text-xs">
-                            {filteredUsers.length === 0 ? (
-                                <tr>
-                                    <td colSpan={6} className="py-12 text-center text-surface-400 font-medium">
-                                        No users found matching your search.
-                                    </td>
-                                </tr>
-                            ) : (
-                                filteredUsers.map((u) => {
-                                    const isPaid = u.plan === "pro" || u.plan === "business";
-                                    const signupDate = new Date(u.createdAt).toLocaleDateString("en-GB", {
-                                        day: "numeric",
-                                        month: "short",
-                                        year: "numeric",
-                                    });
-
-                                    const lastSeen = u.lastSignInAt
-                                        ? new Date(u.lastSignInAt).toLocaleDateString("en-GB", {
-                                              day: "numeric",
-                                              month: "short",
-                                          })
-                                        : "Never";
-
-                                    return (
-                                        <tr key={u.id} className="hover:bg-surface-50/80 dark:hover:bg-surface-800/30 transition-colors">
-                                            {/* User & Business */}
-                                            <td className="py-4 px-5">
-                                                <div className="flex flex-col">
-                                                    <span className="font-extrabold text-surface-900 dark:text-surface-50">
-                                                        {u.businessName || u.name || "Unnamed Business"}
-                                                    </span>
-                                                    <span className="text-[11px] text-surface-400 font-medium">
-                                                        {u.email}
-                                                    </span>
-                                                </div>
-                                            </td>
-
-                                            {/* Tier Badge */}
-                                            <td className="py-4 px-4">
-                                                <span
-                                                    className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${
-                                                        u.plan === "business"
-                                                            ? "bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300"
-                                                            : u.plan === "pro"
-                                                            ? "bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300"
-                                                            : "bg-surface-100 dark:bg-surface-800 text-surface-600 dark:text-surface-400"
-                                                    }`}
-                                                >
-                                                    {isPaid && <Crown size={11} />}
-                                                    {u.plan}
-                                                </span>
-                                            </td>
-
-                                            {/* Docs Count */}
-                                            <td className="py-4 px-4 text-center font-bold text-surface-800 dark:text-surface-200">
-                                                {u.docCount}
-                                            </td>
-
-                                            {/* Joined */}
-                                            <td className="py-4 px-4 text-surface-500 font-medium text-[11px]">
-                                                {signupDate}
-                                            </td>
-
-                                            {/* Last Active */}
-                                            <td className="py-4 px-4 text-surface-500 font-medium text-[11px]">
-                                                {lastSeen}
-                                            </td>
-
-                                            {/* Contact */}
-                                            <td className="py-4 px-5 text-right">
-                                                <a
-                                                    href={`mailto:${u.email}?subject=Quick question from Proofa&body=Hi ${u.businessName || 'there'},%0D%0A%0D%0AThank you for using Proofa! I wanted to check in and see how everything is working for your business.%0D%0A%0D%0ABest,%0D%0AProofa Team`}
-                                                    className="inline-flex items-center gap-1 text-[11px] font-bold text-primary-500 hover:text-primary-600 bg-primary-50 dark:bg-primary-950/40 px-2.5 py-1 rounded-lg transition-colors"
-                                                >
-                                                    <Mail size={12} />
-                                                    Email
-                                                </a>
-                                            </td>
-                                        </tr>
-                                    );
-                                })
-                            )}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </main>
+        </div>
     );
 }

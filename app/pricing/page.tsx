@@ -38,7 +38,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { usePaystack } from "@/hooks/usePaystack";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/Toast";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -334,16 +334,13 @@ export default function PricingPage() {
 function PricingPageContent() {
   const { profile, isAuthenticated, plan, refreshProfile, activateTempPro } = useAuth();
   const { initializePayment, loading: paystackLoading } = usePaystack();
-  const { showToast } = useToast();
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const promo = searchParams.get("promo");
+  const { showToast } = useToast();
 
   const [billing, setBilling] = useState<"monthly" | "annual">("annual");
   const [notifyPlan, setNotifyPlan] = useState<string | null>(null);
   const [verifying, setVerifying] = useState(false);
   const [showComparison, setShowComparison] = useState(false);
-  const [promoClaimed, setPromoClaimed] = useState(false);
 
   const getPrice = (p: (typeof PLANS)[number]) =>
     billing === "annual" ? p.annualPrice : p.monthlyPrice;
@@ -409,45 +406,6 @@ function PricingPageContent() {
 
   return (
     <main className="app-container py-6 pb-44">
-
-      {/* ── Pop-Up Event Pass Banner ───────────────────────────────────────── */}
-      {promo === "POPUP" && !promoClaimed && (
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-gradient-to-r from-amber-500 via-primary-500 to-orange-600 text-white rounded-3xl p-5 mb-8 shadow-xl flex flex-col sm:flex-row items-center justify-between gap-4 border border-amber-300/40 relative z-20"
-        >
-          <div className="flex items-center gap-3.5">
-            <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white shrink-0">
-              <Crown size={24} />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="bg-white text-primary-600 font-black text-[9px] uppercase tracking-widest px-2 py-0.5 rounded-full">
-                  Pop-up Event Pass
-                </span>
-                <span className="text-amber-200 text-xs font-semibold">30 Days Free Pro</span>
-              </div>
-              <h3 className="text-lg font-black tracking-tight text-white mt-0.5">
-                Pop-up Market Vendor Special
-              </h3>
-              <p className="text-xs text-white/90 font-medium mt-0.5">
-                Unlock instant Pro features for your stall demos. No card required.
-              </p>
-            </div>
-          </div>
-          <button
-            onClick={() => {
-              activateTempPro();
-              setPromoClaimed(true);
-              showToast("⚡ Pop-up Vendor 30-Day Pro Pass Unlocked!", "success");
-            }}
-            className="bg-white text-primary-600 hover:bg-amber-50 font-black text-xs uppercase tracking-widest px-6 py-3.5 rounded-2xl shadow-md active:scale-95 transition-all shrink-0 w-full sm:w-auto text-center"
-          >
-            Claim 30 Days Free Pro
-          </button>
-        </motion.div>
-      )}
 
       {/* ── Hook ─────────────────────────────────────────────────────────── */}
       <motion.div

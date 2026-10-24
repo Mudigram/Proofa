@@ -21,7 +21,7 @@ export default function BottomNav() {
     const { isBusiness, isPro } = useAuth();
     const [isCreateOpen, setIsCreateOpen] = useState(false);
 
-    if (pathname.startsWith("/auth")) return null;
+    if (pathname.startsWith("/auth") || pathname.startsWith("/admin")) return null;
 
     const navItems = [
         { label: "Home", href: "/", icon: Home },
