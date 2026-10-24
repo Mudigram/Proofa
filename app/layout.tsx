@@ -24,6 +24,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://www.proofa.ng"),
   title: "Proofa — Send Your Receipt on WhatsApp in Seconds",
   description: "Create professional receipts & invoices in seconds. Share directly to WhatsApp. Built for Nigerian small businesses. Free to start.",
   keywords: [
