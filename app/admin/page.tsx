@@ -20,6 +20,27 @@ interface UserRecord {
     latestDoc: string | null;
 }
 
+export interface ShadowLead {
+    id: string;
+    userId: string | null;
+    businessName: string;
+    contactPhone: string | null;
+    contactEmail: string | null;
+    devicePlatform: string;
+    isPWA: boolean;
+    totalDocs: number;
+    receiptCount: number;
+    invoiceCount: number;
+    orderCount: number;
+    totalVolumeNGN: number;
+    totalVolumeUSD: number;
+    topItems: string[];
+    featureTags: string[];
+    firstSeenAt: string;
+    lastActiveAt: string;
+    lastEvent: string;
+}
+
 interface StatsData {
     totalUsers: number;
     newUsers7d: number;
@@ -38,9 +59,14 @@ interface StatsData {
     };
     totalVolumeNGN: number;
     totalVolumeUSD: number;
+    shadowMerchantsCount?: number;
+    shadowTotalVolumeNGN?: number;
+    shadowLeadsWithPhone?: number;
+    shadowHighVolumeCount?: number;
+    shadowBrandConsciousCount?: number;
 }
 
-type TabType = "users" | "insights" | "outreach";
+type TabType = "users" | "shadow" | "insights" | "outreach";
 type SortOption = "newest" | "oldest" | "most_docs" | "highest_volume";
 
 export default function AdminPage() {
@@ -54,14 +80,17 @@ export default function AdminPage() {
     // Data
     const [stats, setStats] = useState<StatsData | null>(null);
     const [users, setUsers] = useState<UserRecord[]>([]);
+    const [shadowLeads, setShadowLeads] = useState<ShadowLead[]>([]);
     const [lastRefreshed, setLastRefreshed] = useState<Date | null>(null);
 
     // UI State
     const [activeTab, setActiveTab] = useState<TabType>("users");
     const [searchQuery, setSearchQuery] = useState("");
     const [planFilter, setPlanFilter] = useState<"all" | "paid" | "free">("all");
+    const [shadowTagFilter, setShadowTagFilter] = useState<string>("all");
     const [sortBy, setSortBy] = useState<SortOption>("newest");
     const [selectedUser, setSelectedUser] = useState<UserRecord | null>(null);
+    const [selectedShadow, setSelectedShadow] = useState<ShadowLead | null>(null);
     const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
     // ── Data Fetching ────────────────────────────────────────────────────────
@@ -81,7 +110,8 @@ export default function AdminPage() {
 
             if (res.ok && data.success) {
                 setStats(data.stats);
-                setUsers(data.users);
+                setUsers(data.users || []);
+                setShadowLeads(data.shadowLeads || []);
                 setIsAuthenticated(true);
                 setLastRefreshed(new Date());
                 sessionStorage.setItem("proofa_admin_token", key);
@@ -119,6 +149,7 @@ export default function AdminPage() {
         setStats(null);
         setUsers([]);
         setSelectedUser(null);
+        setSelectedShadow(null);
         showToast("Session terminated", "info");
     };
 
@@ -147,6 +178,35 @@ export default function AdminPage() {
         link.click();
         document.body.removeChild(link);
         showToast("Customer database exported to CSV", "success");
+    };
+
+    // ── Export Shadow Leads CSV ──────────────────────────────────────────────
+    const exportShadowCSV = () => {
+        if (!shadowLeads.length) return;
+        const headers = ["Shadow ID", "Business Name", "Contact Phone", "Platform", "PWA", "Docs Count", "Volume (NGN)", "Top Items", "Tags", "First Seen", "Last Active"];
+        const rows = shadowLeads.map(s => [
+            s.id,
+            `"${s.businessName || 'Anonymous'}"`,
+            `"${s.contactPhone || ''}"`,
+            s.devicePlatform,
+            s.isPWA ? "Yes" : "No",
+            s.totalDocs,
+            s.totalVolumeNGN,
+            `"${(s.topItems || []).join('; ')}"`,
+            `"${(s.featureTags || []).join('; ')}"`,
+            `"${s.firstSeenAt}"`,
+            `"${s.lastActiveAt}"`,
+        ]);
+
+        const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", `proofa_shadow_leads_${new Date().toISOString().split("T")[0]}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        showToast("Shadow leads database exported to CSV", "success");
     };
 
     // ── Copy Helper ──────────────────────────────────────────────────────────
@@ -182,6 +242,35 @@ export default function AdminPage() {
                 return 0;
             });
     }, [users, planFilter, searchQuery, sortBy]);
+
+    // ── Filtered & Sorted Shadow Leads ───────────────────────────────────────
+    const filteredShadowLeads = useMemo(() => {
+        return shadowLeads
+            .filter(s => {
+                if (shadowTagFilter === "with_phone" && !s.contactPhone) return false;
+                if (shadowTagFilter === "high_volume" && s.totalVolumeNGN < 100000) return false;
+                if (shadowTagFilter === "brand" && !s.featureTags.includes("Brand Conscious")) return false;
+                if (shadowTagFilter === "invoice" && !s.featureTags.includes("Invoicing Focus")) return false;
+                if (shadowTagFilter === "frequent" && s.totalDocs < 3) return false;
+
+                if (!searchQuery.trim()) return true;
+                const q = searchQuery.toLowerCase().trim();
+                return (
+                    s.businessName.toLowerCase().includes(q) ||
+                    (s.contactPhone && s.contactPhone.toLowerCase().includes(q)) ||
+                    s.id.toLowerCase().includes(q) ||
+                    s.topItems.some(i => i.toLowerCase().includes(q)) ||
+                    s.featureTags.some(t => t.toLowerCase().includes(q))
+                );
+            })
+            .sort((a, b) => {
+                if (sortBy === "newest") return new Date(b.lastActiveAt).getTime() - new Date(a.lastActiveAt).getTime();
+                if (sortBy === "oldest") return new Date(a.firstSeenAt).getTime() - new Date(b.firstSeenAt).getTime();
+                if (sortBy === "most_docs") return b.totalDocs - a.totalDocs;
+                if (sortBy === "highest_volume") return b.totalVolumeNGN - a.totalVolumeNGN;
+                return 0;
+            });
+    }, [shadowLeads, shadowTagFilter, searchQuery, sortBy]);
 
     // ── Authentication Screen (Minimalist Slate) ─────────────────────────────
     if (!isAuthenticated) {
@@ -314,7 +403,18 @@ export default function AdminPage() {
                                     : "text-[#787774] hover:text-[#111] dark:hover:text-white"
                             }`}
                         >
-                            Customers ({users.length})
+                            Registered ({users.length})
+                        </button>
+                        <button
+                            onClick={() => setActiveTab("shadow")}
+                            className={`px-3.5 py-1.5 rounded text-xs font-medium transition-colors flex items-center gap-1.5 ${
+                                activeTab === "shadow"
+                                    ? "bg-white dark:bg-[#222] text-[#111] dark:text-white shadow-sm"
+                                    : "text-[#787774] hover:text-[#111] dark:hover:text-white"
+                            }`}
+                        >
+                            <span className="w-1.5 h-1.5 rounded-full bg-[#e8590c] inline-block animate-pulse" />
+                            Shadow Leads ({shadowLeads.length})
                         </button>
                         <button
                             onClick={() => setActiveTab("insights")}
@@ -578,6 +678,257 @@ export default function AdminPage() {
                             <div className="p-3 border-t border-[#EAEAEA] dark:border-[#222] bg-[#F7F6F3] dark:bg-[#161616] flex items-center justify-between font-mono text-[11px] text-[#787774]">
                                 <span>SHOWING {filteredUsers.length} OF {users.length} RECORDS</span>
                                 <span>CLICK ROW TO INSPECT METADATA</span>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* ── TAB: SHADOW LEADS & MERCHANT INTELLIGENCE ─────────────── */}
+                {activeTab === "shadow" && (
+                    <div className="space-y-6">
+                        {/* Shadow Summary Banner */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                            <div className="bg-white dark:bg-[#141414] border border-[#EAEAEA] dark:border-[#222] rounded-lg p-5">
+                                <span className="font-mono text-[10px] tracking-widest text-[#787774] uppercase block mb-1">
+                                    DISCOVERED MERCHANTS
+                                </span>
+                                <div className="text-2xl font-extrabold font-mono text-[#111] dark:text-white">
+                                    {stats?.shadowMerchantsCount ?? shadowLeads.length}
+                                </div>
+                                <span className="text-xs text-[#787774] mt-1 block">Active guest & free users</span>
+                            </div>
+
+                            <div className="bg-white dark:bg-[#141414] border border-[#EAEAEA] dark:border-[#222] rounded-lg p-5">
+                                <span className="font-mono text-[10px] tracking-widest text-[#787774] uppercase block mb-1">
+                                    CONTACTABLE LEADS
+                                </span>
+                                <div className="text-2xl font-extrabold font-mono text-[#346538] dark:text-[#86EFAC]">
+                                    {stats?.shadowLeadsWithPhone ?? shadowLeads.filter(s => s.contactPhone).length}
+                                </div>
+                                <span className="text-xs text-[#787774] mt-1 block">WhatsApp phone captured</span>
+                            </div>
+
+                            <div className="bg-white dark:bg-[#141414] border border-[#EAEAEA] dark:border-[#222] rounded-lg p-5">
+                                <span className="font-mono text-[10px] tracking-widest text-[#787774] uppercase block mb-1">
+                                    UNTRACKED SHADOW REVENUE
+                                </span>
+                                <div className="text-2xl font-extrabold font-mono text-[#111] dark:text-white">
+                                    ₦{(stats?.shadowTotalVolumeNGN ?? 0).toLocaleString()}
+                                </div>
+                                <span className="text-xs text-[#787774] mt-1 block">Total gross volume generated</span>
+                            </div>
+
+                            <div className="bg-white dark:bg-[#141414] border border-[#EAEAEA] dark:border-[#222] rounded-lg p-5">
+                                <span className="font-mono text-[10px] tracking-widest text-[#787774] uppercase block mb-1">
+                                    HIGH INTENT TARGETS
+                                </span>
+                                <div className="text-2xl font-extrabold font-mono text-[#e8590c]">
+                                    {shadowLeads.filter(s => s.featureTags.includes("Brand Conscious") || s.featureTags.includes("High Volume")).length}
+                                </div>
+                                <span className="text-xs text-[#787774] mt-1 block">High-volume / Brand intent</span>
+                            </div>
+                        </div>
+
+                        {/* Search & Tag Filter Bar */}
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-[#141414] p-4 rounded-lg border border-[#EAEAEA] dark:border-[#222]">
+                            <div className="flex-1 max-w-md">
+                                <input
+                                    type="text"
+                                    placeholder="Search by business name, phone, item keywords..."
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    className="w-full bg-[#F7F6F3] dark:bg-[#1A1A1A] border border-[#EAEAEA] dark:border-[#262626] rounded px-3.5 py-2 text-xs font-mono text-[#111] dark:text-white placeholder-[#A1A1AA] focus:outline-none focus:border-[#111] dark:focus:border-white transition-colors"
+                                />
+                            </div>
+
+                            <div className="flex flex-wrap items-center gap-2">
+                                <button
+                                    onClick={() => setShadowTagFilter("all")}
+                                    className={`px-3 py-1.5 rounded text-xs font-mono transition-colors ${
+                                        shadowTagFilter === "all"
+                                            ? "bg-[#111] text-white dark:bg-white dark:text-[#111]"
+                                            : "border border-[#EAEAEA] dark:border-[#262626] text-[#787774] hover:text-[#111] dark:hover:text-white"
+                                    }`}
+                                >
+                                    ALL ({shadowLeads.length})
+                                </button>
+                                <button
+                                    onClick={() => setShadowTagFilter("with_phone")}
+                                    className={`px-3 py-1.5 rounded text-xs font-mono transition-colors ${
+                                        shadowTagFilter === "with_phone"
+                                            ? "bg-[#111] text-white dark:bg-white dark:text-[#111]"
+                                            : "border border-[#EAEAEA] dark:border-[#262626] text-[#787774] hover:text-[#111] dark:hover:text-white"
+                                    }`}
+                                >
+                                    📞 WITH PHONE ({shadowLeads.filter(s => s.contactPhone).length})
+                                </button>
+                                <button
+                                    onClick={() => setShadowTagFilter("high_volume")}
+                                    className={`px-3 py-1.5 rounded text-xs font-mono transition-colors ${
+                                        shadowTagFilter === "high_volume"
+                                            ? "bg-[#111] text-white dark:bg-white dark:text-[#111]"
+                                            : "border border-[#EAEAEA] dark:border-[#262626] text-[#787774] hover:text-[#111] dark:hover:text-white"
+                                    }`}
+                                >
+                                    💰 &gt;₦100K VOLUME ({shadowLeads.filter(s => s.totalVolumeNGN >= 100000).length})
+                                </button>
+                                <button
+                                    onClick={() => setShadowTagFilter("brand")}
+                                    className={`px-3 py-1.5 rounded text-xs font-mono transition-colors ${
+                                        shadowTagFilter === "brand"
+                                            ? "bg-[#111] text-white dark:bg-white dark:text-[#111]"
+                                            : "border border-[#EAEAEA] dark:border-[#262626] text-[#787774] hover:text-[#111] dark:hover:text-white"
+                                    }`}
+                                >
+                                    🎨 LOGO INTENT ({shadowLeads.filter(s => s.featureTags.includes("Brand Conscious")).length})
+                                </button>
+                                <button
+                                    onClick={exportShadowCSV}
+                                    className="border border-[#EAEAEA] dark:border-[#262626] hover:bg-[#F7F6F3] dark:hover:bg-[#1A1A1A] text-[#111] dark:text-white px-3 py-1.5 rounded text-xs font-mono transition-colors"
+                                >
+                                    EXPORT CSV
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Shadow Table */}
+                        <div className="border border-[#EAEAEA] dark:border-[#222] bg-white dark:bg-[#141414] rounded-lg overflow-hidden shadow-xs">
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-left border-collapse">
+                                    <thead>
+                                        <tr className="border-b border-[#EAEAEA] dark:border-[#1F1F1F] font-mono text-[11px] text-[#787774] uppercase tracking-wider bg-[#F7F6F3]/50 dark:bg-[#161616]/50">
+                                            <th className="py-3 px-5">Merchant / Shadow ID</th>
+                                            <th className="py-3 px-4">WhatsApp Contact</th>
+                                            <th className="py-3 px-4 text-right">Docs</th>
+                                            <th className="py-3 px-4 text-right">Volume</th>
+                                            <th className="py-3 px-4">Behavioral Tags</th>
+                                            <th className="py-3 px-4">Top Items</th>
+                                            <th className="py-3 px-4">Last Active</th>
+                                            <th className="py-3 px-5 text-right">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-[#EAEAEA] dark:divide-[#1F1F1F] text-xs">
+                                        {filteredShadowLeads.length === 0 ? (
+                                            <tr>
+                                                <td colSpan={8} className="py-16 text-center text-[#787774] font-mono">
+                                                    NO SHADOW MERCHANTS MATCHING FILTER
+                                                </td>
+                                            </tr>
+                                        ) : (
+                                            filteredShadowLeads.map((s) => {
+                                                const firstItem = s.topItems?.[0] || "products";
+                                                const waText = encodeURIComponent(
+                                                    `Hello ${s.businessName || "there"}! 👋 I noticed you've been using Proofa to issue receipts for your ${firstItem}. How has the experience been? If you'd like your official business logo & custom branding without watermarks, I can activate a free 14-day Pro trial for you today.`
+                                                );
+
+                                                return (
+                                                    <tr
+                                                        key={s.id}
+                                                        onClick={() => setSelectedShadow(s)}
+                                                        className="hover:bg-[#FBFBFA] dark:hover:bg-[#1A1A1A] cursor-pointer transition-colors"
+                                                    >
+                                                        {/* Merchant Name & ID */}
+                                                        <td className="py-3.5 px-5">
+                                                            <div className="flex flex-col">
+                                                                <span className="font-bold text-[#111] dark:text-white">
+                                                                    {s.businessName || "Anonymous Vendor"}
+                                                                </span>
+                                                                <span className="font-mono text-[10px] text-[#787774]">
+                                                                    {s.id.slice(0, 14)}... · {s.devicePlatform} {s.isPWA ? "(PWA)" : ""}
+                                                                </span>
+                                                            </div>
+                                                        </td>
+
+                                                        {/* Phone */}
+                                                        <td className="py-3.5 px-4 font-mono text-[11px]">
+                                                            {s.contactPhone ? (
+                                                                <span className="text-[#346538] dark:text-[#86EFAC] font-medium">
+                                                                    +{s.contactPhone}
+                                                                </span>
+                                                            ) : (
+                                                                <span className="text-[#A1A1AA]">Not captured</span>
+                                                            )}
+                                                        </td>
+
+                                                        {/* Docs */}
+                                                        <td className="py-3.5 px-4 text-right font-mono tabular-nums text-[#111] dark:text-white font-medium">
+                                                            {s.totalDocs}
+                                                        </td>
+
+                                                        {/* Volume */}
+                                                        <td className="py-3.5 px-4 text-right font-mono tabular-nums text-[#111] dark:text-white">
+                                                            ₦{s.totalVolumeNGN.toLocaleString()}
+                                                        </td>
+
+                                                        {/* Behavioral Tags */}
+                                                        <td className="py-3.5 px-4">
+                                                            <div className="flex flex-wrap gap-1 max-w-[220px]">
+                                                                {s.featureTags.slice(0, 2).map((t) => (
+                                                                    <span
+                                                                        key={t}
+                                                                        className={`inline-block px-1.5 py-0.5 rounded text-[9px] font-mono tracking-wide ${
+                                                                            t === "High Volume"
+                                                                                ? "bg-[#FEF3C7] dark:bg-[#78350F] text-[#92400E] dark:text-[#FDE68A]"
+                                                                                : t === "Brand Conscious"
+                                                                                ? "bg-[#EDE9FE] dark:bg-[#4C1D95] text-[#6D28D9] dark:text-[#DDD6FE]"
+                                                                                : "bg-[#F3F4F6] dark:bg-[#1F2937] text-[#4B5563] dark:text-[#9CA3AF]"
+                                                                        }`}
+                                                                    >
+                                                                        {t}
+                                                                    </span>
+                                                                ))}
+                                                                {s.featureTags.length > 2 && (
+                                                                    <span className="text-[9px] font-mono text-[#787774]">
+                                                                        +{s.featureTags.length - 2}
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                        </td>
+
+                                                        {/* Top Items */}
+                                                        <td className="py-3.5 px-4 font-mono text-[11px] text-[#787774] truncate max-w-[150px]">
+                                                            {s.topItems.length > 0 ? s.topItems.slice(0, 2).join(", ") : "—"}
+                                                        </td>
+
+                                                        {/* Last Active */}
+                                                        <td className="py-3.5 px-4 font-mono text-[11px] text-[#787774]">
+                                                            {new Date(s.lastActiveAt).toLocaleDateString("en-GB", {
+                                                                day: "numeric",
+                                                                month: "short",
+                                                            })}
+                                                        </td>
+
+                                                        {/* 1-Click WhatsApp Pitch */}
+                                                        <td className="py-3.5 px-5 text-right" onClick={(e) => e.stopPropagation()}>
+                                                            {s.contactPhone ? (
+                                                                <a
+                                                                    href={`https://wa.me/${s.contactPhone}?text=${waText}`}
+                                                                    target="_blank"
+                                                                    rel="noopener noreferrer"
+                                                                    className="inline-block bg-[#25D366] hover:bg-[#20BA5A] text-white px-2.5 py-1 rounded font-mono text-[11px] transition-colors"
+                                                                >
+                                                                    PITCH WA
+                                                                </a>
+                                                            ) : (
+                                                                <button
+                                                                    onClick={() => setSelectedShadow(s)}
+                                                                    className="inline-block border border-[#EAEAEA] dark:border-[#262626] hover:bg-[#111] hover:text-white dark:hover:bg-white dark:hover:text-[#111] text-[#787774] px-2.5 py-1 rounded font-mono text-[11px] transition-colors"
+                                                                >
+                                                                    INSPECT
+                                                                </button>
+                                                            )}
+                                                        </td>
+                                                    </tr>
+                                                );
+                                            })
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div className="p-3 border-t border-[#EAEAEA] dark:border-[#222] bg-[#F7F6F3] dark:bg-[#161616] flex items-center justify-between font-mono text-[11px] text-[#787774]">
+                                <span>SHOWING {filteredShadowLeads.length} OF {shadowLeads.length} SHADOW LEADS</span>
+                                <span>CLICK ROW TO INSPECT DOSSIER</span>
                             </div>
                         </div>
                     </div>
@@ -882,6 +1233,150 @@ export default function AdminPage() {
                             </a>
                             <button
                                 onClick={() => setSelectedUser(null)}
+                                className="w-full border border-[#EAEAEA] dark:border-[#222] hover:bg-[#F7F6F3] dark:hover:bg-[#1A1A1A] text-xs font-mono py-2.5 rounded transition-colors text-[#787774]"
+                            >
+                                DISMISS
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+            {/* ── SHADOW LEAD INSPECTION DRAWER ──────────────────────────────── */}
+            {selectedShadow && (
+                <div className="fixed inset-0 z-50 flex justify-end bg-black/40 backdrop-blur-xs transition-opacity animate-in fade-in duration-200">
+                    <div className="w-full max-w-lg bg-white dark:bg-[#121212] border-l border-[#EAEAEA] dark:border-[#222] h-full overflow-y-auto p-8 shadow-2xl flex flex-col justify-between">
+                        <div>
+                            {/* Drawer Header */}
+                            <div className="flex items-center justify-between border-b border-[#EAEAEA] dark:border-[#1F1F1F] pb-4 mb-6">
+                                <span className="font-mono text-xs tracking-wider uppercase text-[#787774]">
+                                    SHADOW MERCHANT DOSSIER
+                                </span>
+                                <button
+                                    onClick={() => setSelectedShadow(null)}
+                                    className="font-mono text-xs text-[#787774] hover:text-[#111] dark:hover:text-white transition-colors"
+                                >
+                                    [CLOSE ✕]
+                                </button>
+                            </div>
+
+                            {/* Identity Title */}
+                            <div className="mb-6">
+                                <h2 className="text-2xl font-bold tracking-tight text-[#111] dark:text-white">
+                                    {selectedShadow.businessName || "Anonymous Vendor"}
+                                </h2>
+                                <p className="font-mono text-xs text-[#e8590c] mt-1">
+                                    {selectedShadow.contactPhone ? `WhatsApp: +${selectedShadow.contactPhone}` : "No phone captured"}
+                                </p>
+                            </div>
+
+                            {/* Details Grid */}
+                            <div className="space-y-4">
+                                <div className="border border-[#EAEAEA] dark:border-[#222] rounded p-4 bg-[#F7F6F3] dark:bg-[#181818]">
+                                    <span className="font-mono text-[10px] text-[#787774] uppercase block mb-1">SHADOW_ID</span>
+                                    <div className="flex items-center justify-between font-mono text-xs text-[#111] dark:text-white">
+                                        <span className="truncate max-w-[280px]">{selectedShadow.id}</span>
+                                        <button
+                                            onClick={() => copyToClipboard(selectedShadow.id, "shadow_id_copy", "Shadow ID copied")}
+                                            className="text-[10px] text-[#e8590c] hover:underline uppercase ml-2 shrink-0"
+                                        >
+                                            {copiedKey === "shadow_id_copy" ? "COPIED" : "COPY"}
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div className="border border-[#EAEAEA] dark:border-[#222] rounded p-4">
+                                        <span className="font-mono text-[10px] text-[#787774] uppercase block mb-1">ENVIRONMENT</span>
+                                        <span className="font-mono text-xs font-bold text-[#111] dark:text-white">
+                                            {selectedShadow.devicePlatform} {selectedShadow.isPWA ? "(PWA Installed)" : "(Web)"}
+                                        </span>
+                                    </div>
+                                    <div className="border border-[#EAEAEA] dark:border-[#222] rounded p-4">
+                                        <span className="font-mono text-[10px] text-[#787774] uppercase block mb-1">DOCUMENTS EXPORTED</span>
+                                        <span className="font-mono text-sm font-bold text-[#111] dark:text-white">
+                                            {selectedShadow.totalDocs} ({selectedShadow.receiptCount}r / {selectedShadow.invoiceCount}i / {selectedShadow.orderCount}o)
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div className="border border-[#EAEAEA] dark:border-[#222] rounded p-4">
+                                        <span className="font-mono text-[10px] text-[#787774] uppercase block mb-1">GROSS SHADOW VOLUME</span>
+                                        <span className="font-mono text-sm font-bold text-[#111] dark:text-white">
+                                            ₦{selectedShadow.totalVolumeNGN.toLocaleString()}
+                                        </span>
+                                    </div>
+                                    <div className="border border-[#EAEAEA] dark:border-[#222] rounded p-4">
+                                        <span className="font-mono text-[10px] text-[#787774] uppercase block mb-1">AUTH USER LINK</span>
+                                        <span className="font-mono text-xs font-bold text-[#787774]">
+                                            {selectedShadow.userId ? "Linked to Auth" : "Unauthenticated Guest"}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                {/* Behavioral Tags */}
+                                <div className="border border-[#EAEAEA] dark:border-[#222] rounded p-4">
+                                    <span className="font-mono text-[10px] text-[#787774] uppercase block mb-2">TARGETING TAGS</span>
+                                    <div className="flex flex-wrap gap-1.5">
+                                        {selectedShadow.featureTags.map(tag => (
+                                            <span key={tag} className="px-2 py-0.5 rounded text-[10px] font-mono bg-[#EDF3EC] dark:bg-[#152617] text-[#346538] dark:text-[#86EFAC] font-medium">
+                                                {tag}
+                                            </span>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Discovered Catalog / Top Items */}
+                                <div className="border border-[#EAEAEA] dark:border-[#222] rounded p-4">
+                                    <span className="font-mono text-[10px] text-[#787774] uppercase block mb-2">TOP CATALOG ITEMS</span>
+                                    {selectedShadow.topItems.length > 0 ? (
+                                        <div className="flex flex-wrap gap-1.5">
+                                            {selectedShadow.topItems.map(item => (
+                                                <span key={item} className="px-2 py-0.5 rounded text-[11px] font-mono bg-[#F7F6F3] dark:bg-[#1A1A1A] text-[#111] dark:text-[#EAEAEA] border border-[#EAEAEA] dark:border-[#262626]">
+                                                    {item}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <span className="font-mono text-xs text-[#787774]">No line item data logged yet</span>
+                                    )}
+                                </div>
+
+                                <div className="border border-[#EAEAEA] dark:border-[#222] rounded p-4">
+                                    <span className="font-mono text-[10px] text-[#787774] uppercase block mb-1">FIRST SEEN // LAST ACTIVE</span>
+                                    <span className="font-mono text-xs text-[#111] dark:text-white block">
+                                        First: {new Date(selectedShadow.firstSeenAt).toUTCString()}
+                                    </span>
+                                    <span className="font-mono text-xs text-[#787774] block mt-1">
+                                        Active: {new Date(selectedShadow.lastActiveAt).toUTCString()}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Action buttons at drawer footer */}
+                        <div className="pt-6 border-t border-[#EAEAEA] dark:border-[#222] space-y-2">
+                            {selectedShadow.contactPhone ? (
+                                <a
+                                    href={`https://wa.me/${selectedShadow.contactPhone}?text=${encodeURIComponent(
+                                        `Hello ${selectedShadow.businessName || "there"}! 👋 I noticed you've been using Proofa for your business receipts. How has the experience been? If you'd like your business logo & custom branding without watermarks, I can activate a free 14-day Pro trial for you today.`
+                                    )}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="w-full bg-[#25D366] hover:bg-[#20BA5A] text-white text-xs font-medium py-3 rounded flex items-center justify-center gap-2 transition-colors"
+                                >
+                                    OPEN WHATSAPP CONVERSATION
+                                </a>
+                            ) : (
+                                <button
+                                    disabled
+                                    className="w-full bg-[#EAEAEA] dark:bg-[#222] text-[#A1A1AA] text-xs font-mono py-3 rounded text-center cursor-not-allowed"
+                                >
+                                    PHONE NOT DETECTED YET
+                                </button>
+                            )}
+                            <button
+                                onClick={() => setSelectedShadow(null)}
                                 className="w-full border border-[#EAEAEA] dark:border-[#222] hover:bg-[#F7F6F3] dark:hover:bg-[#1A1A1A] text-xs font-mono py-2.5 rounded transition-colors text-[#787774]"
                             >
                                 DISMISS

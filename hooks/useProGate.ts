@@ -58,6 +58,10 @@ export function useProGate(): ProGateResult {
 
             if (!wasDismissed) {
                 setActiveVariant(variant);
+                // Shadow tracking: log upgrade gate encounter
+                import("@/lib/telemetry").then(({ trackEvent }) => {
+                    trackEvent("upgrade_gate_viewed", { variant });
+                }).catch(() => {});
             }
 
             // Gated Pro-only features (e.g. logo, custom colors) remain gated

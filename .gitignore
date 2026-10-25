@@ -1,7 +1,7 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # dependencies
-/node_modules
+node_modules/
 /.pnp
 .pnp.*
 .yarn/*
@@ -13,9 +13,9 @@
 # testing
 /coverage
 
-# next.js
+# next.js & remotion outputs
 /.next/
-/out/
+out/
 
 # production
 /build
@@ -45,3 +45,13 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Remotion Video Project
+video/node_modules/
+video/out/
+video/.remotion/
+video/public/audio/
+*.mp4
+*.mov
+*.wav
+*.mp3

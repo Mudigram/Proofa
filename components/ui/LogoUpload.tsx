@@ -25,6 +25,11 @@ export const LogoUpload = ({ value, onChange, label = "Business Logo" }: LogoUpl
     const businessName = profile?.businessName || "Your Business";
 
     const handleClick = () => {
+        // Shadow tracking: log logo intent
+        import("@/lib/telemetry").then(({ trackFeatureIntent }) => {
+            trackFeatureIntent("logo_upload", { hasExistingLogo: Boolean(value) });
+        }).catch(() => {});
+
         if (!gate("logo")) return;
         fileInputRef.current?.click();
     };

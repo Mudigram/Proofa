@@ -17,6 +17,7 @@ import { useAuth } from "@/context/AuthContext";
 import { UpgradePrompt } from "@/components/ui/UpgradePrompt";
 import { useRouter } from "next/navigation";
 import { ReceiptData } from "@/lib/types";
+import { trackDocExport, trackFeatureIntent } from "@/lib/telemetry";
 
 interface LivePreviewProps {
     data: any;
@@ -185,6 +186,27 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
         return url;
     };
 
+    const sendExportTelemetry = useCallback((channel: string) => {
+        try {
+            const currency = profile?.defaultCurrency || "NGN";
+            const amt = Number(data?.amount || data?.totalAmount || 0);
+            trackDocExport({
+                docType: type,
+                amount: amt,
+                currency,
+                template: activeTemplate,
+                businessName: data?.businessName || profile?.businessName || null,
+                customerPhone: data?.customerPhone || data?.clientPhone || null,
+                customerName: data?.customerName || data?.clientName || null,
+                items: data?.items || [],
+                bankDetails: data?.bankDetails || undefined,
+            });
+            trackFeatureIntent("whatsapp_direct", { channel, docType: type });
+        } catch {
+            // fire-and-forget
+        }
+    }, [data, type, activeTemplate, profile]);
+
     // ── Share handlers ─────────────────────────────────────────────────────────
 
     const handleWhatsApp = async () => {
@@ -192,6 +214,7 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
         if (!gate("export")) return;
         setIsExporting(true);
         persistDocument();
+        sendExportTelemetry("whatsapp_share");
 
         // If bake is still running, wait for it briefly
         if (prebakeState === "baking") {
@@ -239,6 +262,7 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
         if (!directWaNumber) return;
         setIsExporting(true);
         persistDocument();
+        sendExportTelemetry("whatsapp_direct_chat");
 
         // Ensure fresh image is downloaded to device
         const dataUrl = await getFreshDataUrl();
@@ -260,6 +284,7 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
         if (!gate("export")) return;
         setIsExporting(true);
         persistDocument();
+        sendExportTelemetry("web_share");
 
         const dataUrl = dataUrlCache.current ?? await getFreshDataUrl();
         if (!dataUrl) {
@@ -289,6 +314,7 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
         if (!gate("export")) return;
         setIsExporting(true);
         persistDocument();
+        sendExportTelemetry("download_pdf");
         window.scrollTo(0, 0);
         await new Promise(r => setTimeout(r, 80));
 
@@ -302,6 +328,7 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
         if (!gate("export")) return;
         setIsExporting(true);
         persistDocument();
+        sendExportTelemetry("download_image");
         const dataUrl = await getFreshDataUrl();
         if (dataUrl) {
             downloadImage(dataUrl, `Proofa-${type}-${Date.now()}.png`);

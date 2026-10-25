@@ -128,6 +128,53 @@ export async function POST(req: Request) {
             }
         });
 
+        // 7. Fetch Shadow Leads (Anonymous & Free telemetry profiles)
+        const { data: shadowProfiles, error: shadowError } = await supabaseAdmin
+            .from("shadow_profiles")
+            .select("*")
+            .order("last_active_at", { ascending: false })
+            .limit(500);
+
+        if (shadowError) {
+            console.warn("[Admin API] Shadow profiles fetch warning:", shadowError);
+        }
+
+        const rawShadow = shadowProfiles || [];
+        let shadowTotalVolumeNGN = 0;
+        let shadowLeadsWithPhone = 0;
+        let shadowHighVolumeCount = 0;
+        let shadowBrandConsciousCount = 0;
+
+        const enrichedShadow = rawShadow.map((sp: any) => {
+            const volNGN = Number(sp.total_volume_ngn) || 0;
+            shadowTotalVolumeNGN += volNGN;
+            if (sp.contact_phone) shadowLeadsWithPhone += 1;
+            const tags: string[] = Array.isArray(sp.feature_tags) ? sp.feature_tags : [];
+            if (tags.includes("High Volume")) shadowHighVolumeCount += 1;
+            if (tags.includes("Brand Conscious")) shadowBrandConsciousCount += 1;
+
+            return {
+                id: sp.id,
+                userId: sp.user_id,
+                businessName: sp.business_name || "Anonymous Merchant",
+                contactPhone: sp.contact_phone || null,
+                contactEmail: sp.contact_email || null,
+                devicePlatform: sp.device_platform || "Unknown",
+                isPWA: Boolean(sp.is_pwa),
+                totalDocs: sp.total_docs_count || 0,
+                receiptCount: sp.receipt_count || 0,
+                invoiceCount: sp.invoice_count || 0,
+                orderCount: sp.order_count || 0,
+                totalVolumeNGN: volNGN,
+                totalVolumeUSD: Number(sp.total_volume_usd) || 0,
+                topItems: Array.isArray(sp.top_items) ? sp.top_items : [],
+                featureTags: tags,
+                firstSeenAt: sp.first_seen_at,
+                lastActiveAt: sp.last_active_at,
+                lastEvent: sp.last_event,
+            };
+        });
+
         const estimatedMRR = (planCounts.pro * 2500) + (planCounts.business * 5000);
 
         return NextResponse.json({
@@ -142,8 +189,14 @@ export async function POST(req: Request) {
                 docTypeCounts,
                 totalVolumeNGN,
                 totalVolumeUSD,
+                shadowMerchantsCount: enrichedShadow.length,
+                shadowTotalVolumeNGN,
+                shadowLeadsWithPhone,
+                shadowHighVolumeCount,
+                shadowBrandConsciousCount,
             },
             users: enrichedUsers,
+            shadowLeads: enrichedShadow,
         });
     } catch (error: any) {
         console.error("[Admin API] Server error:", error);
