@@ -169,6 +169,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const refreshProfile = useCallback(async () => {
         if (typeof window !== "undefined") {
             setHasTempPro(localStorage.getItem("proofa_temp_pro") === "1");
+            localStorage.removeItem("proofa_cached_profile");
         }
         if (user) await fetchProfile(user);
     }, [user, fetchProfile]);

@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 const sampleRate = 44100;
-const durationSeconds = 21; // 20s film + 1s safety buffer
+const durationSeconds = 17; // 16s film + 1s safety buffer
 const totalSamples = Math.floor(sampleRate * durationSeconds);
 const numChannels = 2;
 const bytesPerSample = 2; // 16-bit
@@ -45,7 +45,7 @@ for (let i = 0; i < totalSamples; i++) {
   // Global Volume Envelope (fade in 0.5s, fade out last 1.5s)
   let masterGain = 1.0;
   if (t < 0.5) masterGain = t / 0.5;
-  if (t > 19.5) masterGain = Math.max(0, (21 - t) / 1.5);
+  if (t > 15.0) masterGain = Math.max(0, (16.5 - t) / 1.5);
 
   // 1. Kick Drum (on every beat 1, 2, 3, 4 after 3.5s hook, or lighter before)
   const isPostHook = t >= 3.5;

@@ -20,28 +20,32 @@ export async function POST(req: Request) {
             );
         }
 
-        // 2. Validate amount if needed (optional but recommended)
-        // const amount = verification.data.amount; 
+        // 2. Validate and calculate duration
+        const targetPlan = plan || "pro";
+        const isBusiness = targetPlan === "business";
+        const amountInNaira = (verification.data?.amount || 0) / 100;
+        const isAnnual = amountInNaira >= 20000;
+        const renewalDays = isAnnual ? 365 : 30;
+        const renewalDate = new Date(Date.now() + renewalDays * 24 * 60 * 60 * 1000).toISOString();
 
         // 3. Update User Profile in Supabase using Admin client
         const { error } = await supabaseAdmin
             .from("profiles")
             .update({
-                subscription_plan: plan || "pro",
+                subscription_plan: targetPlan,
                 subscription_status: "active",
-                subscription_renewal_date: new Date(
-                    Date.now() + 30 * 24 * 60 * 60 * 1000
-                ).toISOString(),
+                is_business: isBusiness,
+                subscription_renewal_date: renewalDate,
                 updated_at: new Date().toISOString(),
             })
             .eq("id", userId);
 
         if (error) {
             console.error("[Verify API] Profile update error:", error);
-            return NextResponse.json({ error: "Failed to update profile" }, { status: 500 });
+            return NextResponse.json({ error: "Failed to update profile", details: error.message }, { status: 500 });
         }
 
-        return NextResponse.json({ success: true, plan });
+        return NextResponse.json({ success: true, plan: targetPlan, isAnnual });
     } catch (error) {
         console.error("[Verify API] Error:", error);
         return NextResponse.json({ error: "Internal server error" }, { status: 500 });

@@ -61,6 +61,9 @@ export function usePaystack() {
                         value: config.metadata?.userId || ""
                     }
                 ],
+                userId: config.metadata?.userId,
+                user_id: config.metadata?.userId,
+                plan: config.metadata?.plan || "pro",
                 ...config.metadata
             },
             callback: (response: { reference: string }) => {

@@ -85,7 +85,12 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
         .eq("id", userId)
         .single();
 
-    if (error || !data) return null;
+    if (error || !data) {
+        if (error) {
+            console.error("[auth] getUserProfile error:", error.message, error.details || "");
+        }
+        return null;
+    }
 
     // `profiles` table does not have email/name in the struct, so we fetch it via the auth user context 
     // typically we merge this in the AuthContext. Here we just map the DB fields.

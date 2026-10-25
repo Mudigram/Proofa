@@ -332,7 +332,7 @@ export default function PricingPage() {
 }
 
 function PricingPageContent() {
-  const { profile, isAuthenticated, plan, refreshProfile, activateTempPro } = useAuth();
+  const { user, profile, isAuthenticated, plan, refreshProfile, activateTempPro } = useAuth();
   const { initializePayment, loading: paystackLoading } = usePaystack();
   const router = useRouter();
   const { showToast } = useToast();
@@ -362,22 +362,30 @@ function PricingPageContent() {
     }
 
     // Paystack live path
-    if (!profile?.email) return;
+    const userEmail = profile?.email || user?.email;
+    const userId = profile?.id || user?.id;
+    if (!userEmail || !userId) {
+      showToast("Could not determine user account details. Please re-login.", "error");
+      return;
+    }
 
     await initializePayment({
-      email: profile.email,
+      email: userEmail,
       amount: getPrice(planObj),
-      metadata: { userId: profile.id, plan: planObj.id },
+      metadata: { userId, plan: planObj.id },
       onSuccess: async (reference) => {
         setVerifying(true);
         try {
           const res = await fetch("/api/paystack/verify", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ reference, plan: planObj.id, userId: profile.id }),
+            body: JSON.stringify({ reference, plan: planObj.id, userId }),
           });
           const data = await res.json();
           if (data.success) {
+            if (typeof window !== "undefined") {
+              localStorage.removeItem("proofa_cached_profile");
+            }
             await refreshProfile();
             showToast(`Successfully upgraded to ${planObj.name}!`, "success");
             router.push("/profile?upgrade=success");
