@@ -44,6 +44,16 @@ export default function SignupPage() {
             return;
         }
 
+        // Fire welcome email asynchronously via Sendly
+        fetch("/api/email/welcome", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                email: email.trim(),
+                businessName: name.trim() || "My Business",
+            }),
+        }).catch((err) => console.warn("[Signup] Welcome email trigger failed:", err));
+
         // Store temporary draft business name for onboarding wizard
         if (name.trim()) {
             try {

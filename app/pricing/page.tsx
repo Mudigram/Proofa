@@ -6,23 +6,13 @@
   Outfit 900 for plan names and headline; Inter 700 for features and labels. Rounded-[2.5rem]
   cards, uppercase tracking-widest labels, active:scale-[0.98] on every CTA.
 
-  STORY: The user just hit an upgrade gate. They arrive primed. Three stacked tier cards fill
-  the first viewport in anchor-high order (Business → Pro → Free). The Pro card is larger,
-  floated, orange-filled — the page's centre of gravity. They see the price, they see what
-  changes, they tap.
-
-  FIRST VIEWPORT: Hook headline (2 lines, black, tight). Annual/Monthly toggle centred.
-  Three plan cards below — Business (charcoal, compact), Pro (orange, elevated, larger),
-  Free (white, bordered, compact). Primary CTA inside each card.
-
-  FORM: Candidate 3 of the grounded list — "The Business Confidence Stack". Seed key 42df25b5.
-
-  FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review,
-  the verdict, and DESIGN.md.
+  GATEWAYS:
+  - 🇳🇬 NGN payments powered by Paystack (Card, Transfer, USSD)
+  - 🌐 USD international payments powered by Bachs (Global Cards)
 */
 "use client";
 
-import React, { Suspense, useState } from "react";
+import React, { Suspense, useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import {
@@ -35,14 +25,15 @@ import {
   ArrowRight,
   X,
   Sparkles,
+  Globe,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { usePaystack } from "@/hooks/usePaystack";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useToast } from "@/components/ui/Toast";
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Plan Data
+// Plan Data with NGN & USD pricing
 // ─────────────────────────────────────────────────────────────────────────────
 
 const PLANS = [
@@ -50,9 +41,12 @@ const PLANS = [
     id: "business",
     name: "Business",
     icon: Building2,
-    monthlyPrice: 5000,
-    annualPrice: 50000,
-    annualSave: 10000,
+    monthlyPriceNGN: 5000,
+    annualPriceNGN: 50000,
+    annualSaveNGN: 10000,
+    monthlyPriceUSD: 10,
+    annualPriceUSD: 100,
+    annualSaveUSD: 20,
     badge: "For Teams",
     comingSoon: false,
     headline: "Built for teams.",
@@ -68,9 +62,12 @@ const PLANS = [
     id: "pro",
     name: "Pro",
     icon: Crown,
-    monthlyPrice: 2500,
-    annualPrice: 25000,
-    annualSave: 5000,
+    monthlyPriceNGN: 2500,
+    annualPriceNGN: 25000,
+    annualSaveNGN: 5000,
+    monthlyPriceUSD: 5,
+    annualPriceUSD: 50,
+    annualSaveUSD: 10,
     badge: "Most Popular",
     comingSoon: false,
     headline: "Own your brand.",
@@ -88,9 +85,12 @@ const PLANS = [
     id: "free",
     name: "Free",
     icon: Zap,
-    monthlyPrice: 0,
-    annualPrice: 0,
-    annualSave: 0,
+    monthlyPriceNGN: 0,
+    annualPriceNGN: 0,
+    annualSaveNGN: 0,
+    monthlyPriceUSD: 0,
+    annualPriceUSD: 0,
+    annualSaveUSD: 0,
     badge: null,
     comingSoon: false,
     headline: "Start today.",
@@ -124,8 +124,10 @@ const COMPARISON_ROWS: [string, string | boolean, string | boolean, string | boo
   ["Support", "Community", "Priority", "Dedicated manager"],
 ];
 
-const formatPrice = (n: number) =>
-  n === 0 ? "₦0" : `₦${n.toLocaleString()}`;
+const formatPrice = (n: number, curr: "NGN" | "USD") => {
+  if (n === 0) return curr === "NGN" ? "₦0" : "$0";
+  return curr === "NGN" ? `₦${n.toLocaleString()}` : `$${n.toLocaleString()}`;
+};
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Notify Me bottom sheet
@@ -147,8 +149,6 @@ function NotifySheet({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    // TODO: save to Supabase waitlist table when ready
-    // await supabase.from("waitlist").upsert({ email, plan })
     await new Promise((r) => setTimeout(r, 700));
     setDone(true);
     setLoading(false);
@@ -170,10 +170,8 @@ function NotifySheet({
         transition={{ type: "spring", damping: 28, stiffness: 320 }}
         className="relative z-10 w-full max-w-md bg-white dark:bg-surface-900 rounded-t-[2.5rem] shadow-2xl overflow-hidden"
       >
-        {/* Drag handle */}
         <div className="w-10 h-1.5 bg-surface-200 dark:bg-surface-700 rounded-full mx-auto mt-4 mb-2" />
 
-        {/* Dismiss */}
         <button
           onClick={onClose}
           className="absolute top-5 right-5 w-9 h-9 rounded-full bg-surface-100 dark:bg-surface-800 flex items-center justify-center text-surface-400 dark:text-surface-500 hover:text-surface-700 dark:hover:text-surface-300 transition-colors"
@@ -191,8 +189,7 @@ function NotifySheet({
                 You&apos;re on the list!
               </h2>
               <p className="text-surface-500 dark:text-surface-400 text-sm font-medium leading-relaxed">
-                We&apos;ll notify you the moment {plan} payments go live —
-                with an early-adopter discount.
+                We&apos;ll notify you the moment {plan} payments go live — with an early-adopter discount.
               </p>
               <button
                 onClick={onClose}
@@ -203,7 +200,6 @@ function NotifySheet({
             </div>
           ) : (
             <>
-              {/* Pro badge */}
               <div className="inline-flex items-center gap-1.5 bg-primary-50 dark:bg-primary-950/60 text-primary-600 dark:text-primary-400 text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full mb-5">
                 <Bell size={11} />
                 {plan} · Early Access
@@ -214,7 +210,7 @@ function NotifySheet({
               </h2>
               <p className="text-surface-500 dark:text-surface-400 text-sm font-medium leading-relaxed mb-6">
                 Payments are launching soon. Drop your email and we&apos;ll reach
-                out the moment it&apos;s ready — with an early-adopter discount.
+                out the moment it&apos;s ready.
               </p>
 
               <form onSubmit={handleSubmit} className="flex flex-col gap-3">
@@ -295,7 +291,6 @@ function TestimonialCard({
       transition={{ delay, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
       className="bg-white dark:bg-surface-900 rounded-[1.5rem] shadow-sm border border-surface-100 dark:border-surface-800 overflow-hidden"
     >
-      {/* WhatsApp-style chat header */}
       <div className="bg-surface-50 dark:bg-surface-800 border-b border-surface-100 dark:border-surface-800 px-4 py-2.5 flex items-center gap-3">
         <div className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center flex-shrink-0">
           <span className="text-primary-600 font-black text-xs">{name[0]}</span>
@@ -307,7 +302,6 @@ function TestimonialCard({
         <span className="text-[10px] text-surface-300 dark:text-surface-600 font-medium">{time}</span>
       </div>
 
-      {/* Message bubble */}
       <div className="px-4 py-4">
         <div className="bg-surface-50 dark:bg-surface-800 rounded-2xl rounded-tl-sm px-4 py-3 inline-block max-w-full">
           <p className="text-sm text-surface-700 dark:text-surface-300 font-medium leading-relaxed">
@@ -320,7 +314,7 @@ function TestimonialCard({
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Page
+// Page Wrapper
 // ─────────────────────────────────────────────────────────────────────────────
 
 export default function PricingPage() {
@@ -332,18 +326,71 @@ export default function PricingPage() {
 }
 
 function PricingPageContent() {
-  const { user, profile, isAuthenticated, plan, refreshProfile, activateTempPro } = useAuth();
+  const { user, profile, isAuthenticated, plan, refreshProfile } = useAuth();
   const { initializePayment, loading: paystackLoading } = usePaystack();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { showToast } = useToast();
 
+  const [currency, setCurrency] = useState<"NGN" | "USD">("NGN");
   const [billing, setBilling] = useState<"monthly" | "annual">("annual");
   const [notifyPlan, setNotifyPlan] = useState<string | null>(null);
   const [verifying, setVerifying] = useState(false);
   const [showComparison, setShowComparison] = useState(false);
 
-  const getPrice = (p: (typeof PLANS)[number]) =>
-    billing === "annual" ? p.annualPrice : p.monthlyPrice;
+  const userId = profile?.id || user?.id;
+
+  // Handle return callbacks from Bachs International Checkout
+  useEffect(() => {
+    const bachsStatus = searchParams?.get("bachs");
+    const planParam = searchParams?.get("plan");
+    const cycleParam = searchParams?.get("cycle");
+    const sessionId = searchParams?.get("session_id");
+
+    if (bachsStatus === "success" && userId) {
+      setVerifying(true);
+      fetch("/api/bachs/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          sessionId,
+          plan: planParam || "pro",
+          cycle: cycleParam || "monthly",
+          userId,
+        }),
+      })
+        .then((r) => r.json())
+        .then(async (res) => {
+          if (res.success) {
+            if (typeof window !== "undefined") {
+              localStorage.removeItem("proofa_cached_profile");
+            }
+            await refreshProfile();
+            showToast(`Welcome to Proofa ${planParam?.toUpperCase() || "PRO"}! International payment activated.`, "success");
+            router.replace("/profile?upgrade=success");
+          } else {
+            showToast(res.error || "Could not verify international session.", "error");
+          }
+        })
+        .catch(() => {
+          showToast("Network error verifying international payment.", "error");
+        })
+        .finally(() => setVerifying(false));
+    } else if (bachsStatus === "cancel") {
+      showToast("International checkout was cancelled.", "info");
+    }
+  }, [searchParams, userId, refreshProfile, router, showToast]);
+
+  const getPrice = (p: (typeof PLANS)[number]) => {
+    if (currency === "USD") {
+      return billing === "annual" ? p.annualPriceUSD : p.monthlyPriceUSD;
+    }
+    return billing === "annual" ? p.annualPriceNGN : p.monthlyPriceNGN;
+  };
+
+  const getAnnualSavings = (p: (typeof PLANS)[number]) => {
+    return currency === "USD" ? p.annualSaveUSD : p.annualSaveNGN;
+  };
 
   const handleCTA = async (planObj: (typeof PLANS)[number]) => {
     if (planObj.id === "free") {
@@ -361,14 +408,48 @@ function PricingPageContent() {
       return;
     }
 
-    // Paystack live path
     const userEmail = profile?.email || user?.email;
-    const userId = profile?.id || user?.id;
     if (!userEmail || !userId) {
       showToast("Could not determine user account details. Please re-login.", "error");
       return;
     }
 
+    // ─────────────────────────────────────────────────────────────────────────
+    // Route 1: International USD via Bachs
+    // ─────────────────────────────────────────────────────────────────────────
+    if (currency === "USD") {
+      setVerifying(true);
+      try {
+        const res = await fetch("/api/bachs/checkout", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            plan: planObj.id,
+            billing,
+            userId,
+            email: userEmail,
+            businessName: profile?.businessName || "Proofa Merchant",
+          }),
+        });
+
+        const data = await res.json();
+
+        if (data.success && data.checkoutUrl) {
+          window.location.href = data.checkoutUrl;
+        } else {
+          showToast(data.error || "Failed to initialize Bachs international checkout.", "error");
+          setVerifying(false);
+        }
+      } catch {
+        showToast("Network error connecting to Bachs payment gateway.", "error");
+        setVerifying(false);
+      }
+      return;
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Route 2: Nigerian NGN via Paystack
+    // ─────────────────────────────────────────────────────────────────────────
     await initializePayment({
       email: userEmail,
       amount: getPrice(planObj),
@@ -420,15 +501,15 @@ function PricingPageContent() {
         initial={{ y: 12 }}
         animate={{ y: 0 }}
         transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-        className="text-center mb-8 mt-2"
+        className="text-center mb-6 mt-2"
       >
         <h1 className="text-[2.25rem] font-black text-surface-900 dark:text-surface-50 tracking-tight leading-[1.05] mb-3">
           Make sure it says<br />
           <span className="text-primary-500">something good</span>
           <br />about your business.
         </h1>
-        <p className="text-surface-500 dark:text-surface-400 text-sm font-medium leading-relaxed max-w-[300px] mx-auto">
-          Every receipt you send is a first impression. Pro makes it count.
+        <p className="text-surface-500 dark:text-surface-400 text-sm font-medium leading-relaxed max-w-[320px] mx-auto">
+          Every receipt you send is a first impression. Pro makes your brand unforgettable.
         </p>
       </motion.div>
 
@@ -437,7 +518,7 @@ function PricingPageContent() {
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
-        className="flex items-center justify-center gap-3 mb-8"
+        className="flex items-center justify-center gap-3 mb-6"
       >
         <div className="flex -space-x-2">
           {["T", "E", "A", "O"].map((letter, i) => (
@@ -454,16 +535,42 @@ function PricingPageContent() {
         </p>
       </motion.div>
 
-      {/* ── Billing toggle ───────────────────────────────────────────────── */}
-      <div className="flex justify-center mb-6">
-        <div className="inline-flex items-center bg-surface-100 dark:bg-surface-800 rounded-2xl p-1.5 gap-1 border border-surface-200 dark:border-surface-800">
+      {/* ── Regional Gateway & Currency Switcher ─────────────────────────── */}
+      <div className="flex flex-col items-center gap-2.5 mb-6">
+        <div className="inline-flex items-center bg-surface-100 dark:bg-surface-800 rounded-2xl p-1 gap-1 border border-surface-200 dark:border-surface-800 shadow-xs">
+          <button
+            id="currency-ngn"
+            onClick={() => setCurrency("NGN")}
+            className={`px-3.5 py-1.5 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all flex items-center gap-1.5 ${
+              currency === "NGN"
+                ? "bg-white dark:bg-surface-900 text-surface-900 dark:text-surface-50 shadow-sm"
+                : "text-surface-500 hover:text-surface-900 dark:hover:text-surface-100"
+            }`}
+          >
+            <span>🇳🇬</span> NGN (Paystack)
+          </button>
+          <button
+            id="currency-usd"
+            onClick={() => setCurrency("USD")}
+            className={`px-3.5 py-1.5 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all flex items-center gap-1.5 ${
+              currency === "USD"
+                ? "bg-white dark:bg-surface-900 text-surface-900 dark:text-surface-50 shadow-sm"
+                : "text-surface-500 hover:text-surface-900 dark:hover:text-surface-100"
+            }`}
+          >
+            <span>🌐</span> USD (Bachs)
+          </button>
+        </div>
+
+        {/* ── Billing Cycle (Monthly / Annual) ───────────────────────────── */}
+        <div className="inline-flex items-center bg-surface-100/70 dark:bg-surface-800/70 rounded-2xl p-1 gap-1 border border-surface-200/60 dark:border-surface-800">
           <button
             id="billing-monthly"
             onClick={() => setBilling("monthly")}
-            className={`px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
+            className={`px-4 py-1.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
               billing === "monthly"
                 ? "bg-white dark:bg-surface-900 text-surface-900 dark:text-surface-50 shadow-sm"
-                : "text-surface-600 dark:text-surface-300 hover:text-surface-900 dark:hover:text-surface-50"
+                : "text-surface-500 dark:text-surface-400 hover:text-surface-900 dark:hover:text-surface-50"
             }`}
           >
             Monthly
@@ -471,10 +578,10 @@ function PricingPageContent() {
           <button
             id="billing-annual"
             onClick={() => setBilling("annual")}
-            className={`px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest flex items-center gap-1.5 transition-all ${
+            className={`px-4 py-1.5 rounded-xl text-xs font-black uppercase tracking-widest flex items-center gap-1.5 transition-all ${
               billing === "annual"
                 ? "bg-white dark:bg-surface-900 text-surface-900 dark:text-surface-50 shadow-sm"
-                : "text-surface-600 dark:text-surface-300 hover:text-surface-900 dark:hover:text-surface-50"
+                : "text-surface-500 dark:text-surface-400 hover:text-surface-900 dark:hover:text-surface-50"
             }`}
           >
             Annual
@@ -494,6 +601,8 @@ function PricingPageContent() {
           const isFree = planObj.id === "free";
           const isCurrent = isCurrentPlan(planObj);
           const loading = (paystackLoading || verifying) && !planObj.comingSoon;
+          const priceValue = getPrice(planObj);
+          const savings = getAnnualSavings(planObj);
 
           return (
             <motion.div
@@ -571,11 +680,9 @@ function PricingPageContent() {
                         isFree ? "text-surface-900 dark:text-surface-50" : "text-white"
                       }`}
                     >
-                      {getPrice(planObj) === 0
-                        ? "Free"
-                        : formatPrice(getPrice(planObj))}
+                      {formatPrice(priceValue, currency)}
                     </span>
-                    {getPrice(planObj) > 0 && (
+                    {priceValue > 0 && (
                       <span
                         className={`text-sm font-medium mb-0.5 ${
                           isFree ? "text-surface-600 dark:text-surface-300" : "text-white/70"
@@ -585,38 +692,38 @@ function PricingPageContent() {
                       </span>
                     )}
                   </div>
-                  {billing === "annual" && planObj.annualSave > 0 && (
+                  {billing === "annual" && savings > 0 && (
                     <p
                       className={`text-xs font-bold mt-1 font-mono ${
                         isPro ? "text-white/90" : "text-surface-700 dark:text-surface-300"
                       }`}
                     >
-                      ~₦{Math.round(planObj.annualPrice / 12).toLocaleString()}/mo · Save ₦{planObj.annualSave.toLocaleString()} vs monthly
+                      Save {formatPrice(savings, currency)} with annual billing
                     </p>
                   )}
-                  {billing === "monthly" && planObj.monthlyPrice > 0 && (
+                  {billing === "monthly" && priceValue > 0 && (
                     <p
                       className={`text-xs font-medium mt-1 font-mono ${
                         isPro ? "text-white/80" : "text-surface-700 dark:text-surface-300"
                       }`}
                     >
-                      or ₦{planObj.annualPrice.toLocaleString()}/yr · save ₦{planObj.annualSave.toLocaleString()}
+                      Switch to annual to save {formatPrice(savings, currency)}/yr
                     </p>
                   )}
                 </div>
               </div>
 
               {/* Features + CTA */}
-              <div className="bg-white px-6 py-5">
+              <div className="bg-white dark:bg-surface-900 px-6 py-5">
                 <ul className="flex flex-col gap-2.5 mb-5">
                   {planObj.features.map((feat) => (
                     <li
                       key={feat}
-                      className="flex items-center gap-2.5 text-sm text-surface-700 font-medium"
+                      className="flex items-center gap-2.5 text-sm text-surface-700 dark:text-surface-300 font-medium"
                     >
                       <div
                         className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 ${
-                          isFree ? "bg-surface-100" : "bg-primary-50"
+                          isFree ? "bg-surface-100 dark:bg-surface-800" : "bg-primary-50 dark:bg-primary-950/60"
                         }`}
                       >
                         <Check
@@ -630,9 +737,17 @@ function PricingPageContent() {
                   ))}
                 </ul>
 
+                {/* Gateway Indicator */}
+                {!isFree && (
+                  <div className="text-[10px] font-mono text-surface-400 dark:text-surface-500 flex items-center gap-1.5 mb-3 px-1">
+                    <Globe size={11} className="text-primary-500" />
+                    <span>Processed securely via {currency === "USD" ? "Bachs (USD Cards)" : "Paystack (NGN & Bank Transfer)"}</span>
+                  </div>
+                )}
+
                 {/* CTA */}
                 {isCurrent ? (
-                  <div className="w-full bg-surface-50 border border-surface-200 text-surface-500 font-bold py-3.5 rounded-2xl flex items-center justify-center gap-2 text-sm">
+                  <div className="w-full bg-surface-50 dark:bg-surface-800 border border-surface-200 dark:border-surface-700 text-surface-500 dark:text-surface-400 font-bold py-3.5 rounded-2xl flex items-center justify-center gap-2 text-sm">
                     <Check size={15} strokeWidth={3} className="text-primary-500" />
                     Current Plan
                   </div>
@@ -640,7 +755,7 @@ function PricingPageContent() {
                   <Link
                     href="/"
                     id="cta-free"
-                    className="w-full bg-surface-100 text-surface-600 font-bold py-3.5 rounded-2xl flex items-center justify-center text-sm active:scale-[0.98] transition-all hover:bg-surface-200"
+                    className="w-full bg-surface-100 dark:bg-surface-800 text-surface-600 dark:text-surface-300 font-bold py-3.5 rounded-2xl flex items-center justify-center text-sm active:scale-[0.98] transition-all hover:bg-surface-200 dark:hover:bg-surface-700"
                   >
                     Continue Free
                   </Link>
@@ -652,13 +767,13 @@ function PricingPageContent() {
                     className={`w-full font-bold py-4 rounded-2xl flex items-center justify-center gap-2 text-sm active:scale-[0.98] transition-all disabled:opacity-70 ${
                       isPro
                         ? "bg-primary-500 text-white shadow-lg shadow-primary-500/25 hover:bg-primary-600"
-                        : "bg-surface-900 text-white hover:bg-black"
+                        : "bg-surface-900 dark:bg-surface-50 text-white dark:text-surface-900 hover:bg-black dark:hover:bg-white"
                     }`}
                   >
                     {loading ? (
                       <>
                         <Loader2 size={16} className="animate-spin" />
-                        {verifying ? "Verifying…" : "Loading…"}
+                        {verifying ? "Verifying…" : "Redirecting…"}
                       </>
                     ) : planObj.comingSoon ? (
                       <>
@@ -680,11 +795,11 @@ function PricingPageContent() {
       </div>
 
       {/* ── Feature comparison toggle ─────────────────────────────────────── */}
-      <div className="mb-10 flex justify-center">
+      <div className="mb-10 flex flex-col items-center">
         <button
           id="compare-toggle"
           onClick={() => setShowComparison((v) => !v)}
-          className="inline-flex items-center justify-center gap-2 text-xs font-black uppercase tracking-widest text-surface-700 hover:text-surface-900 bg-surface-100/80 hover:bg-surface-200/80 border border-surface-200 rounded-2xl px-6 py-3.5 transition-all active:scale-[0.98]"
+          className="inline-flex items-center justify-center gap-2 text-xs font-black uppercase tracking-widest text-surface-700 dark:text-surface-300 hover:text-surface-900 bg-surface-100/80 dark:bg-surface-800 border border-surface-200 dark:border-surface-700 rounded-2xl px-6 py-3.5 transition-all active:scale-[0.98]"
         >
           <span>{showComparison ? "Hide" : "Compare"} all features</span>
           <motion.div
@@ -704,14 +819,13 @@ function PricingPageContent() {
               transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
               className="overflow-hidden w-full mt-3"
             >
-              <div className="bg-white rounded-[2rem] border border-surface-100 overflow-hidden shadow-sm">
-                {/* Column headers */}
-                <div className="grid grid-cols-4 border-b border-surface-100">
+              <div className="bg-white dark:bg-surface-900 rounded-[2rem] border border-surface-100 dark:border-surface-800 overflow-hidden shadow-sm">
+                <div className="grid grid-cols-4 border-b border-surface-100 dark:border-surface-800">
                   <div className="p-4 col-span-1" />
                   {[
                     { label: "Free", style: "text-surface-500" },
                     { label: "Pro", style: "text-primary-500" },
-                    { label: "Biz", style: "text-surface-700" },
+                    { label: "Biz", style: "text-surface-700 dark:text-surface-300" },
                   ].map(({ label, style }) => (
                     <div
                       key={label}
@@ -722,23 +836,22 @@ function PricingPageContent() {
                   ))}
                 </div>
 
-                {/* Rows */}
                 {COMPARISON_ROWS.map(([label, free, pro, biz], rowIdx) => (
                   <div
                     key={label}
-                    className={`grid grid-cols-4 border-b border-surface-50 last:border-0 ${
-                      rowIdx % 2 === 0 ? "bg-white" : "bg-surface-50/40"
+                    className={`grid grid-cols-4 border-b border-surface-50 dark:border-surface-800/60 last:border-0 ${
+                      rowIdx % 2 === 0 ? "bg-white dark:bg-surface-900" : "bg-surface-50/40 dark:bg-surface-800/30"
                     }`}
                   >
                     <div className="p-3 pl-4 col-span-1">
-                      <span className="text-[11px] font-bold text-surface-600 leading-tight">
+                      <span className="text-[11px] font-bold text-surface-600 dark:text-surface-300 leading-tight">
                         {label}
                       </span>
                     </div>
                     <div className="p-3 flex items-center justify-center">
                       <CompCell value={free} />
                     </div>
-                    <div className="p-3 flex items-center justify-center bg-primary-50/30">
+                    <div className="p-3 flex items-center justify-center bg-primary-50/30 dark:bg-primary-950/20">
                       <CompCell value={pro} isHighlight />
                     </div>
                     <div className="p-3 flex items-center justify-center">
@@ -754,7 +867,7 @@ function PricingPageContent() {
 
       {/* ── Testimonials ──────────────────────────────────────────────────── */}
       <div className="mb-10">
-        <p className="text-center text-[10px] font-black uppercase tracking-[0.18em] text-surface-600 mb-5">
+        <p className="text-center text-[10px] font-black uppercase tracking-[0.18em] text-surface-600 dark:text-surface-400 mb-5">
           What sellers are saying
         </p>
         <div className="flex flex-col gap-3">
@@ -793,10 +906,10 @@ function PricingPageContent() {
         <div className="absolute bottom-0 left-0 w-24 h-24 bg-primary-500/10 blur-[50px] rounded-full -ml-8 -mb-8 pointer-events-none" />
 
         <p className="text-white/50 text-[10px] font-black uppercase tracking-widest mb-4 relative z-10">
-          Trusted across Nigeria
+          Trusted across Nigeria &amp; West Africa
         </p>
         <div className="flex justify-center gap-2 flex-wrap relative z-10">
-          {["Lagos", "Abuja", "PH City", "Ibadan", "Enugu", "Kano"].map((city) => (
+          {["Lagos", "Abuja", "PH City", "Ibadan", "Accra", "Nairobi", "London"].map((city) => (
             <span
               key={city}
               className="text-[9px] font-black uppercase tracking-widest bg-white/10 px-3.5 py-1.5 rounded-full"

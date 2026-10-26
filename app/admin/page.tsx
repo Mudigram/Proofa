@@ -93,6 +93,54 @@ export default function AdminPage() {
     const [selectedShadow, setSelectedShadow] = useState<ShadowLead | null>(null);
     const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
+    // Sendly Email Dispatcher State
+    const [sendlyTo, setSendlyTo] = useState("");
+    const [sendlySubject, setSendlySubject] = useState("Quick question from Proofa founder");
+    const [sendlyMessage, setSendlyMessage] = useState(
+        "Hi there,\n\nI noticed you recently started using Proofa to issue receipts for your business. I'm checking in personally to see how everything is going.\n\nAre you having any trouble sending receipts or saving your bank account details? If there's any feature you'd love to see next, just hit reply directly.\n\nBest,\nProofa Team"
+    );
+    const [isSendingEmail, setIsSendingEmail] = useState(false);
+
+    const handleSendSendly = async () => {
+        if (!sendlyTo.trim()) {
+            showToast("Please enter recipient email(s)", "error");
+            return;
+        }
+        if (!sendlySubject.trim() || !sendlyMessage.trim()) {
+            showToast("Subject and message cannot be empty", "error");
+            return;
+        }
+
+        setIsSendingEmail(true);
+        try {
+            const recipients = sendlyTo.split(",").map(e => e.trim()).filter(Boolean);
+            const res = await fetch("/api/admin/email/send", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "x-admin-key": adminKey,
+                },
+                body: JSON.stringify({
+                    to: recipients.length === 1 ? recipients[0] : recipients,
+                    subject: sendlySubject.trim(),
+                    message: sendlyMessage.trim(),
+                    actionText: "Open Proofa App",
+                    actionUrl: "https://www.proofa.ng",
+                }),
+            });
+            const data = await res.json();
+            if (res.ok && data.success) {
+                showToast(`Email successfully dispatched via Sendly to ${recipients.length} recipient(s)!`, "success");
+            } else {
+                showToast(data.error || "Failed to dispatch email via Sendly", "error");
+            }
+        } catch {
+            showToast("Network error contacting Sendly email service", "error");
+        } finally {
+            setIsSendingEmail(false);
+        }
+    };
+
     // ── Data Fetching ────────────────────────────────────────────────────────
     const fetchData = useCallback(async (key: string) => {
         setIsLoading(true);
@@ -1130,6 +1178,97 @@ export default function AdminPage() {
                                 </div>
                             </div>
                         </div>
+
+                        {/* Sendly Direct Dispatcher */}
+                        <div className="bg-white dark:bg-[#141414] border border-[#EAEAEA] dark:border-[#222] rounded-lg p-6">
+                            <div className="flex items-center justify-between mb-1">
+                                <h3 className="text-base font-bold text-[#111] dark:text-white">
+                                    Sendly API Email Dispatcher
+                                </h3>
+                                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#EDF3EC] dark:bg-[#152617] text-[#346538] dark:text-[#86EFAC] font-bold">
+                                    LIVE API CONNECTED
+                                </span>
+                            </div>
+                            <p className="text-xs text-[#787774] mb-4">
+                                Send direct emails or broadcasts through Proofa&apos;s Sendly API infrastructure with automatic delivery tracking.
+                            </p>
+
+                            <div className="space-y-3">
+                                <div>
+                                    <label className="font-mono text-[10px] text-[#787774] uppercase block mb-1">
+                                        RECIPIENT(S) · COMMA SEPARATED OR CLICK A SEGMENT ABOVE
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={sendlyTo}
+                                        onChange={(e) => setSendlyTo(e.target.value)}
+                                        placeholder="user@example.com, merchant2@example.com"
+                                        className="w-full text-xs font-mono p-3 rounded border border-[#EAEAEA] dark:border-[#262626] bg-[#FBFBFA] dark:bg-[#181818] text-[#111] dark:text-white focus:outline-none focus:border-[#e8590c]"
+                                    />
+                                </div>
+
+                                <div className="flex gap-2">
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setSendlySubject("Quick question from Proofa founder");
+                                            setSendlyMessage(
+                                                "Hi there,\n\nI noticed you recently started using Proofa to issue receipts for your business. I'm checking in personally to see how everything is going.\n\nAre you having any trouble sending receipts or saving your bank account details? If there's any feature you'd love to see next, just hit reply directly.\n\nBest,\nProofa Team"
+                                            );
+                                            showToast("Loaded Founder Check-In blueprint", "info");
+                                        }}
+                                        className="text-[10px] font-mono border border-[#EAEAEA] dark:border-[#262626] hover:bg-[#F7F6F3] dark:hover:bg-[#1A1A1A] px-2.5 py-1.5 rounded text-[#787774] transition-colors"
+                                    >
+                                        LOAD FOUNDER CHECK-IN
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setSendlySubject("Upgrade your business branding on Proofa");
+                                            setSendlyMessage(
+                                                "Hi there,\n\nWe noticed you've been actively issuing receipts on Proofa! Your business looks much more official.\n\nIf you'd like to completely remove the Proofa watermark, add your custom business logo, and unlock unlimited HD WhatsApp exports, you can upgrade to Proofa Pro for just ₦2,500/month here:\nhttps://www.proofa.ng/pricing\n\nKeep up the great work!\nProofa Team"
+                                            );
+                                            showToast("Loaded Pro Upgrade Nudge blueprint", "info");
+                                        }}
+                                        className="text-[10px] font-mono border border-[#EAEAEA] dark:border-[#262626] hover:bg-[#F7F6F3] dark:hover:bg-[#1A1A1A] px-2.5 py-1.5 rounded text-[#787774] transition-colors"
+                                    >
+                                        LOAD UPGRADE NUDGE
+                                    </button>
+                                </div>
+
+                                <div>
+                                    <label className="font-mono text-[10px] text-[#787774] uppercase block mb-1">
+                                        SUBJECT LINE
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={sendlySubject}
+                                        onChange={(e) => setSendlySubject(e.target.value)}
+                                        className="w-full text-xs font-mono p-3 rounded border border-[#EAEAEA] dark:border-[#262626] bg-[#FBFBFA] dark:bg-[#181818] text-[#111] dark:text-white focus:outline-none focus:border-[#e8590c]"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="font-mono text-[10px] text-[#787774] uppercase block mb-1">
+                                        EMAIL MESSAGE BODY (PLAIN TEXT / MARKDOWN)
+                                    </label>
+                                    <textarea
+                                        rows={5}
+                                        value={sendlyMessage}
+                                        onChange={(e) => setSendlyMessage(e.target.value)}
+                                        className="w-full text-xs font-mono p-3 rounded border border-[#EAEAEA] dark:border-[#262626] bg-[#FBFBFA] dark:bg-[#181818] text-[#111] dark:text-white focus:outline-none focus:border-[#e8590c]"
+                                    />
+                                </div>
+
+                                <button
+                                    onClick={handleSendSendly}
+                                    disabled={isSendingEmail}
+                                    className="w-full bg-[#e8590c] hover:bg-[#cf4e0a] text-white text-xs font-bold py-3.5 rounded flex items-center justify-center gap-2 transition-all disabled:opacity-50"
+                                >
+                                    {isSendingEmail ? "DISPATCHING VIA SENDLY..." : "SEND EMAIL VIA SENDLY API →"}
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 )}
             </main>
@@ -1225,11 +1364,22 @@ export default function AdminPage() {
 
                         {/* Action buttons at drawer footer */}
                         <div className="pt-6 border-t border-[#EAEAEA] dark:border-[#222] space-y-2">
+                            <button
+                                onClick={() => {
+                                    setSendlyTo(selectedUser.email);
+                                    setActiveTab("outreach");
+                                    setSelectedUser(null);
+                                    showToast(`Loaded ${selectedUser.email} into Sendly Dispatcher`, "info");
+                                }}
+                                className="w-full bg-[#e8590c] hover:bg-[#cf4e0a] text-white text-xs font-bold py-3 rounded flex items-center justify-center gap-2 transition-colors"
+                            >
+                                COMPOSE VIA SENDLY API
+                            </button>
                             <a
                                 href={`mailto:${selectedUser.email}?subject=Hello from Proofa&body=Hi ${selectedUser.businessName || 'there'},`}
-                                className="w-full bg-[#111111] hover:bg-[#333333] dark:bg-[#EEEEEE] dark:hover:bg-[#CCCCCC] dark:text-[#111] text-white text-xs font-medium py-3 rounded flex items-center justify-center gap-2 transition-colors"
+                                className="w-full bg-[#111111] hover:bg-[#333333] dark:bg-[#EEEEEE] dark:hover:bg-[#CCCCCC] dark:text-[#111] text-white text-xs font-medium py-2.5 rounded flex items-center justify-center gap-2 transition-colors"
                             >
-                                SEND DIRECT EMAIL
+                                OPEN EMAIL CLIENT (BCC)
                             </a>
                             <button
                                 onClick={() => setSelectedUser(null)}

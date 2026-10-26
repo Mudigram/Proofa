@@ -63,6 +63,9 @@ export const metadata: Metadata = {
     apple: "/Logo/Proofa orange icon.png",
   },
   manifest: "/manifest.json",
+  verification: {
+    google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION || undefined,
+  },
   alternates: {
     canonical: "https://www.proofa.ng/",
   },

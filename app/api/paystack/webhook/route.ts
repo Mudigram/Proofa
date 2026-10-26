@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import crypto from "crypto";
 import { supabaseAdmin } from "@/lib/supabase";
+import { sendUpgradeEmail } from "@/lib/email";
 
 const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY;
 
@@ -94,6 +95,14 @@ export async function POST(req: Request) {
                     console.error("[Paystack Webhook] Failed to update profile:", updateError);
                 } else {
                     console.log(`[Paystack Webhook] Successfully activated ${targetPlan} for user ${userId}`);
+                    if (customerEmail) {
+                        sendUpgradeEmail(
+                            customerEmail,
+                            targetPlan,
+                            amountInNaira.toLocaleString(),
+                            "NGN"
+                        ).catch((err) => console.warn("[Paystack Webhook] Sendly email dispatch notice:", err));
+                    }
                 }
                 break;
             }

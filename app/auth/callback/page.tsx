@@ -14,7 +14,22 @@ export default function AuthCallbackPage() {
 
     useEffect(() => {
         // Supabase automatically reads the hash and sets the session
-        supabase.auth.getSession().then(() => {
+        supabase.auth.getSession().then(({ data }) => {
+            const user = data.session?.user;
+            if (user && user.email) {
+                const createdAt = new Date(user.created_at).getTime();
+                const isNewUser = (Date.now() - createdAt) < 2 * 60 * 1000;
+                if (isNewUser) {
+                    fetch("/api/email/welcome", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            email: user.email,
+                            businessName: user.user_metadata?.name || user.user_metadata?.full_name || "Merchant",
+                        }),
+                    }).catch(() => {});
+                }
+            }
             router.replace("/");
         });
     }, [router]);

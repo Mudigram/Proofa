@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { verifyPaystackTransaction } from "@/lib/paystack";
 import { supabaseAdmin } from "@/lib/supabase";
+import { sendUpgradeEmail } from "@/lib/email";
 
 export async function POST(req: Request) {
     try {
@@ -29,7 +30,7 @@ export async function POST(req: Request) {
         const renewalDate = new Date(Date.now() + renewalDays * 24 * 60 * 60 * 1000).toISOString();
 
         // 3. Update User Profile in Supabase using Admin client
-        const { error } = await supabaseAdmin
+        const { data: updatedProfile, error } = await supabaseAdmin
             .from("profiles")
             .update({
                 subscription_plan: targetPlan,
@@ -38,11 +39,25 @@ export async function POST(req: Request) {
                 subscription_renewal_date: renewalDate,
                 updated_at: new Date().toISOString(),
             })
-            .eq("id", userId);
+            .eq("id", userId)
+            .select("*")
+            .single();
 
         if (error) {
             console.error("[Verify API] Profile update error:", error);
             return NextResponse.json({ error: "Failed to update profile", details: error.message }, { status: 500 });
+        }
+
+        // 4. Dispatch upgrade confirmation email via Sendly
+        const customerEmail = verification.data?.customer?.email;
+        if (customerEmail) {
+            sendUpgradeEmail(
+                customerEmail,
+                targetPlan,
+                amountInNaira.toLocaleString(),
+                "NGN",
+                updatedProfile?.business_name
+            ).catch((err) => console.warn("[Verify API] Sendly email dispatch notice:", err));
         }
 
         return NextResponse.json({ success: true, plan: targetPlan, isAnnual });
