@@ -8,6 +8,7 @@ import Link from "next/link";
 import { User, Users, LogOut, ChevronRight, Crown, Settings, WalletCards, ShieldCheck, HelpCircle, MessageCircle, CheckCircle2, Copy, Check, Moon } from "lucide-react";
 import Image from "next/image";
 import { Modal } from "@/components/ui/Modal";
+import CustomerCareModal from "@/components/CustomerCareModal";
 import { useToast } from "@/components/ui/Toast";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 
@@ -365,51 +366,11 @@ export default function ProfilePage() {
                 </footer>
             </motion.div>
 
-            {/* Help & Support Modal */}
-            <Modal
+            {/* Customer Care & Support Modal */}
+            <CustomerCareModal
                 isOpen={isSupportOpen}
                 onClose={() => setIsSupportOpen(false)}
-                title="Help & Support"
-            >
-                <div className="flex flex-col gap-4">
-                    <p className="text-xs text-surface-500 leading-relaxed">
-                        Need help with your receipts or account? Find answers below or chat directly on WhatsApp.
-                    </p>
-
-                    <div className="flex flex-col gap-2.5">
-                        <div className="p-3 bg-surface-50 rounded-xl border border-surface-200/60">
-                            <h4 className="text-xs font-semibold text-surface-900">How do I remove the watermark?</h4>
-                            <p className="text-xs text-surface-500 mt-0.5 leading-relaxed">
-                                Upgrade to Proofa Pro to export clean, watermark-free receipts and invoices.
-                            </p>
-                        </div>
-
-                        <div className="p-3 bg-surface-50 rounded-xl border border-surface-200/60">
-                            <h4 className="text-xs font-semibold text-surface-900">How do I add bank details?</h4>
-                            <p className="text-xs text-surface-500 mt-0.5 leading-relaxed">
-                                Enable &quot;Bank Details&quot; inside any document editor or save defaults in your Bank Vault.
-                            </p>
-                        </div>
-
-                        <div className="p-3 bg-surface-50 rounded-xl border border-surface-200/60">
-                            <h4 className="text-xs font-semibold text-surface-900">Can I share directly to WhatsApp?</h4>
-                            <p className="text-xs text-surface-500 mt-0.5 leading-relaxed">
-                                Yes! Generate any document and tap &quot;Share to WhatsApp&quot; to send a crisp image instantly.
-                            </p>
-                        </div>
-                    </div>
-
-                    <a
-                        href="https://wa.me/2348000000000?text=Hi%20Proofa%20Support%2C%20I%20need%20help%20with%20my%20account"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 rounded-xl active:scale-[0.98] transition-all flex items-center justify-center gap-2 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
-                    >
-                        <MessageCircle size={17} aria-hidden="true" />
-                        Chat on WhatsApp
-                    </a>
-                </div>
-            </Modal>
+            />
         </main>
     );
 }

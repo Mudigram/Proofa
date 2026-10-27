@@ -101,6 +101,42 @@ export default function AdminPage() {
     );
     const [isSendingEmail, setIsSendingEmail] = useState(false);
 
+    // Inbound Mailbox State
+    interface InboundItem {
+        id: string;
+        from: string;
+        to: string;
+        subject: string;
+        text: string;
+        html?: string;
+        receivedAt: string;
+        read: boolean;
+    }
+    const [inboundEmails, setInboundEmails] = useState<InboundItem[]>([]);
+    const [isLoadingInbox, setIsLoadingInbox] = useState(false);
+
+    const fetchInbox = useCallback(async (key: string) => {
+        setIsLoadingInbox(true);
+        try {
+            const res = await fetch("/api/admin/email/inbox", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "x-admin-key": key,
+                },
+                body: JSON.stringify({ adminKey: key }),
+            });
+            const data = await res.json();
+            if (res.ok && data.success) {
+                setInboundEmails(data.inbox || []);
+            }
+        } catch (e) {
+            console.warn("Failed to fetch inbound emails:", e);
+        } finally {
+            setIsLoadingInbox(false);
+        }
+    }, []);
+
     const handleSendSendly = async () => {
         if (!sendlyTo.trim()) {
             showToast("Please enter recipient email(s)", "error");
@@ -163,6 +199,7 @@ export default function AdminPage() {
                 setIsAuthenticated(true);
                 setLastRefreshed(new Date());
                 sessionStorage.setItem("proofa_admin_token", key);
+                fetchInbox(key);
             } else {
                 showToast(data.error || "Authentication failed", "error");
                 sessionStorage.removeItem("proofa_admin_token");
@@ -1211,37 +1248,6 @@ export default function AdminPage() {
                                     <button
                                         type="button"
                                         onClick={() => {
-                                            setSendlyTo("beexconcept@gmail.com");
-                                            setSendlySubject("Welcome to Proofa Pro, BEE-X Concept! 👑 (Your account is active)");
-                                            setSendlyMessage(
-                                                "Hi BEE-X Concept,\n\nFirst off, I wanted to personally reach out and thank you for becoming one of Proofa's very first Pro subscribers this past Saturday!\n\nI'm the founder of Proofa, and seeing your subscription come through meant the world to our team.\n\nYour ₦2,500 monthly Pro subscription is 100% active. Here is everything that is now unlocked on your account:\n\n1. Zero Proofa Watermarks: Every receipt and invoice you send will now look 100% your own.\n2. Official Business Logo: You can now upload the BEE-X Concept logo so it sits boldly at the top of every document.\n3. Bank Account Vault: Save your account number once in your profile, and it will automatically appear on all future bills—no more typing or errors.\n4. HD WhatsApp Export: Crisp, high-definition receipts ready to send straight to your clients.\n\nWhite-Glove Setup Offer:\nIf you have your business logo (PNG or JPEG) and would like me to personally format and set it up on your profile for you, simply reply directly to this email with your logo attached. I'll take care of it today!\n\nIf there is any feature or custom invoice layout you need for BEE-X Concept, you can reply directly to this email or chat with me on WhatsApp anytime.\n\nThank you for trusting Proofa with your business,\nTolani\nFounder, Proofa HQ\nhttps://www.proofa.ng"
-                                            );
-                                            showToast("Loaded BEE-X Concept VIP Welcome preset", "info");
-                                        }}
-                                        className="text-[10px] font-mono border border-amber-300 dark:border-amber-700 bg-amber-50/50 dark:bg-amber-950/30 hover:bg-amber-100 dark:hover:bg-amber-900/40 px-2.5 py-1.5 rounded text-amber-800 dark:text-amber-300 font-bold transition-colors"
-                                    >
-                                        👑 1. BEE-X CONCEPT (VIP PRO)
-                                    </button>
-
-                                    <button
-                                        type="button"
-                                        onClick={() => {
-                                            // Pre-fill both to avoid typo bounce if gamil vs gmail
-                                            setSendlyTo("babbanyaya6660@gmail.com, babbanyaya6660@gamil.com");
-                                            setSendlySubject("Assisting with your Proofa Annual plan payment — Baban Yalwa Furniture");
-                                            setSendlyMessage(
-                                                "Hello Baban Yalwa Furniture,\n\nI noticed you recently tried to subscribe to the Proofa Annual Business Plan (₦50,000), but the payment didn't go through on your card.\n\nFirst, I wanted to reach out personally to help. In Nigeria, bank cards frequently decline or time out on ₦50,000 transactions due to daily online spending limits or bank network delays.\n\nYou didn't do anything wrong!\n\nBecause you're running a serious furniture and carpentry business, we want to make sure you get all your Annual Business benefits without payment hassle:\n• Saving ₦10,000 compared to paying monthly\n• Unlimited branded invoices and receipts with your workshop logo\n• Professional quotes and deposit receipts for your furniture orders\n• Multi-device sync for your team\n\nHow would you prefer to complete your subscription?\n\nOption 1: Direct Bank Transfer\nYou can make a direct bank transfer of ₦50,000 to our official account, and I will manually activate your Annual Business plan immediately. (Just reply to this email for our account details).\n\nOption 2: Assisted Paystack Checkout\nI can generate a fresh direct payment link with alternative payment methods (Direct Bank Transfer or USSD).\n\nLooking forward to helping Baban Yalwa Furniture look even more prestigious to your clients!\n\nBest regards,\nTolani\nFounder, Proofa HQ\nhttps://www.proofa.ng"
-                                            );
-                                            showToast("Loaded Baban Yalwa ₦50k Recovery preset", "info");
-                                        }}
-                                        className="text-[10px] font-mono border border-red-300 dark:border-red-700 bg-red-50/50 dark:bg-red-950/30 hover:bg-red-100 dark:hover:bg-red-900/40 px-2.5 py-1.5 rounded text-red-800 dark:text-red-300 font-bold transition-colors"
-                                    >
-                                        ⚠️ 2. BABAN YALWA (₦50K RECOVERY)
-                                    </button>
-
-                                    <button
-                                        type="button"
-                                        onClick={() => {
                                             const freeEmails = users.filter(u => u.plan === "free").map(u => u.email).filter(Boolean);
                                             if (freeEmails.length > 0) {
                                                 setSendlyTo(freeEmails.join(", "));
@@ -1254,7 +1260,21 @@ export default function AdminPage() {
                                         }}
                                         className="text-[10px] font-mono border border-emerald-300 dark:border-emerald-700 bg-emerald-50/50 dark:bg-emerald-950/30 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 px-2.5 py-1.5 rounded text-emerald-800 dark:text-emerald-300 font-bold transition-colors"
                                     >
-                                        🚀 3. 20 FREE USERS (ACTIVATION BROADCAST)
+                                        🚀 1. FREE USER ACTIVATION (30S RECEIPT + BANK VAULT)
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setSendlySubject("Own your brand: Remove Proofa watermark & add your logo");
+                                            setSendlyMessage(
+                                                "Hi there,\n\nWe noticed you've been actively issuing receipts on Proofa! Your business looks much more official.\n\nDid you know you can completely remove the 'Made with Proofa' watermark and feature your official business logo at the top of every document?\n\nWith Proofa Pro (₦2,500/month or ₦25,000/year):\n• Remove all watermarks permanently\n• Upload your custom logo & brand colors\n• Export in high-definition (2×) for WhatsApp\n• Save unlimited bank accounts in your vault\n\nYou can upgrade in 1 click here:\nhttps://www.proofa.ng/pricing\n\nKeep up the great sales!\nProofa Team"
+                                            );
+                                            showToast("Loaded Pro Upgrade Nudge preset", "info");
+                                        }}
+                                        className="text-[10px] font-mono border border-amber-300 dark:border-amber-700 bg-amber-50/50 dark:bg-amber-950/30 hover:bg-amber-100 dark:hover:bg-amber-900/40 px-2.5 py-1.5 rounded text-amber-800 dark:text-amber-300 font-bold transition-colors"
+                                    >
+                                        ✨ 2. PRO UPGRADE NUDGE (WATERMARK & LOGO)
                                     </button>
 
                                     <button
@@ -1262,13 +1282,54 @@ export default function AdminPage() {
                                         onClick={() => {
                                             setSendlySubject("Quick question from Proofa founder");
                                             setSendlyMessage(
-                                                "Hi there,\n\nI noticed you recently started using Proofa to issue receipts for your business. I'm checking in personally to see how everything is going.\n\nAre you having any trouble sending receipts or saving your bank account details? If there's any feature you'd love to see next, just hit reply directly.\n\nBest,\nProofa Team"
+                                                "Hi there,\n\nI noticed you signed up for Proofa recently for your business. I'm the founder and I personally check in with our sellers.\n\nAre you having any trouble sending receipts or saving your bank account details? If there's any feature or custom invoice layout you wish Proofa had, just hit reply directly to this email.\n\nBest,\nTolani\nFounder, Proofa HQ\nhttps://www.proofa.ng"
                                             );
-                                            showToast("Loaded Generic Check-In blueprint", "info");
+                                            showToast("Loaded Founder Check-In preset", "info");
                                         }}
-                                        className="text-[10px] font-mono border border-[#EAEAEA] dark:border-[#262626] hover:bg-[#F7F6F3] dark:hover:bg-[#1A1A1A] px-2.5 py-1.5 rounded text-[#787774] transition-colors"
+                                        className="text-[10px] font-mono border border-blue-300 dark:border-blue-700 bg-blue-50/50 dark:bg-blue-950/30 hover:bg-blue-100 dark:hover:bg-blue-900/40 px-2.5 py-1.5 rounded text-blue-800 dark:text-blue-300 font-bold transition-colors"
                                     >
-                                        GENERIC CHECK-IN
+                                        👋 3. NEW SIGNUP 1-ON-1 CHECK-IN
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setSendlySubject("Can we help your business issue receipts faster?");
+                                            setSendlyMessage(
+                                                "Hi there,\n\nI noticed it's been a little while since you logged into Proofa. Running a business is busy, and we want to make sure your receipt and invoicing workflow is completely frictionless.\n\nWe've recently rolled out instant WhatsApp exports, faster bank vault auto-filling, and order summaries.\n\nIs there anything holding you back or any confusion you ran into? Reply directly to this note or message our customer care team on WhatsApp at 08050826536—we're here to help you get set up in 2 minutes.\n\nBest regards,\nProofa Team\nhttps://www.proofa.ng"
+                                            );
+                                            showToast("Loaded Inactive User Win-Back preset", "info");
+                                        }}
+                                        className="text-[10px] font-mono border border-purple-300 dark:border-purple-700 bg-purple-50/50 dark:bg-purple-950/30 hover:bg-purple-100 dark:hover:bg-purple-900/40 px-2.5 py-1.5 rounded text-purple-800 dark:text-purple-300 font-bold transition-colors"
+                                    >
+                                        💤 4. INACTIVE USER WIN-BACK (7+ DAYS)
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setSendlySubject("Proofa VIP Merchant: Free setup & priority support");
+                                            setSendlyMessage(
+                                                "Hi there,\n\nWe noticed you've been actively issuing receipts and invoices on Proofa for your business sales. We love seeing businesses like yours grow!\n\nAs a high-volume seller, we would love to offer you a free concierge setup session. If you have your official logo or custom colors, reply with them attached and our design team will optimize your template for free.\n\nYou can also reach our founder directly on WhatsApp at 08050826536 whenever you need instant assistance.\n\nKeep up the wonderful momentum!\nProofa HQ\nhttps://www.proofa.ng"
+                                            );
+                                            showToast("Loaded High-Volume VIP Concierge preset", "info");
+                                        }}
+                                        className="text-[10px] font-mono border border-indigo-300 dark:border-indigo-700 bg-indigo-50/50 dark:bg-indigo-950/30 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 px-2.5 py-1.5 rounded text-indigo-800 dark:text-indigo-300 font-bold transition-colors"
+                                    >
+                                        ⭐ 5. HIGH-VOLUME VIP CONCIERGE
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setSendlyTo("");
+                                            setSendlySubject("");
+                                            setSendlyMessage("");
+                                            showToast("Composer cleared", "info");
+                                        }}
+                                        className="text-[10px] font-mono border border-[#EAEAEA] dark:border-[#262626] hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/30 dark:hover:text-red-400 px-2.5 py-1.5 rounded text-[#787774] transition-colors"
+                                    >
+                                        🗑️ CLEAR FORM
                                     </button>
                                 </div>
 
@@ -1304,6 +1365,102 @@ export default function AdminPage() {
                                     {isSendingEmail ? "DISPATCHING VIA SENDLY..." : "SEND EMAIL VIA SENDLY API →"}
                                 </button>
                             </div>
+                        </div>
+
+                        {/* ── Inbound Mailbox (hello@proofa.ng) ───────────────────────── */}
+                        <div className="bg-white dark:bg-[#141414] border border-[#EAEAEA] dark:border-[#222] rounded-lg p-6">
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+                                <div>
+                                    <div className="flex items-center gap-2">
+                                        <h3 className="text-base font-bold text-[#111] dark:text-white">
+                                            Inbound Customer Mailbox (<span className="text-[#e8590c] font-mono">hello@proofa.ng</span>)
+                                        </h3>
+                                        <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 font-bold">
+                                            {inboundEmails.length} MESSAGES
+                                        </span>
+                                    </div>
+                                    <p className="text-xs text-[#787774] mt-1">
+                                        Real-time customer inquiries &amp; replies sent to hello@proofa.ng via Sendly Inbound Webhook.
+                                    </p>
+                                </div>
+
+                                <div className="flex items-center gap-2">
+                                    <button
+                                        type="button"
+                                        onClick={() => adminKey && fetchInbox(adminKey)}
+                                        className="text-[10px] font-mono border border-[#EAEAEA] dark:border-[#262626] hover:bg-[#F7F6F3] dark:hover:bg-[#1A1A1A] px-2.5 py-1.5 rounded text-[#787774] transition-colors"
+                                    >
+                                        {isLoadingInbox ? "REFRESHING..." : "↻ REFRESH"}
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => copyToClipboard("https://www.proofa.ng/api/email/inbound", "webhook_url", "Copied Inbound Webhook URL")}
+                                        className="text-[10px] font-mono border border-[#e8590c]/40 text-[#e8590c] hover:bg-[#e8590c]/10 px-2.5 py-1.5 rounded transition-colors"
+                                    >
+                                        {copiedKey === "webhook_url" ? "✓ COPIED WEBHOOK URL" : "COPY WEBHOOK URL"}
+                                    </button>
+                                </div>
+                            </div>
+
+                            {inboundEmails.length === 0 ? (
+                                <div className="border border-dashed border-[#EAEAEA] dark:border-[#262626] rounded-lg p-6 text-center bg-[#FBFBFA] dark:bg-[#161616]">
+                                    <p className="text-xs font-mono text-[#787774] mb-1 font-bold">
+                                        NO INBOUND CUSTOMER EMAILS RECEIVED YET
+                                    </p>
+                                    <p className="text-[11px] text-[#A1A1AA] max-w-md mx-auto leading-relaxed">
+                                        When customers reply to Proofa emails or send messages to <span className="font-mono text-[#111] dark:text-white">hello@proofa.ng</span>, Sendly forwards them to your endpoint (<span className="font-mono text-[#e8590c]">/api/email/inbound</span>) and they will display here with 1-click reply.
+                                    </p>
+                                </div>
+                            ) : (
+                                <div className="space-y-3">
+                                    {inboundEmails.map((item) => (
+                                        <div
+                                            key={item.id}
+                                            className="border border-[#EAEAEA] dark:border-[#262626] rounded-lg p-4 bg-[#FBFBFA] dark:bg-[#181818] hover:border-[#e8590c]/40 transition-colors"
+                                        >
+                                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-2">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="font-mono text-xs font-bold text-[#111] dark:text-white">
+                                                        {item.from}
+                                                    </span>
+                                                    <span className="text-[10px] font-mono text-[#787774]">
+                                                        → {item.to}
+                                                    </span>
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-[10px] font-mono text-[#787774]">
+                                                        {new Date(item.receivedAt).toLocaleString("en-GB", {
+                                                            day: "numeric",
+                                                            month: "short",
+                                                            hour: "2-digit",
+                                                            minute: "2-digit",
+                                                        })}
+                                                    </span>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            setSendlyTo(item.from);
+                                                            setSendlySubject(item.subject.startsWith("Re:") ? item.subject : `Re: ${item.subject}`);
+                                                            setSendlyMessage(`Hi there,\n\nThanks for reaching out! Regarding your message:\n\n> "${item.text.slice(0, 120)}..."\n\n`);
+                                                            showToast(`Loaded ${item.from} into Sendly Dispatcher for reply`, "info");
+                                                        }}
+                                                        className="text-[10px] font-mono bg-[#111] hover:bg-black text-white dark:bg-white dark:text-[#111] px-2.5 py-1 rounded transition-colors"
+                                                    >
+                                                        REPLY VIA SENDLY ↵
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                            <div className="text-xs font-bold text-[#111] dark:text-white mb-1">
+                                                {item.subject}
+                                            </div>
+                                            <div className="text-xs font-mono text-[#787774] line-clamp-3 whitespace-pre-wrap leading-relaxed">
+                                                {item.text}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
                         </div>
                     </div>
                 )}

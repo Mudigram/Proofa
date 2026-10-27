@@ -3,9 +3,10 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, Loader2, User, Building2, Mail } from "lucide-react";
+import { ChevronLeft, Loader2, User, Building2, Mail, MessageCircle, Headphones } from "lucide-react";
 import { updateProfile } from "@/lib/auth";
 import { Input } from "@/components/ui/FormInput";
+import CustomerCareModal from "@/components/CustomerCareModal";
 
 export default function AccountSettingsPage() {
     const { user, profile, isAuthenticated, isLoading: authLoading, refreshProfile } = useAuth();
@@ -15,6 +16,7 @@ export default function AccountSettingsPage() {
     const [isSaving, setIsSaving] = useState(false);
     const [successMsg, setSuccessMsg] = useState<string | null>(null);
     const [errorMsg, setErrorMsg] = useState<string | null>(null);
+    const [isCareOpen, setIsCareOpen] = useState(false);
 
     useEffect(() => {
         if (!authLoading && !isAuthenticated) {
@@ -139,7 +141,38 @@ export default function AccountSettingsPage() {
                 >
                     {isSaving ? <Loader2 size={20} className="animate-spin" /> : "Save Changes"}
                 </button>
+
+                {/* Customer Care Direct Line */}
+                <div className="pt-2">
+                    <button
+                        type="button"
+                        onClick={() => setIsCareOpen(true)}
+                        className="w-full py-3.5 px-4 rounded-2xl border border-surface-200 dark:border-surface-800 bg-surface-50/70 dark:bg-surface-900/50 hover:bg-surface-100 dark:hover:bg-surface-800/80 transition-all flex items-center justify-between group text-left"
+                    >
+                        <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+                                <Headphones size={16} />
+                            </div>
+                            <div>
+                                <p className="text-xs font-black text-surface-900 dark:text-surface-100">
+                                    Need help with your account?
+                                </p>
+                                <p className="text-[10px] text-surface-500 font-medium">
+                                    WhatsApp: 08050826536 · hello@proofa.ng
+                                </p>
+                            </div>
+                        </div>
+                        <span className="text-[11px] font-black text-emerald-600 dark:text-emerald-400 group-hover:underline">
+                            Chat Now →
+                        </span>
+                    </button>
+                </div>
             </form>
+
+            <CustomerCareModal
+                isOpen={isCareOpen}
+                onClose={() => setIsCareOpen(false)}
+            />
         </main>
     );
 }
