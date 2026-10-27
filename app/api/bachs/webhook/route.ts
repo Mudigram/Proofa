@@ -4,42 +4,119 @@ import { supabaseAdmin } from "@/lib/supabase";
 import { BACHS_WEBHOOK_SECRET } from "@/lib/bachs";
 import { sendUpgradeEmail } from "@/lib/email";
 
+/**
+ * Bachs Webhook Verification
+ * Supports both:
+ * 1. Standard Bachs format: HMAC over "{timestamp}.{raw_body}" with X-Bachs-Timestamp & X-Bachs-Signature
+ * 2. V2 format: t={timestamp},v1={signature}
+ * 3. Fallback: HMAC directly over raw_body
+ */
+function verifyBachsSignature(
+  rawBody: string,
+  signatureHeader: string | null,
+  timestampHeader: string | null,
+  secret: string
+): boolean {
+  if (!signatureHeader) return false;
+
+  let timestamp = timestampHeader || "";
+  let signaturesToTest: string[] = [];
+
+  // Check if signature header is formatted as "t=...,v1=..."
+  if (signatureHeader.includes("v1=")) {
+    const parts = signatureHeader.split(",");
+    for (const part of parts) {
+      const [key, val] = part.trim().split("=");
+      if (key === "t" && !timestamp) {
+        timestamp = val;
+      } else if (key === "v1" && val) {
+        signaturesToTest.push(val.trim());
+      }
+    }
+  } else {
+    signaturesToTest.push(signatureHeader.trim());
+  }
+
+  if (signaturesToTest.length === 0) return false;
+
+  // Build expected digests
+  const candidatePayloads: string[] = [];
+  if (timestamp) {
+    candidatePayloads.push(`${timestamp}.${rawBody}`);
+  }
+  // Also add rawBody directly as fallback
+  candidatePayloads.push(rawBody);
+
+  for (const payload of candidatePayloads) {
+    const expectedDigest = crypto
+      .createHmac("sha256", secret)
+      .update(payload)
+      .digest("hex");
+
+    for (const receivedSig of signaturesToTest) {
+      if (receivedSig.length === expectedDigest.length) {
+        try {
+          if (crypto.timingSafeEqual(Buffer.from(receivedSig), Buffer.from(expectedDigest))) {
+            return true;
+          }
+        } catch {
+          // length mismatch or buffer error
+        }
+      }
+    }
+  }
+
+  return false;
+}
+
 export async function POST(req: Request) {
   try {
     const rawBody = await req.text();
-    const signature = req.headers.get("x-bachs-signature") || req.headers.get("bachs-signature");
+    const signatureHeader =
+      req.headers.get("x-bachs-signature") ||
+      req.headers.get("bachs-signature") ||
+      req.headers.get("x-bachs-signature-v2");
+    const timestampHeader =
+      req.headers.get("x-bachs-timestamp") ||
+      req.headers.get("bachs-timestamp");
 
-    // 1. Signature Verification (if secret configured)
+    // 1. Signature Verification (enforced whenever BACHS_WEBHOOK_SECRET is set)
     if (BACHS_WEBHOOK_SECRET) {
-      if (!signature) {
+      if (!signatureHeader) {
         console.error("[Bachs Webhook] Missing signature header.");
         return new Response("Missing signature header", { status: 400 });
       }
 
-      const hmac = crypto
-        .createHmac("sha256", BACHS_WEBHOOK_SECRET)
-        .update(rawBody)
-        .digest("hex");
+      const isValid = verifyBachsSignature(
+        rawBody,
+        signatureHeader,
+        timestampHeader,
+        BACHS_WEBHOOK_SECRET
+      );
 
-      if (hmac !== signature) {
+      if (!isValid) {
         console.error("[Bachs Webhook] Invalid HMAC signature.");
         return new Response("Invalid signature", { status: 401 });
       }
     }
 
     const event = JSON.parse(rawBody);
-    console.log("[Bachs Webhook] Received event:", event.type || event.event);
-
-    const eventType = event.type || event.event;
+    const rawType = (event.type || event.event || "").toLowerCase().replace(/[\s_]/g, ".");
     const data = event.data || event;
 
-    // Handle successful payment events
+    console.log("[Bachs Webhook] Received event:", rawType || "unknown");
+
+    // Handle payment / checkout success events
     const isPaymentSuccess =
-      eventType === "collection.succeeded" ||
-      eventType === "checkout.completed" ||
-      eventType === "charge.success" ||
+      rawType === "checkout.completed" ||
+      rawType === "collection.succeeded" ||
+      rawType === "invoice.paid" ||
+      rawType === "customer.subscription.created" ||
+      rawType === "customer.subscription.updated" ||
+      rawType === "charge.success" ||
       data.status === "SUCCEEDED" ||
-      data.status === "COMPLETED";
+      data.status === "COMPLETED" ||
+      data.status === "PAID";
 
     if (isPaymentSuccess) {
       const metadata = data.metadata || {};
@@ -98,6 +175,41 @@ export async function POST(req: Request) {
           amountDisplay,
           data.currency || "USD"
         ).catch((err) => console.warn("[Bachs Webhook] Sendly upgrade email error:", err));
+      }
+    }
+
+    // Handle cancellation / subscription deletion
+    const isCancellation =
+      rawType === "customer.subscription.deleted" ||
+      rawType === "subscription.cancelled" ||
+      data.status === "CANCELLED";
+
+    if (isCancellation) {
+      const metadata = data.metadata || {};
+      let userId = metadata.userId || metadata.user_id;
+      const customerEmail = metadata.email || data.customer?.email || data.customer_email;
+
+      if (!userId && customerEmail) {
+        try {
+          const { data: authData } = await supabaseAdmin.auth.admin.listUsers();
+          const matching = authData?.users?.find(
+            (u) => u.email?.toLowerCase() === customerEmail.toLowerCase()
+          );
+          if (matching) userId = matching.id;
+        } catch (err) {
+          console.warn("[Bachs Webhook] Error resolving user on cancellation:", err);
+        }
+      }
+
+      if (userId) {
+        await supabaseAdmin
+          .from("profiles")
+          .update({
+            subscription_status: "cancelled",
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", userId);
+        console.log(`[Bachs Webhook] Marked subscription cancelled for user ${userId}`);
       }
     }
 
