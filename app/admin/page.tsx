@@ -1207,7 +1207,56 @@ export default function AdminPage() {
                                     />
                                 </div>
 
-                                <div className="flex gap-2">
+                                <div className="flex flex-wrap gap-2">
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setSendlyTo("beexconcept@gmail.com");
+                                            setSendlySubject("Welcome to Proofa Pro, BEE-X Concept! 👑 (Your account is active)");
+                                            setSendlyMessage(
+                                                "Hi BEE-X Concept,\n\nFirst off, I wanted to personally reach out and thank you for becoming one of Proofa's very first Pro subscribers this past Saturday!\n\nI'm the founder of Proofa, and seeing your subscription come through meant the world to our team.\n\nYour ₦2,500 monthly Pro subscription is 100% active. Here is everything that is now unlocked on your account:\n\n1. Zero Proofa Watermarks: Every receipt and invoice you send will now look 100% your own.\n2. Official Business Logo: You can now upload the BEE-X Concept logo so it sits boldly at the top of every document.\n3. Bank Account Vault: Save your account number once in your profile, and it will automatically appear on all future bills—no more typing or errors.\n4. HD WhatsApp Export: Crisp, high-definition receipts ready to send straight to your clients.\n\nWhite-Glove Setup Offer:\nIf you have your business logo (PNG or JPEG) and would like me to personally format and set it up on your profile for you, simply reply directly to this email with your logo attached. I'll take care of it today!\n\nIf there is any feature or custom invoice layout you need for BEE-X Concept, you can reply directly to this email or chat with me on WhatsApp anytime.\n\nThank you for trusting Proofa with your business,\nTolani\nFounder, Proofa HQ\nhttps://www.proofa.ng"
+                                            );
+                                            showToast("Loaded BEE-X Concept VIP Welcome preset", "info");
+                                        }}
+                                        className="text-[10px] font-mono border border-amber-300 dark:border-amber-700 bg-amber-50/50 dark:bg-amber-950/30 hover:bg-amber-100 dark:hover:bg-amber-900/40 px-2.5 py-1.5 rounded text-amber-800 dark:text-amber-300 font-bold transition-colors"
+                                    >
+                                        👑 1. BEE-X CONCEPT (VIP PRO)
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            // Pre-fill both to avoid typo bounce if gamil vs gmail
+                                            setSendlyTo("babbanyaya6660@gmail.com, babbanyaya6660@gamil.com");
+                                            setSendlySubject("Assisting with your Proofa Annual plan payment — Baban Yalwa Furniture");
+                                            setSendlyMessage(
+                                                "Hello Baban Yalwa Furniture,\n\nI noticed you recently tried to subscribe to the Proofa Annual Business Plan (₦50,000), but the payment didn't go through on your card.\n\nFirst, I wanted to reach out personally to help. In Nigeria, bank cards frequently decline or time out on ₦50,000 transactions due to daily online spending limits or bank network delays.\n\nYou didn't do anything wrong!\n\nBecause you're running a serious furniture and carpentry business, we want to make sure you get all your Annual Business benefits without payment hassle:\n• Saving ₦10,000 compared to paying monthly\n• Unlimited branded invoices and receipts with your workshop logo\n• Professional quotes and deposit receipts for your furniture orders\n• Multi-device sync for your team\n\nHow would you prefer to complete your subscription?\n\nOption 1: Direct Bank Transfer\nYou can make a direct bank transfer of ₦50,000 to our official account, and I will manually activate your Annual Business plan immediately. (Just reply to this email for our account details).\n\nOption 2: Assisted Paystack Checkout\nI can generate a fresh direct payment link with alternative payment methods (Direct Bank Transfer or USSD).\n\nLooking forward to helping Baban Yalwa Furniture look even more prestigious to your clients!\n\nBest regards,\nTolani\nFounder, Proofa HQ\nhttps://www.proofa.ng"
+                                            );
+                                            showToast("Loaded Baban Yalwa ₦50k Recovery preset", "info");
+                                        }}
+                                        className="text-[10px] font-mono border border-red-300 dark:border-red-700 bg-red-50/50 dark:bg-red-950/30 hover:bg-red-100 dark:hover:bg-red-900/40 px-2.5 py-1.5 rounded text-red-800 dark:text-red-300 font-bold transition-colors"
+                                    >
+                                        ⚠️ 2. BABAN YALWA (₦50K RECOVERY)
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            const freeEmails = users.filter(u => u.plan === "free").map(u => u.email).filter(Boolean);
+                                            if (freeEmails.length > 0) {
+                                                setSendlyTo(freeEmails.join(", "));
+                                            }
+                                            setSendlySubject("Quick question about your business receipts");
+                                            setSendlyMessage(
+                                                "Hi there,\n\nThank you for trying out Proofa for your business! I'm reaching out directly from Proofa HQ to see how your experience has been.\n\nMost sellers who join Proofa tell us the same thing:\n\"Typing out my bank account number and order details in WhatsApp DM was taking too much time, and customers kept asking for receipts.\"\n\nWith Proofa, you can generate an official receipt in under 30 seconds:\n1. Tap 'Receipt' or 'Invoice' at https://www.proofa.ng/receipt\n2. Enter your customer's name and items\n3. Tap 'Share to WhatsApp'\n\nPro-tip: If you haven't yet, save your bank details in your Bank Vault (under Profile). Once saved, your bank details appear automatically on every bill you create—no retyping required!\n\nHave you had a chance to send your first receipt to a customer yet?\n\nIf you ran into any confusion or there's a feature you wish we had, simply reply to this email. I read and respond to every seller personally.\n\nWishing you great sales this week,\nTolani\nFounder, Proofa HQ\nhttps://www.proofa.ng"
+                                            );
+                                            showToast(`Loaded Free User Activation preset (${freeEmails.length} free users attached)`, "info");
+                                        }}
+                                        className="text-[10px] font-mono border border-emerald-300 dark:border-emerald-700 bg-emerald-50/50 dark:bg-emerald-950/30 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 px-2.5 py-1.5 rounded text-emerald-800 dark:text-emerald-300 font-bold transition-colors"
+                                    >
+                                        🚀 3. 20 FREE USERS (ACTIVATION BROADCAST)
+                                    </button>
+
                                     <button
                                         type="button"
                                         onClick={() => {
@@ -1215,24 +1264,11 @@ export default function AdminPage() {
                                             setSendlyMessage(
                                                 "Hi there,\n\nI noticed you recently started using Proofa to issue receipts for your business. I'm checking in personally to see how everything is going.\n\nAre you having any trouble sending receipts or saving your bank account details? If there's any feature you'd love to see next, just hit reply directly.\n\nBest,\nProofa Team"
                                             );
-                                            showToast("Loaded Founder Check-In blueprint", "info");
+                                            showToast("Loaded Generic Check-In blueprint", "info");
                                         }}
                                         className="text-[10px] font-mono border border-[#EAEAEA] dark:border-[#262626] hover:bg-[#F7F6F3] dark:hover:bg-[#1A1A1A] px-2.5 py-1.5 rounded text-[#787774] transition-colors"
                                     >
-                                        LOAD FOUNDER CHECK-IN
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => {
-                                            setSendlySubject("Upgrade your business branding on Proofa");
-                                            setSendlyMessage(
-                                                "Hi there,\n\nWe noticed you've been actively issuing receipts on Proofa! Your business looks much more official.\n\nIf you'd like to completely remove the Proofa watermark, add your custom business logo, and unlock unlimited HD WhatsApp exports, you can upgrade to Proofa Pro for just ₦2,500/month here:\nhttps://www.proofa.ng/pricing\n\nKeep up the great work!\nProofa Team"
-                                            );
-                                            showToast("Loaded Pro Upgrade Nudge blueprint", "info");
-                                        }}
-                                        className="text-[10px] font-mono border border-[#EAEAEA] dark:border-[#262626] hover:bg-[#F7F6F3] dark:hover:bg-[#1A1A1A] px-2.5 py-1.5 rounded text-[#787774] transition-colors"
-                                    >
-                                        LOAD UPGRADE NUDGE
+                                        GENERIC CHECK-IN
                                     </button>
                                 </div>
 

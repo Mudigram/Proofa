@@ -328,6 +328,16 @@ export function getBroadcastEmailHtml({
   actionText?: string;
   actionUrl?: string;
 }): string {
+  const formattedMessage = message
+    .split("\n\n")
+    .map(
+      (p) =>
+        `<p style="margin: 0 0 14px 0; font-size: 14px; line-height: 1.6; color: #374151;">${p
+          .trim()
+          .replace(/\n/g, "<br>")}</p>`
+    )
+    .join("");
+
   return `
 <!DOCTYPE html>
 <html lang="en">
@@ -353,8 +363,8 @@ export function getBroadcastEmailHtml({
               <h1 style="font-size: 22px; font-weight: 900; color: #111111; margin: 0 0 16px 0;">
                 ${title}
               </h1>
-              <div style="font-size: 15px; line-height: 1.6; color: #374151; white-space: pre-line; margin-bottom: 24px;">
-                ${message}
+              <div style="margin-bottom: 24px;">
+                ${formattedMessage}
               </div>
 
               ${

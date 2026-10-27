@@ -30,8 +30,30 @@ export async function POST(req: Request) {
       actionUrl,
     });
 
+    const recipients = Array.isArray(to) ? to : [to];
+
+    // Individual dispatch protects customer privacy (no exposed group CC headers)
+    if (recipients.length > 1) {
+      const results = [];
+      for (const recipient of recipients) {
+        const cleanEmail = recipient.trim();
+        if (!cleanEmail || !cleanEmail.includes("@")) continue;
+        const res = await sendEmail({
+          to: cleanEmail,
+          subject,
+          html,
+        });
+        results.push(res);
+      }
+      return NextResponse.json({
+        success: true,
+        sentCount: results.filter((r) => r.success).length,
+        total: recipients.length,
+      });
+    }
+
     const result = await sendEmail({
-      to,
+      to: recipients[0].trim(),
       subject,
       html,
     });
