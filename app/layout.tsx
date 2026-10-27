@@ -25,34 +25,37 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.proofa.ng"),
-  title: "Proofa  Send Your Receipt on WhatsApp in Seconds",
-  description: "Create professional receipts & invoices in seconds. Share directly to WhatsApp. Built for Nigerian small businesses. Free to start.",
+  title: "Free Receipt & Invoice Generator in Nigeria | Proofa",
+  description: "Generate professional receipts & invoices in seconds. Download or share directly on WhatsApp, Instagram & TikTok. Free for Nigerian businesses.",
   keywords: [
     "receipt generator Nigeria",
     "invoice generator Nigeria",
+    "generator receipt in nigeria",
+    "free receipt generator nigeria",
+    "receipt maker Lagos",
     "WhatsApp receipt sender",
+    "Instagram vendor receipt generator",
+    "TikTok shop receipt Nigeria",
     "proof of payment Nigeria",
     "business receipt maker",
     "Nigerian SME invoice",
     "order summary generator",
-    "payment receipt WhatsApp",
-    "small business Nigeria",
     "e-receipt Nigeria",
     "online invoice maker",
     "Lagos business tools",
   ],
   authors: [{ name: "Proofa Team" }],
   openGraph: {
-    title: "Proofa  Fast, Professional Business Documents",
-    description: "Create and share receipts, invoices, and order summaries in seconds. Optimized for mobile and WhatsApp.",
-    url: "https://proofa.ng",
+    title: "Free Receipt & Invoice Generator in Nigeria | Proofa",
+    description: "Generate professional receipts & invoices in seconds. Download or share directly on WhatsApp, Instagram & TikTok. Free for Nigerian businesses.",
+    url: "https://www.proofa.ng",
     siteName: "Proofa",
     images: [
       {
         url: "/Logo/Proofa orange icon.png",
         width: 1200,
         height: 630,
-        alt: "Proofa Logo",
+        alt: "Proofa - Free Receipt & Invoice Generator in Nigeria",
       },
     ],
     locale: "en_NG",
@@ -67,12 +70,29 @@ export const metadata: Metadata = {
     google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION || undefined,
   },
   alternates: {
-    canonical: "https://www.proofa.ng/",
+    canonical: "./",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+  other: {
+    "geo.region": "NG-LA",
+    "geo.placename": "Lagos, Nigeria",
+    "geo.position": "6.5244;3.3792",
+    "ICBM": "6.5244, 3.3792",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Proofa  Mobile Receipt & Invoice Generator",
-    description: "Create professional receipts & invoices in seconds. Share directly to WhatsApp. Built for Nigerian small businesses. Free to start.",
+    title: "Free Receipt & Invoice Generator in Nigeria | Proofa",
+    description: "Generate professional receipts & invoices in seconds. Download or share directly on WhatsApp, Instagram & TikTok. Free for Nigerian businesses.",
     images: ["/Logo/Proofa orange icon.png"],
   },
   appleWebApp: {
@@ -145,4 +165,3 @@ export default function RootLayout({
     </html>
   );
 }
-

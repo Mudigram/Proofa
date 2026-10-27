@@ -18,7 +18,7 @@ const jsonLdSchemas = {
     "name": "Proofa",
     "applicationCategory": "BusinessApplication",
     "operatingSystem": "Web, Android, iOS",
-    "description": "Create professional receipts, invoices, and order summaries instantly and share them via WhatsApp. Built for Nigerian entrepreneurs and small businesses.",
+    "description": "Free receipt and invoice generator for Nigerian businesses, vendors, and freelancers. Create professional receipts, invoices, and order summaries instantly and share directly on WhatsApp, Instagram, and TikTok.",
     "url": "https://www.proofa.ng",
     "offers": {
       "@type": "Offer",
@@ -37,7 +37,7 @@ const jsonLdSchemas = {
     "name": "Proofa",
     "url": "https://www.proofa.ng",
     "logo": "https://www.proofa.ng/logo.png",
-    "description": "WhatsApp receipt generator for Nigerian small businesses and entrepreneurs.",
+    "description": "Free receipt and invoice generator for Nigerian small businesses, Instagram vendors, and WhatsApp merchants.",
     "address": {
       "@type": "PostalAddress",
       "addressCountry": "NG"

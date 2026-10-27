@@ -1,0 +1,24 @@
+# Proofa — Free Receipt & Invoice Generator in Nigeria
+
+> Proofa (https://www.proofa.ng) is a fast, web-based receipt, invoice, and order summary maker designed specifically for Nigerian and African small businesses, merchants, freelancers, and online vendors.
+
+## Core Capabilities
+- **Instant Receipt Generation**: Create professional customer payment receipts with transaction IDs, itemized lists, and payment methods (Bank Transfer, Cash, POS, Card).
+- **Invoice Generation**: Issue commercial invoices with due dates, VAT (7.5% Nigerian rate), and bank account details.
+- **Order Summaries**: Generate packing slips and delivery orders for Instagram, WhatsApp, and TikTok vendors.
+- **Social Sharing**: One-tap direct sharing to WhatsApp, Instagram DM, and TikTok. Downloadable as high-resolution images (PNG) and PDF.
+- **Localized for Nigeria**: Native support for Nigerian Naira (₦ / NGN) and USD ($), Nigerian bank account vaults (Zenith, GTBank, Access, Kuda, OPay, Moniepoint, PalmPay, etc.).
+- **Pricing**: Free tier available with no registration required. Pro and Business plans available for custom branding, logo upload, watermark removal, and multi-device sync.
+
+## Target Audience
+- Nigerian Instagram and TikTok vendors
+- WhatsApp merchants and boutique sellers
+- Freelancers and digital service providers in Nigeria
+- SME retailers, supermarkets, and physical stores needing clean digital receipts
+
+## Key Links
+- [Receipt Generator](https://www.proofa.ng/receipt): Create instant receipts online.
+- [Invoice Generator](https://www.proofa.ng/invoice): Create customer invoices with VAT and payment terms.
+- [Order Summary Maker](https://www.proofa.ng/order): Delivery and fulfillment slips for social commerce.
+- [Pricing](https://www.proofa.ng/pricing): Free vs Pro (₦2,500/mo) vs Business (₦5,000/mo).
+- [How It Works](https://www.proofa.ng/how-it-works): Guide to generating and sharing receipts on WhatsApp.
