@@ -93,6 +93,13 @@ export default function AdminPage() {
     const [selectedShadow, setSelectedShadow] = useState<ShadowLead | null>(null);
     const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
+    // User Action & Inspection State
+    const [isUpdatingPlan, setIsUpdatingPlan] = useState(false);
+    const [userDocs, setUserDocs] = useState<any[] | null>(null);
+    const [isLoadingDocs, setIsLoadingDocs] = useState(false);
+    const [generatedResetLink, setGeneratedResetLink] = useState<string | null>(null);
+    const [isGeneratingReset, setIsGeneratingReset] = useState(false);
+
     // Sendly Email Dispatcher State
     const [sendlyTo, setSendlyTo] = useState("");
     const [sendlySubject, setSendlySubject] = useState("Quick question from Proofa founder");
@@ -300,6 +307,125 @@ export default function AdminPage() {
         setCopiedKey(id);
         showToast(message, "success");
         setTimeout(() => setCopiedKey(null), 2000);
+    };
+
+    // ── Admin User Action Handlers ───────────────────────────────────────────
+    const handleUpdateUserPlan = async (
+        userId: string,
+        targetPlan: "free" | "pro" | "business",
+        status: "active" | "trialing" | "inactive",
+        durationDays: number | null
+    ) => {
+        setIsUpdatingPlan(true);
+        try {
+            const res = await fetch("/api/admin/user/manage", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "x-admin-key": adminKey,
+                },
+                body: JSON.stringify({
+                    action: "update_plan",
+                    userId,
+                    plan: targetPlan,
+                    status,
+                    durationDays,
+                }),
+            });
+            const data = await res.json();
+            if (!res.ok || data.error) {
+                showToast(data.error || "Failed to update user plan", "error");
+                return;
+            }
+
+            // Update local users array
+            setUsers((prev) =>
+                prev.map((u) =>
+                    u.id === userId
+                        ? { ...u, plan: targetPlan, subscriptionStatus: status }
+                        : u
+                )
+            );
+
+            // Update selected user
+            if (selectedUser && selectedUser.id === userId) {
+                setSelectedUser({
+                    ...selectedUser,
+                    plan: targetPlan,
+                    subscriptionStatus: status,
+                });
+            }
+
+            showToast(data.message || `Account plan updated to ${targetPlan.toUpperCase()}`, "success");
+        } catch (err: any) {
+            console.error("Failed to update user plan:", err);
+            showToast("Network error updating plan", "error");
+        } finally {
+            setIsUpdatingPlan(false);
+        }
+    };
+
+    const handleGeneratePasswordReset = async (email: string) => {
+        setIsGeneratingReset(true);
+        try {
+            const res = await fetch("/api/admin/user/manage", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "x-admin-key": adminKey,
+                },
+                body: JSON.stringify({
+                    action: "reset_password",
+                    email,
+                }),
+            });
+            const data = await res.json();
+            if (!res.ok || data.error) {
+                showToast(data.error || "Failed to generate password reset", "error");
+                return;
+            }
+
+            if (data.recoveryUrl) {
+                setGeneratedResetLink(data.recoveryUrl);
+                navigator.clipboard.writeText(data.recoveryUrl);
+                showToast("Password recovery link generated & copied to clipboard!", "success");
+            } else {
+                showToast("Password reset email sent to user", "success");
+            }
+        } catch (err: any) {
+            console.error("Failed to reset password:", err);
+            showToast("Network error generating reset link", "error");
+        } finally {
+            setIsGeneratingReset(false);
+        }
+    };
+
+    const handleFetchUserDocs = async (userId: string) => {
+        setIsLoadingDocs(true);
+        try {
+            const res = await fetch("/api/admin/user/manage", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "x-admin-key": adminKey,
+                },
+                body: JSON.stringify({
+                    action: "fetch_user_docs",
+                    userId,
+                }),
+            });
+            const data = await res.json();
+            if (!res.ok || data.error) {
+                showToast(data.error || "Failed to load user documents", "error");
+                return;
+            }
+            setUserDocs(data.documents || []);
+        } catch (err: any) {
+            console.error("Failed to fetch user documents:", err);
+            showToast("Network error fetching documents", "error");
+        } finally {
+            setIsLoadingDocs(false);
+        }
     };
 
     // ── Filtered & Sorted Users ──────────────────────────────────────────────
@@ -692,7 +818,11 @@ export default function AdminPage() {
                                                 return (
                                                     <tr
                                                         key={u.id}
-                                                        onClick={() => setSelectedUser(u)}
+                                                        onClick={() => {
+                                                            setSelectedUser(u);
+                                                            setUserDocs(null);
+                                                            setGeneratedResetLink(null);
+                                                        }}
                                                         className="hover:bg-[#FBFBFA] dark:hover:bg-[#1A1A1A] cursor-pointer transition-colors"
                                                     >
                                                         {/* User / Entity */}
@@ -1477,7 +1607,11 @@ export default function AdminPage() {
                                     CUSTOMER PROFILE RECORD
                                 </span>
                                 <button
-                                    onClick={() => setSelectedUser(null)}
+                                    onClick={() => {
+                                        setSelectedUser(null);
+                                        setUserDocs(null);
+                                        setGeneratedResetLink(null);
+                                    }}
                                     className="font-mono text-xs text-[#787774] hover:text-[#111] dark:hover:text-white"
                                 >
                                     [CLOSE ✕]
@@ -1552,6 +1686,168 @@ export default function AdminPage() {
                                         {selectedUser.lastSignInAt ? new Date(selectedUser.lastSignInAt).toUTCString() : "Never authenticated via password"}
                                     </span>
                                 </div>
+
+                                {/* ── ADMIN CONTROLS: TIER UPGRADES & PROMO PASSES ── */}
+                                <div className="border border-[#EAEAEA] dark:border-[#262626] rounded p-4 bg-[#FBFBFA] dark:bg-[#151515] space-y-3">
+                                    <div className="flex items-center justify-between">
+                                        <span className="font-mono text-[10px] text-[#e8590c] font-bold uppercase tracking-wider">
+                                            ⚡ ADMIN PLAN & PROMO ACTIONS
+                                        </span>
+                                        {isUpdatingPlan && (
+                                            <span className="font-mono text-[10px] text-[#787774] animate-pulse">
+                                                UPDATING...
+                                            </span>
+                                        )}
+                                    </div>
+
+                                    {/* Pro Grants */}
+                                    <div>
+                                        <span className="font-mono text-[9px] text-[#787774] uppercase block mb-1.5">PRO PASSES</span>
+                                        <div className="grid grid-cols-3 gap-2">
+                                            <button
+                                                disabled={isUpdatingPlan}
+                                                onClick={() => handleUpdateUserPlan(selectedUser.id, "pro", "trialing", 14)}
+                                                className="border border-[#EAEAEA] dark:border-[#333] hover:border-[#e8590c] bg-white dark:bg-[#202020] text-[#111] dark:text-white text-[10px] font-mono py-1.5 px-2 rounded transition-colors text-center disabled:opacity-50"
+                                            >
+                                                +14d Pro Trial
+                                            </button>
+                                            <button
+                                                disabled={isUpdatingPlan}
+                                                onClick={() => handleUpdateUserPlan(selectedUser.id, "pro", "active", 30)}
+                                                className="border border-[#EAEAEA] dark:border-[#333] hover:border-[#e8590c] bg-white dark:bg-[#202020] text-[#111] dark:text-white text-[10px] font-mono py-1.5 px-2 rounded transition-colors text-center disabled:opacity-50"
+                                            >
+                                                Pro 30 Days
+                                            </button>
+                                            <button
+                                                disabled={isUpdatingPlan}
+                                                onClick={() => handleUpdateUserPlan(selectedUser.id, "pro", "active", 365)}
+                                                className="border border-[#EAEAEA] dark:border-[#333] hover:border-[#e8590c] bg-white dark:bg-[#202020] text-[#111] dark:text-white text-[10px] font-mono py-1.5 px-2 rounded transition-colors text-center disabled:opacity-50"
+                                            >
+                                                Pro 1 Year
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    {/* Business Grants */}
+                                    <div>
+                                        <span className="font-mono text-[9px] text-[#787774] uppercase block mb-1.5">BUSINESS TIERS</span>
+                                        <div className="grid grid-cols-3 gap-2">
+                                            <button
+                                                disabled={isUpdatingPlan}
+                                                onClick={() => handleUpdateUserPlan(selectedUser.id, "business", "active", 30)}
+                                                className="border border-[#EAEAEA] dark:border-[#333] hover:border-[#8B5CF6] bg-white dark:bg-[#202020] text-[#5B3E8C] dark:text-[#C4B5FD] text-[10px] font-mono py-1.5 px-2 rounded transition-colors text-center disabled:opacity-50"
+                                            >
+                                                Business 30d
+                                            </button>
+                                            <button
+                                                disabled={isUpdatingPlan}
+                                                onClick={() => handleUpdateUserPlan(selectedUser.id, "business", "active", 365)}
+                                                className="border border-[#EAEAEA] dark:border-[#333] hover:border-[#8B5CF6] bg-white dark:bg-[#202020] text-[#5B3E8C] dark:text-[#C4B5FD] text-[10px] font-mono py-1.5 px-2 rounded transition-colors text-center disabled:opacity-50"
+                                            >
+                                                Business 1yr
+                                            </button>
+                                            <button
+                                                disabled={isUpdatingPlan}
+                                                onClick={() => handleUpdateUserPlan(selectedUser.id, "business", "active", null)}
+                                                className="border border-[#EAEAEA] dark:border-[#333] hover:border-[#8B5CF6] bg-white dark:bg-[#202020] text-[#5B3E8C] dark:text-[#C4B5FD] font-bold text-[10px] font-mono py-1.5 px-2 rounded transition-colors text-center disabled:opacity-50"
+                                            >
+                                                VIP Lifetime
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    {/* Reset to Free */}
+                                    <div className="pt-2 border-t border-[#EAEAEA] dark:border-[#222]">
+                                        <button
+                                            disabled={isUpdatingPlan}
+                                            onClick={() => handleUpdateUserPlan(selectedUser.id, "free", "inactive", null)}
+                                            className="w-full border border-red-200 dark:border-red-900/40 hover:bg-red-50 dark:hover:bg-red-950/20 text-red-600 dark:text-red-400 text-[10px] font-mono py-1.5 px-2 rounded transition-colors text-center disabled:opacity-50"
+                                        >
+                                            Downgrade / Reset to Free Plan
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* ── PASSWORD RESET DISPATCH ── */}
+                                <div className="border border-[#EAEAEA] dark:border-[#262626] rounded p-4 bg-[#FBFBFA] dark:bg-[#151515] space-y-2">
+                                    <div className="flex items-center justify-between">
+                                        <span className="font-mono text-[10px] text-[#787774] font-bold uppercase tracking-wider">
+                                            🔑 PASSWORD RECOVERY
+                                        </span>
+                                        <button
+                                            disabled={isGeneratingReset}
+                                            onClick={() => handleGeneratePasswordReset(selectedUser.email)}
+                                            className="text-[10px] font-mono text-[#e8590c] hover:underline uppercase disabled:opacity-50"
+                                        >
+                                            {isGeneratingReset ? "GENERATING..." : "GENERATE RESET LINK"}
+                                        </button>
+                                    </div>
+
+                                    {generatedResetLink && (
+                                        <div className="space-y-1.5 pt-2">
+                                            <div className="flex items-center gap-2">
+                                                <input
+                                                    type="text"
+                                                    readOnly
+                                                    value={generatedResetLink}
+                                                    className="w-full bg-white dark:bg-[#1A1A1A] border border-[#EAEAEA] dark:border-[#262626] rounded px-2.5 py-1.5 text-[10px] font-mono text-[#111] dark:text-white"
+                                                />
+                                                <button
+                                                    onClick={() => copyToClipboard(generatedResetLink, "reset_link_copy", "Recovery link copied")}
+                                                    className="shrink-0 bg-[#111] text-white dark:bg-white dark:text-[#111] px-2.5 py-1.5 rounded text-[10px] font-mono"
+                                                >
+                                                    COPY
+                                                </button>
+                                            </div>
+                                            <p className="font-mono text-[9px] text-[#346538] dark:text-[#86EFAC]">
+                                                ✓ Link active. Copy & send to customer on WhatsApp or email.
+                                            </p>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* ── CLOUD DOCUMENT INSPECTOR ── */}
+                                <div className="border border-[#EAEAEA] dark:border-[#262626] rounded p-4 bg-[#FBFBFA] dark:bg-[#151515] space-y-2">
+                                    <div className="flex items-center justify-between">
+                                        <span className="font-mono text-[10px] text-[#787774] font-bold uppercase tracking-wider">
+                                            📂 CLOUD DOCUMENTS
+                                        </span>
+                                        <button
+                                            disabled={isLoadingDocs}
+                                            onClick={() => handleFetchUserDocs(selectedUser.id)}
+                                            className="text-[10px] font-mono text-[#e8590c] hover:underline uppercase disabled:opacity-50"
+                                        >
+                                            {isLoadingDocs ? "FETCHING..." : userDocs ? "REFRESH DOCS" : "INSPECT CLOUD DOCS"}
+                                        </button>
+                                    </div>
+
+                                    {userDocs && (
+                                        <div className="pt-2">
+                                            {userDocs.length === 0 ? (
+                                                <p className="font-mono text-[10px] text-[#787774]">No cloud documents recorded for this user yet.</p>
+                                            ) : (
+                                                <div className="max-h-56 overflow-y-auto space-y-1.5">
+                                                    {userDocs.map((doc) => (
+                                                        <div key={doc.id} className="border border-[#EAEAEA] dark:border-[#222] bg-white dark:bg-[#181818] p-2 rounded flex items-center justify-between font-mono text-[10px]">
+                                                            <div>
+                                                                <span className="uppercase font-bold text-[#111] dark:text-white mr-1.5">[{doc.type}]</span>
+                                                                <span className="text-[#787774]">{doc.customer_name || "Walk-in"}</span>
+                                                                <span className="block text-[9px] text-[#A1A1AA] mt-0.5">
+                                                                    {new Date(doc.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
+                                                                </span>
+                                                            </div>
+                                                            <div className="text-right">
+                                                                <span className="font-bold text-[#111] dark:text-white">
+                                                                    {doc.currency} {Number(doc.amount).toLocaleString()}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                         </div>
 
@@ -1575,7 +1871,11 @@ export default function AdminPage() {
                                 OPEN EMAIL CLIENT (BCC)
                             </a>
                             <button
-                                onClick={() => setSelectedUser(null)}
+                                onClick={() => {
+                                    setSelectedUser(null);
+                                    setUserDocs(null);
+                                    setGeneratedResetLink(null);
+                                }}
                                 className="w-full border border-[#EAEAEA] dark:border-[#222] hover:bg-[#F7F6F3] dark:hover:bg-[#1A1A1A] text-xs font-mono py-2.5 rounded transition-colors text-[#787774]"
                             >
                                 DISMISS
@@ -1718,6 +2018,18 @@ export default function AdminPage() {
                                     PHONE NOT DETECTED YET
                                 </button>
                             )}
+
+                            <button
+                                onClick={() => {
+                                    const pitch = `Hello ${selectedShadow.businessName || "there"}! 👋 I noticed you've been using Proofa for your business receipts. As a special courtesy, I'd like to gift your business a free 14-Day Pro Pass so you can upload your logo, remove watermarks, and use multi-device sync. Just let me know if you'd like me to activate this for you!`;
+                                    navigator.clipboard.writeText(pitch);
+                                    showToast("14-Day Pro Promo Pitch copied to clipboard", "success");
+                                }}
+                                className="w-full border border-[#EAEAEA] dark:border-[#262626] hover:bg-[#F7F6F3] dark:hover:bg-[#1A1A1A] text-[#111] dark:text-white text-xs font-mono py-2.5 rounded transition-colors text-center"
+                            >
+                                COPY 14-DAY PRO PASS PITCH
+                            </button>
+
                             <button
                                 onClick={() => setSelectedShadow(null)}
                                 className="w-full border border-[#EAEAEA] dark:border-[#222] hover:bg-[#F7F6F3] dark:hover:bg-[#1A1A1A] text-xs font-mono py-2.5 rounded transition-colors text-[#787774]"

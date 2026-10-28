@@ -138,49 +138,114 @@ async function fetchChartData(
     range: DateRange,
     currency: string
 ): Promise<DailyRevenue[]> {
-    const { data, error } = await supabase
-        .from("v_daily_revenue")
-        .select("day, currency, doc_count, total_amount, type")
+    try {
+        const { data, error } = await supabase
+            .from("v_daily_revenue")
+            .select("day, currency, doc_count, total_amount, type")
+            .eq("owner_id", ownerId)
+            .eq("currency", currency)
+            .gte("day", range.from.split("T")[0])
+            .lte("day", range.to.split("T")[0])
+            .order("day", { ascending: true });
+
+        if (!error && data && data.length > 0) {
+            return data.map(row => ({
+                day: row.day,
+                currency: row.currency,
+                docCount: Number(row.doc_count),
+                totalAmount: Number(row.total_amount),
+                type: row.type as DocumentType,
+            }));
+        }
+    } catch {
+        // Fallback to querying raw documents table
+    }
+
+    // Direct fallback querying the `documents` table
+    const { data: rawDocs, error: rawError } = await supabase
+        .from("documents")
+        .select("created_at, currency, amount, type")
         .eq("owner_id", ownerId)
         .eq("currency", currency)
-        .gte("day", range.from.split("T")[0])
-        .lte("day", range.to.split("T")[0])
-        .order("day", { ascending: true });
+        .is("deleted_at", null)
+        .gte("created_at", range.from)
+        .lte("created_at", range.to)
+        .order("created_at", { ascending: true });
 
-    if (error || !data) return [];
+    if (rawError || !rawDocs || rawDocs.length === 0) return [];
 
-    return data.map(row => ({
-        day: row.day,
-        currency: row.currency,
-        docCount: Number(row.doc_count),
-        totalAmount: Number(row.total_amount),
-        type: row.type as DocumentType,
-    }));
+    const grouped: Record<string, { day: string; currency: string; docCount: number; totalAmount: number; type: DocumentType }> = {};
+    for (const doc of rawDocs) {
+        const day = (doc.created_at || "").split("T")[0];
+        if (!day) continue;
+        const key = `${day}_${doc.type}`;
+        if (!grouped[key]) {
+            grouped[key] = {
+                day,
+                currency: doc.currency || currency,
+                docCount: 0,
+                totalAmount: 0,
+                type: (doc.type as DocumentType) || "receipt",
+            };
+        }
+        grouped[key].docCount += 1;
+        grouped[key].totalAmount += Number(doc.amount) || 0;
+    }
+
+    return Object.values(grouped).sort((a, b) => a.day.localeCompare(b.day));
 }
 
 async function fetchActivity(
     ownerId: string,
     limit: number
 ): Promise<ActivityItem[]> {
-    const { data, error } = await supabase
-        .from("v_activity_log")
-        .select("id, owner_id, created_by, creator_name, type, amount, currency, customer_name, template, created_at")
+    try {
+        const { data, error } = await supabase
+            .from("v_activity_log")
+            .select("id, owner_id, created_by, creator_name, type, amount, currency, customer_name, template, created_at")
+            .eq("owner_id", ownerId)
+            .order("created_at", { ascending: false })
+            .limit(limit);
+
+        if (!error && data && data.length > 0) {
+            return data.map(row => ({
+                id: row.id,
+                ownerId: row.owner_id,
+                createdBy: row.created_by,
+                creatorName: row.creator_name,
+                type: row.type as DocumentType,
+                amount: Number(row.amount),
+                currency: row.currency,
+                customerName: row.customer_name,
+                template: row.template,
+                createdAt: row.created_at,
+            }));
+        }
+    } catch {
+        // Fallback to querying raw documents table
+    }
+
+    // Direct fallback querying the `documents` table
+    const { data: rawDocs, error: rawError } = await supabase
+        .from("documents")
+        .select("id, owner_id, created_by, type, amount, currency, customer_name, template, created_at")
         .eq("owner_id", ownerId)
+        .is("deleted_at", null)
         .order("created_at", { ascending: false })
         .limit(limit);
 
-    if (error || !data) return [];
+    if (rawError || !rawDocs) return [];
 
-    return data.map(row => ({
+    return rawDocs.map(row => ({
         id: row.id,
         ownerId: row.owner_id,
         createdBy: row.created_by,
-        creatorName: row.creator_name,
+        creatorName: "Merchant / Staff",
         type: row.type as DocumentType,
-        amount: Number(row.amount),
-        currency: row.currency,
-        customerName: row.customer_name,
-        template: row.template,
+        amount: Number(row.amount) || 0,
+        currency: row.currency || "NGN",
+        customerName: row.customer_name || "Walk-in Customer",
+        template: row.template || "minimalist",
         createdAt: row.created_at,
     }));
 }
