@@ -17,6 +17,7 @@ import DailySummaryCard from "@/components/dashboard/DailySummaryCard";
 import { DashboardPeriod } from "@/lib/types";
 import { RefreshCw, Lock, Crown, Loader2 } from "lucide-react";
 import Link from "next/link";
+import { BusinessAscensionCard } from "@/components/ui/BusinessAscensionCard";
 
 const PERIODS: { value: DashboardPeriod; label: string }[] = [
     { value: "today", label: "Today" },
@@ -40,8 +41,8 @@ function UpgradeGate() {
                 </p>
             </div>
             <Link
-                href="/pricing"
-                className="px-6 py-3 bg-surface-900 text-white rounded-2xl text-xs font-black uppercase tracking-widest"
+                href="/pricing?plan=pro"
+                className="px-6 py-3 bg-surface-900 text-white rounded-2xl text-xs font-black uppercase tracking-widest shadow-md"
             >
                 Upgrade to Pro
             </Link>
@@ -61,8 +62,8 @@ function BusinessNudge({ feature }: { feature: string }) {
                 </p>
             </div>
             <Link
-                href="/pricing"
-                className="text-[10px] font-black uppercase tracking-widest text-primary-500"
+                href="/pricing?plan=business"
+                className="text-[10px] font-black uppercase tracking-widest text-primary-500 font-mono"
             >
                 Upgrade →
             </Link>
@@ -176,6 +177,11 @@ export default function DashboardPage() {
                     {/* Metric cards — same for Pro and Business */}
                     <MetricCards metrics={data.metrics} />
 
+                    {/* Pro to Business Ascension Card */}
+                    {isPro && !isBusiness && (
+                        <BusinessAscensionCard source="dashboard" className="my-1" />
+                    )}
+
                     {/* Revenue chart */}
                     <div className="bg-surface-50 dark:bg-surface-900 border border-surface-200/80 dark:border-surface-800 rounded-2xl p-4">
                         <div className="flex items-center justify-between mb-4">
@@ -219,7 +225,7 @@ export default function DashboardPage() {
                                             Share daily summaries to WhatsApp
                                         </p>
                                         <Link
-                                            href="/pricing"
+                                            href="/pricing?plan=business"
                                             className="px-5 py-2 bg-primary-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-primary-600 transition-colors shadow-md"
                                         >
                                             Upgrade to Business

@@ -1,8 +1,8 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Zap, Crown } from "lucide-react";
+import { X, Zap, Crown, Building2, Check, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { UpgradeVariant } from "@/hooks/useProGate";
@@ -16,31 +16,27 @@ const VARIANTS: Record<
     { icon: React.ReactNode; headline: string; subtext: string; cta: string }
 > = {
     export: {
-        icon: <Zap size={28} className="text-primary-500" />,
+        icon: <Zap size={22} className="text-primary-500" />,
         headline: "Remove watermark & export HD",
-        subtext:
-            "Your customers notice the difference. Send clean, branded receipts that build trust.",
-        cta: "Make My Business Look Pro",
+        subtext: "Send clean, branded receipts that build instant trust on WhatsApp.",
+        cta: "Unlock Pro (₦2,500/mo)",
     },
     logo: {
-        icon: <Crown size={28} className="text-primary-500" />,
-        headline: "Logo upload is available in Pro",
-        subtext:
-            "Put your brand front and center. Businesses with logos look more established.",
-        cta: "Add My Brand Logo",
+        icon: <Crown size={22} className="text-primary-500" />,
+        headline: "Upload your official business logo",
+        subtext: "Vendors with logos look established. Protect your brand reputation.",
+        cta: "Add Business Logo",
     },
     colors: {
-        icon: <Crown size={28} className="text-primary-500" />,
-        headline: "Unlock brand customization",
-        subtext:
-            "Match your receipts to your business brand. Your identity, your colors.",
-        cta: "Unlock My Brand Colors",
+        icon: <Crown size={22} className="text-primary-500" />,
+        headline: "Match your custom brand colours",
+        subtext: "Turn receipts into marketing assets that reflect your visual identity.",
+        cta: "Unlock Brand Colours",
     },
     generic: {
-        icon: <Zap size={28} className="text-primary-500" />,
-        headline: "Make your business look more professional",
-        subtext:
-            "Upgrade to Pro and send branded, watermark-free receipts. Look more credible. Build customer trust.",
+        icon: <Zap size={22} className="text-primary-500" />,
+        headline: "Elevate your business to Pro",
+        subtext: "Issue clean, branded receipts and invoices with cloud backup.",
         cta: "Upgrade to Pro",
     },
 };
@@ -56,109 +52,163 @@ interface UpgradePromptProps {
 
 export function UpgradePrompt({ variant, onClose }: UpgradePromptProps) {
     const { isAuthenticated } = useAuth();
+    const [selectedTier, setSelectedTier] = useState<"pro" | "business">("pro");
     const isOpen = variant !== null;
     const content = variant ? VARIANTS[variant] : null;
 
+    if (!isOpen || !content) return null;
+
+    const proUrl = isAuthenticated ? "/pricing?plan=pro" : "/auth/signup?from=/pricing?plan=pro";
+    const bizUrl = isAuthenticated ? "/pricing?plan=business" : "/auth/signup?from=/pricing?plan=business";
+
     return (
         <AnimatePresence>
-            {isOpen && content && (
-                <div className="fixed inset-0 z-[100] flex items-end justify-center px-4 pb-12 sm:pb-0 sm:items-center">
-                    {/* Backdrop */}
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        onClick={onClose}
-                        className="fixed inset-0 bg-surface-950/60 backdrop-blur-sm"
-                    />
+            <div className="fixed inset-0 z-[120] flex items-end justify-center px-3 pb-3 sm:pb-6 sm:items-center">
+                {/* Backdrop */}
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    onClick={onClose}
+                    className="fixed inset-0 bg-surface-950/60 backdrop-blur-sm"
+                />
 
-                    {/* Bottom sheet */}
-                    <motion.div
-                        initial={{ y: "100%", opacity: 0 }}
-                        animate={{ y: 0, opacity: 1 }}
-                        exit={{ y: "100%", opacity: 0 }}
-                        transition={{ type: "spring", damping: 28, stiffness: 320 }}
-                        className="relative z-10 w-full max-w-md bg-white dark:bg-surface-900 rounded-t-[2.5rem] shadow-2xl overflow-hidden"
-                    >
-                        {/* Drag handle */}
-                        <div className="w-10 h-1.5 bg-surface-200 dark:bg-surface-700 rounded-full mx-auto mt-4 mb-2" />
+                {/* Bottom sheet / Modal */}
+                <motion.div
+                    initial={{ y: "100%", opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    exit={{ y: "100%", opacity: 0 }}
+                    transition={{ type: "spring", damping: 28, stiffness: 320 }}
+                    className="relative z-10 w-full max-w-md bg-white dark:bg-surface-900 rounded-[2rem] shadow-2xl overflow-hidden border border-surface-200/80 dark:border-surface-800 p-5 sm:p-6"
+                >
+                    {/* Header bar */}
+                    <div className="flex items-center justify-between mb-3">
+                        <div className="inline-flex items-center gap-1.5 bg-primary-50 dark:bg-primary-950/60 text-primary-600 dark:text-primary-400 text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full">
+                            <Crown size={12} />
+                            Premium Feature
+                        </div>
 
-                        {/* Dismiss */}
                         <button
                             onClick={onClose}
-                            className="absolute top-5 right-5 w-9 h-9 rounded-full bg-surface-100 dark:bg-surface-800 flex items-center justify-center text-surface-400 dark:text-surface-500 hover:text-surface-700 dark:hover:text-surface-300 transition-colors"
+                            className="w-7 h-7 rounded-full bg-surface-100 dark:bg-surface-800 flex items-center justify-center text-surface-400 hover:text-surface-700 dark:hover:text-surface-200 transition-colors"
                         >
-                            <X size={18} />
+                            <X size={14} />
                         </button>
+                    </div>
 
-                        <div className="px-7 pb-10 pt-4">
-                            {/* Pro badge */}
-                            <div className="inline-flex items-center gap-1.5 bg-primary-50 dark:bg-primary-950/60 text-primary-600 dark:text-primary-400 text-xs font-black uppercase tracking-widest px-3 py-1.5 rounded-full mb-5">
-                                <Crown size={12} />
-                                Pro Feature
-                            </div>
-
-                            {/* Icon + Headline */}
-                            <div className="flex items-start gap-4 mb-4">
-                                <div className="w-14 h-14 bg-primary-50 dark:bg-primary-950/60 rounded-2xl flex items-center justify-center flex-shrink-0">
-                                    {content.icon}
-                                </div>
-                                <h2 className="text-2xl font-extrabold text-surface-900 dark:text-surface-50 tracking-tight leading-snug mt-1">
-                                    {content.headline}
-                                </h2>
-                            </div>
-
-                            <p className="text-surface-500 dark:text-surface-400 text-sm font-medium leading-relaxed mb-7">
+                    {/* Headline */}
+                    <div className="flex items-start gap-3 mb-2">
+                        <div className="w-10 h-10 bg-primary-50 dark:bg-primary-950/60 rounded-xl flex items-center justify-center flex-shrink-0 text-primary-500">
+                            {content.icon}
+                        </div>
+                        <div>
+                            <h2 className="text-base font-black text-surface-900 dark:text-surface-50 tracking-tight leading-snug">
+                                {content.headline}
+                            </h2>
+                            <p className="text-xs text-surface-500 dark:text-surface-400 font-medium mt-0.5 leading-relaxed">
                                 {content.subtext}
                             </p>
-
-                            {/* Social proof */}
-                            <div className="bg-surface-50 dark:bg-surface-900 rounded-2xl px-4 py-3 mb-6 flex items-center gap-3">
-                                <div className="flex -space-x-2">
-                                    {["🟠", "🔵", "🟢"].map((c, i) => (
-                                        <div key={i} className="w-7 h-7 rounded-full bg-white dark:bg-surface-900 border-2 border-surface-100 dark:border-surface-800 flex items-center justify-center text-xs">
-                                            {c}
-                                        </div>
-                                    ))}
-                                </div>
-                                <p className="text-surface-500 dark:text-surface-400 text-xs font-medium">
-                                    <span className="font-bold text-surface-800 dark:text-surface-100">120+ businesses</span> already look more professional
-                                </p>
-                            </div>
-
-                            {/* CTA */}
-                            {isAuthenticated ? (
-                                /* Signed in → go straight to pricing */
-                                <Link
-                                    href="/pricing"
-                                    onClick={onClose}
-                                    className="w-full bg-primary-500 text-white font-bold py-4 rounded-2xl flex items-center justify-center gap-2 shadow-lg active:scale-[0.98] transition-all"
-                                >
-                                    {content.cta}
-                                </Link>
-                            ) : (
-                                /* Not signed in → account first, then pricing */
-                                <div className="flex flex-col gap-3">
-                                    <Link
-                                        href={`/auth/signup?from=/pricing`}
-                                        onClick={onClose}
-                                        className="w-full bg-primary-500 text-white font-bold py-4 rounded-2xl flex items-center justify-center gap-2 shadow-lg active:scale-[0.98] transition-all"
-                                    >
-                                        Create Free Account First
-                                    </Link>
-                                    <Link
-                                        href="/auth/login"
-                                        onClick={onClose}
-                                        className="w-full bg-surface-100 dark:bg-surface-800 text-surface-700 dark:text-surface-300 font-bold py-3.5 rounded-2xl flex items-center justify-center text-sm active:scale-[0.98] transition-all"
-                                    >
-                                        I already have an account
-                                    </Link>
-                                </div>
-                            )}
                         </div>
-                    </motion.div>
-                </div>
-            )}
+                    </div>
+
+                    {/* Tier selector switcher */}
+                    <div className="grid grid-cols-2 gap-2 my-4 p-1 bg-surface-100 dark:bg-surface-800 rounded-xl border border-surface-200/60 dark:border-surface-700/60">
+                        <button
+                            type="button"
+                            onClick={() => setSelectedTier("pro")}
+                            className={`py-2 px-2.5 rounded-lg text-left transition-all ${
+                                selectedTier === "pro"
+                                    ? "bg-white dark:bg-surface-900 text-surface-900 dark:text-white shadow-xs font-bold"
+                                    : "text-surface-500 hover:text-surface-800 dark:hover:text-surface-200"
+                            }`}
+                        >
+                            <div className="flex items-center justify-between">
+                                <span className="text-[11px] font-black uppercase tracking-wider flex items-center gap-1">
+                                    <Crown size={12} className="text-primary-500" /> Pro
+                                </span>
+                                <span className="text-[11px] font-mono font-bold text-primary-500">₦2,500</span>
+                            </div>
+                            <p className="text-[9px] text-surface-400 mt-0.5">Solo vendor · Logo &amp; No watermark</p>
+                        </button>
+
+                        <button
+                            type="button"
+                            onClick={() => setSelectedTier("business")}
+                            className={`py-2 px-2.5 rounded-lg text-left transition-all ${
+                                selectedTier === "business"
+                                    ? "bg-white dark:bg-surface-900 text-surface-900 dark:text-white shadow-xs font-bold"
+                                    : "text-surface-500 hover:text-surface-800 dark:hover:text-surface-200"
+                            }`}
+                        >
+                            <div className="flex items-center justify-between">
+                                <span className="text-[11px] font-black uppercase tracking-wider flex items-center gap-1">
+                                    <Building2 size={12} className="text-amber-500" /> Business
+                                </span>
+                                <span className="text-[11px] font-mono font-bold text-amber-500">₦5,000</span>
+                            </div>
+                            <p className="text-[9px] text-surface-400 mt-0.5">Teams · Multi-device sync &amp; Staff</p>
+                        </button>
+                    </div>
+
+                    {/* Tier Feature highlights */}
+                    <div className="bg-surface-50 dark:bg-surface-800/40 rounded-xl p-3 mb-4 border border-surface-100 dark:border-surface-800">
+                        {selectedTier === "pro" ? (
+                            <ul className="space-y-1.5 text-xs text-surface-600 dark:text-surface-300">
+                                <li className="flex items-center gap-2">
+                                    <Check size={13} className="text-emerald-500 shrink-0" />
+                                    <span>Remove all watermarks &amp; export in Ultra HD</span>
+                                </li>
+                                <li className="flex items-center gap-2">
+                                    <Check size={13} className="text-emerald-500 shrink-0" />
+                                    <span>Upload custom business logo &amp; brand colours</span>
+                                </li>
+                                <li className="flex items-center gap-2">
+                                    <Check size={13} className="text-emerald-500 shrink-0" />
+                                    <span>Bank account vault &amp; ₦ / $ currency toggle</span>
+                                </li>
+                            </ul>
+                        ) : (
+                            <ul className="space-y-1.5 text-xs text-surface-600 dark:text-surface-300">
+                                <li className="flex items-center gap-2">
+                                    <Check size={13} className="text-amber-500 shrink-0" />
+                                    <span>Everything in Pro included</span>
+                                </li>
+                                <li className="flex items-center gap-2">
+                                    <Check size={13} className="text-amber-500 shrink-0" />
+                                    <span>Multi-device real-time sync (never lose sales records)</span>
+                                </li>
+                                <li className="flex items-center gap-2">
+                                    <Check size={13} className="text-amber-500 shrink-0" />
+                                    <span>Shop Attendant Mode (staff issue receipts; only you see revenue)</span>
+                                </li>
+                            </ul>
+                        )}
+                    </div>
+
+                    {/* CTA */}
+                    <div className="flex items-center gap-2">
+                        <Link
+                            href={selectedTier === "pro" ? proUrl : bizUrl}
+                            onClick={onClose}
+                            className={`flex-1 ${
+                                selectedTier === "pro"
+                                    ? "bg-primary-500 hover:bg-primary-600 shadow-primary-500/20"
+                                    : "bg-gradient-to-r from-amber-500 to-primary-600 shadow-amber-500/20"
+                            } text-white font-black py-3 px-4 rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg active:scale-[0.98] transition-all`}
+                        >
+                            <span>{selectedTier === "pro" ? "GET PRO (₦2,500/mo)" : "GET BUSINESS (₦5,000/mo)"}</span>
+                            <ArrowRight size={14} />
+                        </Link>
+                        <button
+                            type="button"
+                            onClick={onClose}
+                            className="px-3 py-3 text-xs font-bold text-surface-400 hover:text-surface-600 dark:hover:text-surface-300 transition-colors shrink-0"
+                        >
+                            Close
+                        </button>
+                    </div>
+                </motion.div>
+            </div>
         </AnimatePresence>
     );
 }

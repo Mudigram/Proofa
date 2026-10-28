@@ -15,6 +15,7 @@ import { useProGate } from "@/hooks/useProGate";
 import { GamificationModal } from "@/components/ui/GamificationModal";
 import { useAuth } from "@/context/AuthContext";
 import { UpgradePrompt } from "@/components/ui/UpgradePrompt";
+import { PostExportUpgradePrompt } from "@/components/ui/PostExportUpgradePrompt";
 import { useRouter } from "next/navigation";
 import { ReceiptData } from "@/lib/types";
 import { trackDocExport, trackFeatureIntent } from "@/lib/telemetry";
@@ -30,6 +31,7 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
     const [activeTemplate, setActiveTemplate] = useState<TemplateName>(initialTemplate);
     const [isExporting, setIsExporting] = useState(false);
     const [showGamification, setShowGamification] = useState(false);
+    const [showPostExportPrompt, setShowPostExportPrompt] = useState(false);
     const [pendingExportAction, setPendingExportAction] = useState<(() => void) | null>(null);
     const [hasSharedForFreeExport, setHasSharedForFreeExport] = useState(false);
     const [isPremium, setIsPremium] = useState(false);
@@ -68,6 +70,14 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
             default: return <MinimalistTemplate {...props} />;
         }
     };
+
+    const triggerPostExportNudge = useCallback(() => {
+        if (!authIsPro) {
+            setTimeout(() => {
+                setShowPostExportPrompt(true);
+            }, 750);
+        }
+    }, [authIsPro]);
 
     // ── Pre-bake ───────────────────────────────────────────────────────────────
     // Runs 400ms after data/template change settles.
@@ -239,10 +249,17 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
                 prebaked: prebakedFile.current,
             });
 
-            if (result === "shared") showToast("Sent to WhatsApp!", "success");
-            else if (result === "downloaded") showToast("Image saved — open WhatsApp → tap 📎 → attach it", "info");
-            else if (result === "aborted") { /* user cancelled, say nothing */ }
-            else showToast("Something went wrong. Use the Image button instead.", "error");
+            if (result === "shared") {
+                showToast("Sent to WhatsApp!", "success");
+                triggerPostExportNudge();
+            } else if (result === "downloaded") {
+                showToast("Image saved — open WhatsApp → tap 📎 → attach it", "info");
+                triggerPostExportNudge();
+            } else if (result === "aborted") {
+                /* user cancelled, say nothing */
+            } else {
+                showToast("Something went wrong. Use the Image button instead.", "error");
+            }
         } catch (err) {
             console.error("[handleWhatsApp] Error:", err);
             showToast("Failed to share. Tap Image to save.", "error");
@@ -279,6 +296,7 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
 
             window.open(`https://wa.me/${directWaNumber}?text=${text}`, "_blank");
             showToast("Image saved! Opening WhatsApp chat with customer...", "success");
+            triggerPostExportNudge();
         } catch (err) {
             console.error("[LivePreview] Direct WA error:", err);
         } finally {
@@ -308,10 +326,17 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
                 prebaked: prebakedFile.current,
             });
 
-            if (result === "shared") showToast("Shared!", "success");
-            else if (result === "downloaded") showToast("Image saved — attach it manually", "info");
-            else if (result === "aborted") { /* silent */ }
-            else showToast("Share failed. Try the Image button.", "error");
+            if (result === "shared") {
+                showToast("Shared!", "success");
+                triggerPostExportNudge();
+            } else if (result === "downloaded") {
+                showToast("Image saved — attach it manually", "info");
+                triggerPostExportNudge();
+            } else if (result === "aborted") {
+                /* silent */
+            } else {
+                showToast("Share failed. Try the Image button.", "error");
+            }
         } catch (err) {
             console.error("[LivePreview] Share error:", err);
             showToast("Share failed. Try the Image button.", "error");
@@ -332,7 +357,12 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
             await new Promise(r => setTimeout(r, 60));
 
             const ok = await downloadAsPDF(CAPTURE_ID, `Proofa-${type}-${Date.now()}.pdf`, isPro);
-            showToast(ok ? "Saved as PDF! 📄" : "PDF generation failed.", ok ? "success" : "error");
+            if (ok) {
+                showToast("Saved as PDF! 📄", "success");
+                triggerPostExportNudge();
+            } else {
+                showToast("PDF generation failed.", "error");
+            }
         } catch (err) {
             console.error("[LivePreview] PDF error:", err);
             showToast("PDF generation failed.", "error");
@@ -353,6 +383,7 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
             if (dataUrl) {
                 downloadImage(dataUrl, `Proofa-${type}-${Date.now()}.png`);
                 showToast("Image saved in gallery!", "success");
+                triggerPostExportNudge();
             } else {
                 showToast("Failed to save image.", "error");
             }
@@ -589,6 +620,13 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
 
             {/* Upgrade Prompt — mounts as sibling, overlays everything */}
             <UpgradePrompt variant={activeVariant} onClose={closePrompt} />
+            <PostExportUpgradePrompt
+                isOpen={showPostExportPrompt}
+                onClose={() => setShowPostExportPrompt(false)}
+                businessName={data?.businessName || profile?.businessName}
+                docAmount={data?.amount || data?.totalAmount}
+                docType={type}
+            />
             <GamificationModal
                 isOpen={showGamification}
                 onClose={() => setShowGamification(false)}

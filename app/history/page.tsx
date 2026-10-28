@@ -14,6 +14,7 @@ import { useToast } from "@/components/ui/Toast";
 import { useAuth } from "@/context/AuthContext";
 import { fetchCloudHistory, deleteCloudDocument } from "@/lib/dashboard";
 import { Crown, Zap } from "lucide-react";
+import { BusinessAscensionCard } from "@/components/ui/BusinessAscensionCard";
 
 export default function HistoryPage() {
     const [history, setHistory] = useState<SavedDocument[]>([]);
@@ -22,7 +23,7 @@ export default function HistoryPage() {
     const [selectedDoc, setSelectedDoc] = useState<SavedDocument | null>(null);
     const [filter, setFilter] = useState<"all" | "saved" | "drafts">("all");
     const { showToast } = useToast();
-    const { user, profile, isPro } = useAuth();
+    const { user, profile, isPro, isBusiness } = useAuth();
 
     const loadHistory = useCallback(async () => {
         const localDocs = getHistory();
@@ -220,6 +221,7 @@ export default function HistoryPage() {
                         </div>
 
                         <StaggerContainer key={filter}>
+                            {/* Free to Pro Nudge */}
                             {!isPro && filter !== "drafts" && (
                                 <StaggerItem>
                                     <div className="mb-6 overflow-hidden relative group">
@@ -235,7 +237,7 @@ export default function HistoryPage() {
                                                 </div>
                                             </div>
                                             <Link
-                                                href="/pricing"
+                                                href="/pricing?plan=pro"
                                                 className="bg-surface-900 text-white text-[10px] font-black uppercase tracking-[0.2em] px-8 py-3.5 rounded-xl shadow-lg shadow-black/10 active:scale-95 transition-all whitespace-nowrap"
                                             >
                                                 Unlock Pro Features
@@ -244,6 +246,14 @@ export default function HistoryPage() {
                                     </div>
                                 </StaggerItem>
                             )}
+
+                            {/* Pro to Business Ascension Card */}
+                            {isPro && !isBusiness && (
+                                <StaggerItem>
+                                    <BusinessAscensionCard source="history" className="mb-6" />
+                                </StaggerItem>
+                            )}
+
                             <div className="grid gap-4">
                                 {filteredHistory.map((doc) => (
                                     <StaggerItem key={doc.id}>
@@ -263,7 +273,7 @@ export default function HistoryPage() {
                                                             {doc.type === 'order' ? 'summary' : doc.type}
                                                         </span>
                                                         {(doc.data as any).status === "Draft" && (
-                                                            <span className="bg-amber-100 text-amber-700 text-[8px] font-black px-1.5 py-0.5 rounded uppercase tracking-widest">Draft</span>
+                                                             <span className="bg-amber-100 text-amber-700 text-[8px] font-black px-1.5 py-0.5 rounded uppercase tracking-widest">Draft</span>
                                                         )}
                                                         {!user && (
                                                             <span className="bg-surface-100 text-surface-500 dark:bg-surface-800 dark:text-surface-400 text-[8px] font-black px-1.5 py-0.5 rounded uppercase tracking-widest">Saved Offline</span>
