@@ -64,6 +64,7 @@ const GUEST_BIZ_KEY = "proofa_guest_biz_profile";
 export interface GuestBizProfile {
     businessName?: string;
     businessAddress?: string;
+    businessPhone?: string;
     logoUrl?: string;
     bankDetails?: {
         bankName: string;
@@ -90,6 +91,7 @@ export function saveGuestBizProfile(updates: Partial<GuestBizProfile>): void {
         const merged: GuestBizProfile = {
             ...existing,
             ...(updates.businessName ? { businessName: updates.businessName.trim() } : {}),
+            ...(updates.businessPhone ? { businessPhone: updates.businessPhone.trim() } : {}),
             ...(updates.businessAddress ? { businessAddress: updates.businessAddress.trim() } : {}),
             ...(updates.logoUrl ? { logoUrl: updates.logoUrl } : {}),
             ...(updates.bankDetails?.bankName ? { bankDetails: updates.bankDetails } : {}),
@@ -97,8 +99,6 @@ export function saveGuestBizProfile(updates: Partial<GuestBizProfile>): void {
         localStorage.setItem(GUEST_BIZ_KEY, JSON.stringify(merged));
     } catch {}
 }
-
-// ─── Extract amount from any document type ───────────────────────────────────
 
 // ─── Extract amount from any document type ───────────────────────────────────
 
@@ -244,9 +244,10 @@ export async function saveDocument(
     // Auto-save business identity for guest convenience across receipts
     try {
         const anyData = data as any;
-        if (anyData.businessName || anyData.bankDetails?.bankName || anyData.logoUrl) {
+        if (anyData.businessName || anyData.businessPhone || anyData.bankDetails?.bankName || anyData.logoUrl) {
             saveGuestBizProfile({
                 businessName: anyData.businessName,
+                businessPhone: anyData.businessPhone,
                 businessAddress: anyData.businessAddress,
                 logoUrl: anyData.logoUrl,
                 bankDetails: anyData.bankDetails,
@@ -277,4 +278,3 @@ export async function saveDocument(
 
     return doc;
 }
-

@@ -25,7 +25,9 @@ export default function ReceiptForm() {
 
     const [formData, setFormData] = useState<ReceiptData>({
         businessName: "",
+        businessPhone: "",
         customerName: "",
+        customerPhone: "",
         items: [{ id: "1", name: "", quantity: 1, price: 0 }],
         amount: 0,
         status: "Paid",
@@ -81,6 +83,7 @@ export default function ReceiptForm() {
                 setFormData(prev => ({
                     ...prev,
                     businessName: prev.businessName || profile.businessName || "",
+                    businessPhone: prev.businessPhone || (profile as any)?.phone || getGuestBizProfile()?.businessPhone || "",
                     logoUrl: prev.logoUrl || profile.logoUrl || undefined,
                 }));
             } else {
@@ -89,6 +92,7 @@ export default function ReceiptForm() {
                     setFormData(prev => ({
                         ...prev,
                         businessName: prev.businessName || guestProfile.businessName || "",
+                        businessPhone: prev.businessPhone || guestProfile.businessPhone || "",
                         logoUrl: prev.logoUrl || guestProfile.logoUrl || undefined,
                         bankDetails: (guestProfile.bankDetails && guestProfile.bankDetails.enabled && !prev.bankDetails?.bankName)
                             ? guestProfile.bankDetails
@@ -102,6 +106,7 @@ export default function ReceiptForm() {
     const handleDemoFill = () => {
         setFormData({
             businessName: profile?.businessName || "Lagos Kicks Ltd",
+            businessPhone: "08050826536",
             customerName: "Chinedu Walk-in",
             customerPhone: "08012345678",
             items: [
@@ -263,7 +268,6 @@ export default function ReceiptForm() {
         showToast("Document saved & marked as Paid!", "success");
     };
 
-
     const handleModeSwitch = (newMode: "edit" | "preview") => {
         setMode(newMode);
     };
@@ -319,6 +323,14 @@ export default function ReceiptForm() {
                                         onChange={(e) => handleChange("businessName", e.target.value)}
                                         error={errors.businessName}
                                     />
+                                    <Input
+                                        label="YOUR BUSINESS WHATSAPP / PHONE (OPTIONAL)"
+                                        placeholder="e.g. 08050826536"
+                                        type="tel"
+                                        value={formData.businessPhone || ""}
+                                        onChange={(e) => handleChange("businessPhone", e.target.value)}
+                                        helperText="Saves automatically so customers can contact you on WhatsApp"
+                                    />
                                 </section>
                             </StaggerItem>
 
@@ -342,7 +354,7 @@ export default function ReceiptForm() {
                                     </div>
                                     <div className="flex flex-col gap-4">
                                         <Input
-                                            label="NAME (OPTIONAL)"
+                                            label="CUSTOMER NAME (OPTIONAL)"
                                             placeholder="Who paid you?"
                                             value={formData.customerName || ""}
                                             onChange={(e) => handleChange("customerName", e.target.value)}
@@ -351,7 +363,7 @@ export default function ReceiptForm() {
                                             rightElement={<PasteButton onPaste={(text) => handleChange("customerName", text)} />}
                                         />
                                         <Input
-                                            label="PHONE NUMBER (OPTIONAL)"
+                                            label="CUSTOMER PHONE NUMBER (OPTIONAL)"
                                             placeholder="e.g. 08012345678"
                                             type="tel"
                                             value={formData.customerPhone || ""}
@@ -585,7 +597,7 @@ export default function ReceiptForm() {
                         </div>
                     </StaggerContainer>
                 ) : (
-                    <div className="animate-in fade-in slide-in-from-right-4 transition-all duration-500">
+                    <div className="animate-in fade-in slide-from-right-4 transition-all duration-500">
                         <LivePreview
                             data={formData}
                             type="receipt"

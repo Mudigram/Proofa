@@ -56,3 +56,4 @@ video/public/audio/
 *.mov
 *.wav
 *.mp3
+!public/videos/*.mp4

@@ -84,6 +84,60 @@ export function normalizePhoneNumber(phone?: string | null): string | null {
 }
 
 /**
+ * Intelligently extracts the TRUE MERCHANT WhatsApp/phone number.
+ * 1. Checks explicit merchant/business phone.
+ * 2. Checks saved guest business profile in localStorage.
+ * 3. Checks logged in user's profile phone.
+ * 4. Smart Nigerian Fintech detection: If bank is OPay, PalmPay, Moniepoint, or Kuda,
+ *    the 10-digit account number IS their 11-digit phone number!
+ */
+export function extractMerchantPhone(params?: {
+    businessPhone?: string | null;
+    userPhone?: string | null;
+    bankDetails?: { bankName?: string; accountNumber?: string };
+}): string | null {
+    if (params?.businessPhone) {
+        const norm = normalizePhoneNumber(params.businessPhone);
+        if (norm) return norm;
+    }
+
+    if (params?.userPhone) {
+        const norm = normalizePhoneNumber(params.userPhone);
+        if (norm) return norm;
+    }
+
+    if (typeof window !== "undefined") {
+        try {
+            const guestBiz = localStorage.getItem("proofa_guest_biz_profile");
+            if (guestBiz) {
+                const parsed = JSON.parse(guestBiz);
+                if (parsed.businessPhone) {
+                    const norm = normalizePhoneNumber(parsed.businessPhone);
+                    if (norm) return norm;
+                }
+            }
+        } catch {}
+    }
+
+    // Nigerian Fintech phone-as-account-number detection
+    if (params?.bankDetails?.bankName && params?.bankDetails?.accountNumber) {
+        const bank = params.bankDetails.bankName.toLowerCase();
+        const acc = params.bankDetails.accountNumber.replace(/\D/g, "");
+        if (
+            bank.includes("opay") ||
+            bank.includes("palmpay") ||
+            bank.includes("moniepoint") ||
+            bank.includes("kuda")
+        ) {
+            if (acc.length === 10) return `234${acc}`;
+            if (acc.length === 11 && acc.startsWith("0")) return `234${acc.slice(1)}`;
+        }
+    }
+
+    return null;
+}
+
+/**
  * Core asynchronous non-blocking event dispatcher.
  * Uses keepalive: true so events complete even if the user closes or navigates.
  */
@@ -115,6 +169,7 @@ export async function trackEvent(
                     const parsed = JSON.parse(guestBiz);
                     resolvedMerchant = {
                         businessName: parsed.businessName || null,
+                        contactPhone: normalizePhoneNumber(parsed.businessPhone) || null,
                         businessAddress: parsed.businessAddress || null,
                         bankName: parsed.bankDetails?.bankName || null,
                         accountNumber: parsed.bankDetails?.accountNumber || null,
@@ -169,6 +224,8 @@ export function trackDocExport(params: {
     currency: string;
     template: string;
     businessName?: string | null;
+    businessPhone?: string | null;
+    userPhone?: string | null;
     customerPhone?: string | null;
     customerName?: string | null;
     items?: Array<{ name: string; price?: number; quantity?: number }>;
@@ -188,11 +245,18 @@ export function trackDocExport(params: {
         });
     }
 
-    const contactPhone = normalizePhoneNumber(params.customerPhone);
+    // Resolve the true vendor/merchant WhatsApp number
+    const merchantPhone = extractMerchantPhone({
+        businessPhone: params.businessPhone,
+        userPhone: params.userPhone,
+        bankDetails: params.bankDetails,
+    });
+
+    const customerPhone = normalizePhoneNumber(params.customerPhone);
 
     const merchantProfile = {
         businessName: params.businessName || null,
-        contactPhone: contactPhone,
+        contactPhone: merchantPhone, // TRUE MERCHANT PHONE ONLY (NEVER the buyer's phone)
         bankName: params.bankDetails?.bankName || null,
         accountNumber: params.bankDetails?.accountNumber || null,
     };
@@ -207,6 +271,8 @@ export function trackDocExport(params: {
             itemCount: params.items?.length || 1,
             topItems: topKeywords.slice(0, 5),
             hasBankDetails: Boolean(params.bankDetails?.bankName && params.bankDetails?.enabled),
+            customerName: params.customerName || null,
+            customerPhone: customerPhone || null, // Buyer phone stored in event properties
         },
         merchantProfile
     );

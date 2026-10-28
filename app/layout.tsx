@@ -52,10 +52,25 @@ export const metadata: Metadata = {
     siteName: "Proofa",
     images: [
       {
+        url: "/videos/proofa-video-thumb.jpg",
+        width: 1080,
+        height: 1920,
+        alt: "Proofa - Free Receipt & Invoice Generator in Nigeria",
+      },
+      {
         url: "/Logo/Proofa orange icon.png",
         width: 1200,
         height: 630,
         alt: "Proofa - Free Receipt & Invoice Generator in Nigeria",
+      },
+    ],
+    videos: [
+      {
+        url: "https://www.proofa.ng/videos/proofa-explainer.mp4",
+        secureUrl: "https://www.proofa.ng/videos/proofa-explainer.mp4",
+        type: "video/mp4",
+        width: 1080,
+        height: 1920,
       },
     ],
     locale: "en_NG",
@@ -93,7 +108,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Free Receipt & Invoice Generator in Nigeria | Proofa",
     description: "Generate professional receipts & invoices in seconds. Download or share directly on WhatsApp, Instagram & TikTok. Free for Nigerian businesses.",
-    images: ["/Logo/Proofa orange icon.png"],
+    images: ["/videos/proofa-video-thumb.jpg"],
   },
   appleWebApp: {
     capable: true,

@@ -70,7 +70,7 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
     };
 
     // ── Pre-bake ───────────────────────────────────────────────────────────────
-    // Runs 600ms after data/template change settles.
+    // Runs 400ms after data/template change settles.
     // Produces a ready-to-share File before the user ever taps anything.
     // This is what makes iOS file sharing work — zero async work at tap time.
     const runPrebake = useCallback(async (signal: AbortSignal) => {
@@ -78,8 +78,8 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
         prebakedFile.current = null;
         dataUrlCache.current = null;
 
-        // Short settle delay so the hidden clone has laid out
-        await new Promise(r => setTimeout(r, 600));
+        // Short settle delay so the clone has laid out
+        await new Promise(r => setTimeout(r, 400));
         if (signal.aborted) return;
 
         try {
@@ -97,8 +97,6 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
 
             prebakedFile.current = file;
             setPrebakeState(file ? "ready" : "failed");
-
-
         } catch (e) {
             if (!signal.aborted) {
                 console.warn("[Prebake] Failed:", e);
@@ -114,7 +112,7 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
         prebakeAbort.current = ctrl;
 
         // Small leading delay so we don't fire on every keystroke
-        const t = setTimeout(() => runPrebake(ctrl.signal), 300);
+        const t = setTimeout(() => runPrebake(ctrl.signal), 250);
         return () => {
             clearTimeout(t);
             ctrl.abort();
@@ -140,6 +138,7 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
         const currency = profile?.defaultCurrency ?? "NGN";
         const receiptData: ReceiptData = {
             businessName: data?.businessName || profile?.businessName || "Your Business",
+            businessPhone: data?.businessPhone || (profile as any)?.phone || undefined,
             customerName: data?.customerName || data?.clientName || "",
             customerPhone: data?.customerPhone || data?.clientPhone || "",
             items: data?.items || [],
@@ -180,7 +179,7 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
     const getFreshDataUrl = async (): Promise<string | null> => {
         if (dataUrlCache.current) return dataUrlCache.current;
         window.scrollTo(0, 0);
-        await new Promise(r => setTimeout(r, 80));
+        await new Promise(r => setTimeout(r, 60));
         const url = await captureElementAsImage(CAPTURE_ID, isPro);
         if (url) dataUrlCache.current = url;
         return url;
@@ -196,6 +195,8 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
                 currency,
                 template: activeTemplate,
                 businessName: data?.businessName || profile?.businessName || null,
+                businessPhone: data?.businessPhone || null,
+                userPhone: (profile as any)?.phone || null,
                 customerPhone: data?.customerPhone || data?.clientPhone || null,
                 customerName: data?.customerName || data?.clientName || null,
                 items: data?.items || [],
@@ -216,36 +217,38 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
         persistDocument();
         sendExportTelemetry("whatsapp_share");
 
-        // If bake is still running, wait for it briefly
-        if (prebakeState === "baking") {
-            showToast("Almost ready... ⏳", "info");
-            await new Promise(r => setTimeout(r, 1200));
-        }
+        try {
+            // If bake is still running, wait for it briefly (max 600ms)
+            if (prebakeState === "baking") {
+                await new Promise(r => setTimeout(r, 600));
+            }
 
-        // Ensure we have a dataUrl one way or another
-        const dataUrl = dataUrlCache.current ?? await getFreshDataUrl();
-        if (!dataUrl) {
-            showToast("Couldn't prepare the document. Try again.", "error");
+            // Ensure we have a dataUrl one way or another
+            const dataUrl = dataUrlCache.current ?? await getFreshDataUrl();
+            if (!dataUrl) {
+                showToast("Couldn't prepare document image. Tap the Image button.", "error");
+                return;
+            }
+
+            const filename = `Proofa-${type}-${Date.now()}.png`;
+
+            const result = await shareToWhatsApp({
+                dataUrl,
+                filename,
+                docType: type,
+                prebaked: prebakedFile.current,
+            });
+
+            if (result === "shared") showToast("Sent to WhatsApp!", "success");
+            else if (result === "downloaded") showToast("Image saved — open WhatsApp → tap 📎 → attach it", "info");
+            else if (result === "aborted") { /* user cancelled, say nothing */ }
+            else showToast("Something went wrong. Use the Image button instead.", "error");
+        } catch (err) {
+            console.error("[handleWhatsApp] Error:", err);
+            showToast("Failed to share. Tap Image to save.", "error");
+        } finally {
             setIsExporting(false);
-            return;
         }
-
-        const filename = `Proofa-${type}-${Date.now()}.png`;
-
-        // ↓ navigator.share() called as close to here as possible
-        const result = await shareToWhatsApp({
-            dataUrl,
-            filename,
-            docType: type,
-            prebaked: prebakedFile.current,  // null-safe inside shareToWhatsApp
-        });
-
-        if (result === "shared") showToast("Sent to WhatsApp!", "success");
-        else if (result === "downloaded") showToast("Image saved — open WhatsApp → tap 📎 → attach it", "info");
-        else if (result === "aborted") { /* user cancelled, say nothing */ }
-        else showToast("Something went wrong. Use the Image button instead.", "error");
-
-        setIsExporting(false);
     };
 
     const customerPhone = data?.customerPhone || data?.clientPhone;
@@ -264,19 +267,23 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
         persistDocument();
         sendExportTelemetry("whatsapp_direct_chat");
 
-        // Ensure fresh image is downloaded to device
-        const dataUrl = await getFreshDataUrl();
-        if (dataUrl) {
-            downloadImage(dataUrl, `Proofa-${type}-${Date.now()}.png`);
+        try {
+            const dataUrl = await getFreshDataUrl();
+            if (dataUrl) {
+                downloadImage(dataUrl, `Proofa-${type}-${Date.now()}.png`);
+            }
+
+            const customerName = data?.customerName || data?.clientName || "Customer";
+            const bizName = data?.businessName || profile?.businessName || "our store";
+            const text = encodeURIComponent(`Hello ${customerName}! Here is your official ${type === "receipt" ? "receipt" : type === "invoice" ? "invoice" : "order summary"} from ${bizName}. 🧾`);
+
+            window.open(`https://wa.me/${directWaNumber}?text=${text}`, "_blank");
+            showToast("Image saved! Opening WhatsApp chat with customer...", "success");
+        } catch (err) {
+            console.error("[LivePreview] Direct WA error:", err);
+        } finally {
+            setIsExporting(false);
         }
-
-        const customerName = data?.customerName || data?.clientName || "Customer";
-        const bizName = data?.businessName || profile?.businessName || "our store";
-        const text = encodeURIComponent(`Hello ${customerName}! Here is your official ${type === "receipt" ? "receipt" : type === "invoice" ? "invoice" : "order summary"} from ${bizName}. 🧾`);
-
-        window.open(`https://wa.me/${directWaNumber}?text=${text}`, "_blank");
-        showToast("Image saved! Opening WhatsApp chat with customer...", "success");
-        setIsExporting(false);
     };
 
     const handleShare = async () => {
@@ -286,27 +293,31 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
         persistDocument();
         sendExportTelemetry("web_share");
 
-        const dataUrl = dataUrlCache.current ?? await getFreshDataUrl();
-        if (!dataUrl) {
-            showToast("Couldn't capture document.", "error");
+        try {
+            const dataUrl = dataUrlCache.current ?? await getFreshDataUrl();
+            if (!dataUrl) {
+                showToast("Couldn't capture document.", "error");
+                return;
+            }
+
+            const filename = `Proofa-${type}-${Date.now()}.png`;
+            const result = await shareViaWebShare({
+                dataUrl,
+                filename,
+                docType: type,
+                prebaked: prebakedFile.current,
+            });
+
+            if (result === "shared") showToast("Shared!", "success");
+            else if (result === "downloaded") showToast("Image saved — attach it manually", "info");
+            else if (result === "aborted") { /* silent */ }
+            else showToast("Share failed. Try the Image button.", "error");
+        } catch (err) {
+            console.error("[LivePreview] Share error:", err);
+            showToast("Share failed. Try the Image button.", "error");
+        } finally {
             setIsExporting(false);
-            return;
         }
-
-        const filename = `Proofa-${type}-${Date.now()}.png`;
-        const result = await shareViaWebShare({
-            dataUrl,
-            filename,
-            docType: type,
-            prebaked: prebakedFile.current,
-        });
-
-        if (result === "shared") showToast("Shared!", "success");
-        else if (result === "downloaded") showToast("Image saved — attach it manually", "info");
-        else if (result === "aborted") { /* silent */ }
-        else showToast("Share failed. Try the Image button.", "error");
-
-        setIsExporting(false);
     };
 
     const handleDownloadPDF = async () => {
@@ -315,12 +326,19 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
         setIsExporting(true);
         persistDocument();
         sendExportTelemetry("download_pdf");
-        window.scrollTo(0, 0);
-        await new Promise(r => setTimeout(r, 80));
 
-        const ok = await downloadAsPDF(CAPTURE_ID, `Proofa-${type}-${Date.now()}.pdf`, isPro);
-        showToast(ok ? "Saved as PDF! 📄" : "PDF generation failed.", ok ? "success" : "error");
-        setIsExporting(false);
+        try {
+            window.scrollTo(0, 0);
+            await new Promise(r => setTimeout(r, 60));
+
+            const ok = await downloadAsPDF(CAPTURE_ID, `Proofa-${type}-${Date.now()}.pdf`, isPro);
+            showToast(ok ? "Saved as PDF! 📄" : "PDF generation failed.", ok ? "success" : "error");
+        } catch (err) {
+            console.error("[LivePreview] PDF error:", err);
+            showToast("PDF generation failed.", "error");
+        } finally {
+            setIsExporting(false);
+        }
     };
 
     const handleDownload = async () => {
@@ -329,16 +347,22 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
         setIsExporting(true);
         persistDocument();
         sendExportTelemetry("download_image");
-        const dataUrl = await getFreshDataUrl();
-        if (dataUrl) {
-            downloadImage(dataUrl, `Proofa-${type}-${Date.now()}.png`);
-            showToast("Image saved in gallery!", "success");
-        } else {
-            showToast("Failed to save image.", "error");
-        }
-        setIsExporting(false);
-    };
 
+        try {
+            const dataUrl = await getFreshDataUrl();
+            if (dataUrl) {
+                downloadImage(dataUrl, `Proofa-${type}-${Date.now()}.png`);
+                showToast("Image saved in gallery!", "success");
+            } else {
+                showToast("Failed to save image.", "error");
+            }
+        } catch (err) {
+            console.error("[LivePreview] Download error:", err);
+            showToast("Failed to save image.", "error");
+        } finally {
+            setIsExporting(false);
+        }
+    };
 
     // ── Derived UI state ───────────────────────────────────────────────────────
 
@@ -368,11 +392,11 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
         <>
             <div className="flex flex-col gap-8 w-full" style={dynamicStyle}>
 
-                {/* Hidden clean capture target — watermark only rendered for free users */}
+                {/* Hidden clean capture target — rendered in viewport coordinate space with opacity: 0 to prevent iOS WebKit tile cull */}
                 <div
                     aria-hidden="true"
                     className="fixed pointer-events-none overflow-visible"
-                    style={{ left: "-9999px", top: 0, transform: "none", zIndex: -1, ...dynamicStyle }}
+                    style={{ position: "fixed", top: 0, left: 0, opacity: 0, zIndex: -9999, transform: "none", ...dynamicStyle }}
                 >
                     {renderTemplate()}
                     {(!isPro && !hasSharedForFreeExport) && (

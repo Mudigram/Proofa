@@ -26,6 +26,7 @@ export default function InvoiceForm() {
 
     const [formData, setFormData] = useState<InvoiceData>({
         businessName: "",
+        businessPhone: "",
         businessAddress: "",
         clientName: "",
         invoiceNumber: "INV-" + Math.floor(Math.random() * 9000 + 1000),
@@ -91,10 +92,11 @@ export default function InvoiceForm() {
             }
         } else {
             // Auto-fill brand defaults: Pro profile first, or fallback to saved guest business profile
-            if (profile?.businessName || profile?.logoUrl) {
+            if (profile?.businessName || profile?.logoUrl || profile?.phone) {
                 setFormData(prev => ({
                     ...prev,
                     businessName: prev.businessName || profile.businessName || "",
+                    businessPhone: prev.businessPhone || profile.phone || "",
                     logoUrl: prev.logoUrl || profile.logoUrl || undefined,
                 }));
             } else {
@@ -103,6 +105,7 @@ export default function InvoiceForm() {
                     setFormData(prev => ({
                         ...prev,
                         businessName: prev.businessName || guestProfile.businessName || "",
+                        businessPhone: prev.businessPhone || guestProfile.businessPhone || "",
                         businessAddress: prev.businessAddress || guestProfile.businessAddress || "",
                         logoUrl: prev.logoUrl || guestProfile.logoUrl || undefined,
                         bankDetails: (guestProfile.bankDetails && guestProfile.bankDetails.enabled && !prev.bankDetails?.bankName)
@@ -117,6 +120,7 @@ export default function InvoiceForm() {
     const handleDemoFill = () => {
         setFormData({
             businessName: profile?.businessName || "Amaka Couture",
+            businessPhone: "08050826536",
             businessAddress: "Suite 4, Ikeja City Mall, Lagos",
             clientName: "Dr. Mrs. Folake",
             clientPhone: "08098765432",
@@ -306,6 +310,14 @@ export default function InvoiceForm() {
                                         value={formData.businessName}
                                         onChange={(e) => handleChange("businessName", e.target.value)}
                                         error={errors.businessName}
+                                    />
+                                    <Input
+                                        label="YOUR BUSINESS WHATSAPP / PHONE (OPTIONAL)"
+                                        placeholder="e.g. 08050826536"
+                                        type="tel"
+                                        value={formData.businessPhone || ""}
+                                        onChange={(e) => handleChange("businessPhone", e.target.value)}
+                                        helperText="Saves automatically so clients can contact you on WhatsApp"
                                     />
                                     <TextArea
                                         label="ADDRESS (OPTIONAL)"

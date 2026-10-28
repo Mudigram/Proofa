@@ -68,6 +68,11 @@ export default function MinimalistTemplate({ data, type, isPro, hasTrial, curren
                 <div>
                     <p className="text-[10px] font-black text-surface-300 uppercase tracking-widest mb-1.5"> {isReceipt ? "From" : "Billed By"}</p>
                     <p className="text-xs font-bold">{isInvoice ? invoice.businessName : (isReceipt ? receipt.businessName : "Proofa Store")}</p>
+                    {(isReceipt ? receipt.businessPhone : (isInvoice ? invoice.businessPhone : null)) && (
+                        <p className="text-[10px] text-surface-500 font-mono font-bold mt-0.5">
+                            {isReceipt ? receipt.businessPhone : invoice.businessPhone}
+                        </p>
+                    )}
                     <p className="text-[10px] text-surface-400 font-medium leading-relaxed max-w-[150px] mt-1">
                         {isInvoice ? invoice.businessAddress : "Nigeria"}
                     </p>
@@ -213,7 +218,6 @@ export default function MinimalistTemplate({ data, type, isPro, hasTrial, curren
                     </p>
                 </div>
             )}
-
 
             {/* Status Badge for Order/Receipt */}
             {(isOrder || isReceipt) && (

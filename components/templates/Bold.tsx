@@ -18,7 +18,6 @@ export default function BoldTemplate({ data, type, isPro, hasTrial, currencyCode
 
     const receipt = data as ReceiptData;
     const invoice = data as InvoiceData;
-
     const order = data as OrderData;
 
     const items = isReceipt ? (receipt.items || []) : (isInvoice ? invoice.items : order.items);
@@ -40,6 +39,12 @@ export default function BoldTemplate({ data, type, isPro, hasTrial, currencyCode
         : isReceipt
             ? receipt.businessName
             : "Proofa Store";
+
+    const businessPhone = isInvoice
+        ? invoice.businessPhone
+        : isReceipt
+            ? receipt.businessPhone
+            : undefined;
 
     const clientName = isReceipt
         ? receipt.customerName || "Customer"
@@ -84,6 +89,11 @@ export default function BoldTemplate({ data, type, isPro, hasTrial, currencyCode
                         <p className="text-white text-xs font-black uppercase tracking-tight leading-snug">
                             {businessName}
                         </p>
+                        {businessPhone && (
+                            <p className="text-surface-300 text-[9px] font-bold mt-0.5">
+                                {businessPhone}
+                            </p>
+                        )}
                         <p className="text-surface-400 text-[9px] font-bold uppercase mt-1 leading-relaxed">
                             {isInvoice ? invoice.businessAddress : "Lagos, Nigeria"}
                         </p>

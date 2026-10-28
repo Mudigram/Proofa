@@ -26,12 +26,13 @@ export const PasteButton = ({ onPaste }: { onPaste: (text: string) => void }) =>
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
     label: string;
     error?: string;
+    helperText?: string;
     icon?: React.ReactNode;
     rightElement?: React.ReactNode;
     onClear?: () => void;
 }
 
-export const Input = ({ label, error, icon, rightElement, onClear, className = "", ...props }: InputProps) => {
+export const Input = ({ label, error, helperText, icon, rightElement, onClear, className = "", ...props }: InputProps) => {
     const showClear = typeof props.value === "string" && props.value.length > 0 && !props.disabled && !!onClear;
 
     return (
@@ -65,6 +66,7 @@ export const Input = ({ label, error, icon, rightElement, onClear, className = "
                 </div>
             </div>
             {error && <p className="text-xs text-red-500 dark:text-red-400 font-bold px-1">{error}</p>}
+            {helperText && !error && <p className="text-[10px] text-surface-400 font-medium px-1">{helperText}</p>}
         </div>
     );
 };

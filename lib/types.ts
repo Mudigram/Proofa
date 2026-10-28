@@ -44,6 +44,7 @@ export interface DeliveryInfo {
 /** Receipt form data */
 export interface ReceiptData {
     businessName: string;
+    businessPhone?: string;
     customerName?: string;
     customerPhone?: string;
     items: LineItem[];
@@ -61,6 +62,7 @@ export interface ReceiptData {
 /** Invoice form data */
 export interface InvoiceData {
     businessName: string;
+    businessPhone?: string;
     businessAddress?: string;
     clientName: string;
     clientPhone?: string;
@@ -81,6 +83,8 @@ export interface InvoiceData {
 
 /** Order summary form data */
 export interface OrderData {
+    businessName?: string;
+    businessPhone?: string;
     customerName: string;
     customerPhone?: string;
     items: LineItem[];
@@ -133,6 +137,7 @@ export interface UserProfile {
     // Virtual or merged fields (for front-end convenience from auth.users)
     email?: string;
     name?: string;
+    phone?: string | null;
 }
 
 /** A saved bank account in the Bank Vault (Pro feature) */

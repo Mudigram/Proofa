@@ -31,6 +31,12 @@ export default function ClassicTemplate({ data, type, isPro, hasTrial, currencyC
     const deliveryCost = data.deliveryInfo?.enabled ? (data.deliveryInfo.cost ?? 0) : 0;
     const total = (isReceipt ? subtotal : (isOrder ? order.totalAmount : subtotal + tax)) + deliveryCost;
 
+    const businessPhone = isInvoice
+        ? invoice.businessPhone
+        : isReceipt
+            ? receipt.businessPhone
+            : undefined;
+
     return (
         <div className="relative bg-white min-h-[600px] flex flex-col font-mono text-zinc-800 mx-auto max-w-[480px] shadow-2xl p-8" id="document-preview">
             {/* 1. MINIMAL LETTERHEAD */}
@@ -50,6 +56,11 @@ export default function ClassicTemplate({ data, type, isPro, hasTrial, currencyC
                 <h1 className="text-xl font-bold uppercase tracking-[0.2em]" style={{ color: "var(--color-primary-500, #000)" }}>
                     {isInvoice ? invoice.businessName : (isReceipt ? receipt.businessName : "Store")}
                 </h1>
+                {businessPhone && (
+                    <p className="text-[10px] font-bold text-zinc-600 mt-0.5">
+                        {businessPhone}
+                    </p>
+                )}
                 <p className="text-[9px] uppercase tracking-widest text-zinc-500 mt-1 max-w-[300px] text-center">
                     {isInvoice ? invoice.businessAddress : "Lagos, Nigeria"}
                 </p>
