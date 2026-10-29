@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Calendar, ChevronDown } from "lucide-react";
 
 interface DatePickerProps {
@@ -17,6 +17,23 @@ export const DatePicker: React.FC<DatePickerProps> = ({
     className = "",
 }) => {
     const [isOpen, setIsOpen] = useState(false);
+    const containerRef = useRef<HTMLDivElement>(null);
+
+    // Dismiss on click outside
+    useEffect(() => {
+        if (!isOpen) return;
+        const handleClickOutside = (e: MouseEvent | TouchEvent) => {
+            if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+                setIsOpen(false);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        document.addEventListener("touchstart", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+            document.removeEventListener("touchstart", handleClickOutside);
+        };
+    }, [isOpen]);
 
     const getFormattedDisplay = () => {
         if (!value) return "Select date";
@@ -68,14 +85,17 @@ export const DatePicker: React.FC<DatePickerProps> = ({
     };
 
     return (
-        <div className={`flex flex-col gap-1.5 ${className}`}>
+        <div
+            ref={containerRef}
+            className={`flex flex-col gap-1.5 transition-all ${isOpen ? "relative z-50" : "relative z-10"} ${className}`}
+        >
             {label && (
                 <label className="text-[10px] font-black uppercase tracking-widest text-surface-400 dark:text-surface-500 px-1">
                     {label}
                 </label>
             )}
 
-            <div className="relative">
+            <div className={`relative ${isOpen ? "z-50" : ""}`}>
                 {/* Styled Trigger Button */}
                 <button
                     type="button"
@@ -99,41 +119,53 @@ export const DatePicker: React.FC<DatePickerProps> = ({
 
                 {/* Brand-Styled Dropdown Popover */}
                 {isOpen && (
-                    <div className="absolute top-full left-0 right-0 mt-2 z-30 bg-white dark:bg-surface-900 border border-surface-200 dark:border-surface-800 rounded-2xl p-3 shadow-xl flex flex-col gap-2 animate-in fade-in zoom-in-95 duration-150">
-                        {/* Preset Pills */}
-                        <div className="flex items-center gap-2">
-                            <button
-                                type="button"
-                                onClick={() => handlePreset("today")}
-                                className="flex-1 py-2 px-3 rounded-xl bg-primary-50 dark:bg-primary-950/60 hover:bg-primary-100 dark:hover:bg-primary-900/60 text-primary-600 dark:text-primary-400 text-xs font-bold transition-colors flex items-center justify-center gap-1.5"
-                            >
-                                Today
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => handlePreset("yesterday")}
-                                className="flex-1 py-2 px-3 rounded-xl bg-surface-100 dark:bg-surface-800 hover:bg-surface-200 dark:hover:bg-surface-700 text-surface-700 dark:text-surface-300 text-xs font-bold transition-colors flex items-center justify-center gap-1.5"
-                            >
-                                Yesterday
-                            </button>
-                        </div>
+                    <>
+                        {/* Invisible click-away backdrop */}
+                        <div
+                            className="fixed inset-0 z-40 bg-black/5 dark:bg-black/20 backdrop-blur-[1px]"
+                            onClick={() => setIsOpen(false)}
+                        />
 
-                        <div className="h-px bg-surface-100 dark:bg-surface-800 my-1" />
+                        <div className="absolute top-full left-0 right-0 mt-2 z-50 bg-white dark:bg-surface-900 border border-surface-200 dark:border-surface-800 rounded-2xl p-3.5 shadow-2xl flex flex-col gap-2.5 animate-in fade-in zoom-in-95 duration-150">
+                            {/* Preset Pills */}
+                            <div className="flex items-center gap-2">
+                                <button
+                                    type="button"
+                                    onClick={() => handlePreset("today")}
+                                    className="flex-1 py-2 px-3 rounded-xl bg-primary-50 dark:bg-primary-950/60 hover:bg-primary-100 dark:hover:bg-primary-900/60 text-primary-600 dark:text-primary-400 text-xs font-bold transition-colors flex items-center justify-center gap-1.5 active:scale-95"
+                                >
+                                    Today
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => handlePreset("yesterday")}
+                                    className="flex-1 py-2 px-3 rounded-xl bg-surface-100 dark:bg-surface-800 hover:bg-surface-200 dark:hover:bg-surface-700 text-surface-700 dark:text-surface-300 text-xs font-bold transition-colors flex items-center justify-center gap-1.5 active:scale-95"
+                                >
+                                    Yesterday
+                                </button>
+                            </div>
 
-                        {/* Native Date Input Styled Container */}
-                        <div className="flex flex-col gap-1 px-1">
-                            <span className="text-[10px] font-bold text-surface-400 dark:text-surface-500 uppercase tracking-wider">Custom Date</span>
-                            <input
-                                type="date"
-                                value={value}
-                                onChange={(e) => {
-                                    onChange(e.target.value);
-                                    setIsOpen(false);
-                                }}
-                                className="w-full bg-surface-50 dark:bg-surface-900 border border-surface-200 dark:border-surface-800 rounded-xl px-3 py-2 text-xs font-bold text-surface-900 dark:text-surface-50 outline-none focus:border-primary-500"
-                            />
+                            <div className="h-px bg-surface-100 dark:border-surface-800 my-0.5" />
+
+                            {/* Native Date Input Styled Container */}
+                            <div className="flex flex-col gap-1.5 px-0.5">
+                                <span className="text-[10px] font-bold text-surface-400 dark:text-surface-500 uppercase tracking-wider">
+                                    Custom Date
+                                </span>
+                                <input
+                                    type="date"
+                                    value={value}
+                                    onChange={(e) => {
+                                        if (e.target.value) {
+                                            onChange(e.target.value);
+                                            setIsOpen(false);
+                                        }
+                                    }}
+                                    className="w-full bg-surface-50 dark:bg-surface-900 border border-surface-200 dark:border-surface-800 rounded-xl px-3 py-2.5 text-xs font-bold text-surface-900 dark:text-surface-50 outline-none focus:border-primary-500 cursor-pointer"
+                                />
+                            </div>
                         </div>
-                    </div>
+                    </>
                 )}
             </div>
         </div>

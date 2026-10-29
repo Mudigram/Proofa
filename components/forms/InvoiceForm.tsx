@@ -330,7 +330,7 @@ export default function InvoiceForm() {
                             </StaggerItem>
 
                             <StaggerItem>
-                                <section className="flex flex-col gap-5 bg-white dark:bg-surface-900 p-6 rounded-[2rem] border border-surface-100 dark:border-surface-800 shadow-sm">
+                                <section className="flex flex-col gap-5 bg-white dark:bg-surface-900 p-6 rounded-[2rem] border border-surface-100 dark:border-surface-800 shadow-sm relative z-20 overflow-visible">
                                     <h3 className="text-[10px] font-black uppercase tracking-widest text-surface-400 dark:text-surface-500 px-1">Client & Invoice Info</h3>
                                     <div className="flex flex-col gap-4">
                                         <Input

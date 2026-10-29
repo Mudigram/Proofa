@@ -376,7 +376,7 @@ export default function ReceiptForm() {
                             </StaggerItem>
 
                             <StaggerItem>
-                                <section className="flex flex-col gap-6 bg-white dark:bg-surface-900 p-6 rounded-[2rem] border border-surface-100 dark:border-surface-800 shadow-sm relative overflow-hidden">
+                                <section className="flex flex-col gap-6 bg-white dark:bg-surface-900 p-6 rounded-[2rem] border border-surface-100 dark:border-surface-800 shadow-sm relative z-20 overflow-visible">
                                     <div className="flex items-center justify-between px-1">
                                         <h3 className="text-[10px] font-black uppercase tracking-widest text-surface-400 dark:text-surface-500">Items / Payment Details</h3>
                                         <button
@@ -456,7 +456,7 @@ export default function ReceiptForm() {
                                         ))}
                                         {errors.items && <p className="text-red-500 dark:text-red-400 text-[10px] font-bold mt-1 px-1">{errors.items}</p>}
 
-                                        <div className="flex flex-col gap-4 pt-2 border-t border-surface-100 dark:border-surface-800 mt-2">
+                                        <div className="flex flex-col gap-4 pt-2 border-t border-surface-100 dark:border-surface-800 mt-2 relative z-30">
                                             <DatePicker
                                                 label="DATE"
                                                 value={formData.date}
@@ -468,7 +468,7 @@ export default function ReceiptForm() {
                             </StaggerItem>
 
                             <StaggerItem>
-                                <section className="flex flex-col gap-5 bg-white dark:bg-surface-900 p-6 rounded-[2rem] border border-surface-100 dark:border-surface-800 shadow-sm">
+                                <section className="flex flex-col gap-5 bg-white dark:bg-surface-900 p-6 rounded-[2rem] border border-surface-100 dark:border-surface-800 shadow-sm relative z-10">
                                     <h3 className="text-[10px] font-black uppercase tracking-widest text-surface-400 dark:text-surface-500 px-1">Receipt Status</h3>
                                     <SegmentedControl
                                         label="STATUS"
