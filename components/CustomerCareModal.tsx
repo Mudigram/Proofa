@@ -35,7 +35,7 @@ export default function CustomerCareModal({ isOpen, onClose }: CustomerCareModal
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Customer Care">
-      <div className="flex flex-col gap-5 -mt-2">
+      <div className="flex flex-col gap-5 pb-2">
         <p className="text-xs text-surface-500 dark:text-surface-400 leading-relaxed font-medium">
           Have questions about your receipts, bank details, or upgrading your brand? Talk directly with our founder &amp; customer care team.
         </p>
@@ -137,7 +137,7 @@ export default function CustomerCareModal({ isOpen, onClose }: CustomerCareModal
         </div>
 
         {/* ── Operating Hours Note ─────────────────────────────────────────── */}
-        <div className="text-center pt-1 text-[10px] text-surface-400 dark:text-surface-500 font-medium">
+        <div className="text-center pt-2 pb-3 text-[10px] text-surface-400 dark:text-surface-500 font-medium tracking-tight">
           Mon – Sat: 8:00 AM – 8:00 PM WAT · Lagos, Nigeria
         </div>
       </div>
