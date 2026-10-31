@@ -1,18 +1,12 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
+import { requireAdmin } from "@/lib/admin-auth";
 
 export async function POST(req: Request) {
     try {
         const body = await req.json().catch(() => ({}));
-        const adminKey = req.headers.get("x-admin-key") || body.adminKey;
-        const validKey = process.env.ADMIN_SECRET_KEY || "proofa_hq_2026";
-
-        if (!adminKey || adminKey.trim() !== validKey.trim()) {
-            return NextResponse.json(
-                { error: "Unauthorized: Invalid admin key" },
-                { status: 401 }
-            );
-        }
+        const auth = await requireAdmin(req);
+        if (!auth.ok) return auth.response;
 
         const { action, userId, plan, status, durationDays, email } = body;
 

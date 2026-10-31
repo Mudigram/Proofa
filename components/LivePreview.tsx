@@ -18,7 +18,15 @@ import { UpgradePrompt } from "@/components/ui/UpgradePrompt";
 import { PostExportUpgradePrompt } from "@/components/ui/PostExportUpgradePrompt";
 import { useRouter } from "next/navigation";
 import { ReceiptData } from "@/lib/types";
-import { trackDocExport, trackFeatureIntent } from "@/lib/telemetry";
+import {
+    trackDocExport,
+    trackFeatureIntent,
+    trackTemplateChanged,
+    trackShareChannel,
+    trackProFeatureBlocked,
+    trackProFeatureUsed,
+    getOrCreateShadowId,
+} from "@/lib/telemetry";
 
 interface LivePreviewProps {
     data: any;
@@ -247,12 +255,15 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
                 filename,
                 docType: type,
                 prebaked: prebakedFile.current,
+                shadowId: getOrCreateShadowId(),
             });
 
             if (result === "shared") {
+                trackShareChannel("whatsapp");
                 showToast("Sent to WhatsApp!", "success");
                 triggerPostExportNudge();
             } else if (result === "downloaded") {
+                trackShareChannel("download");
                 showToast("Image saved — open WhatsApp → tap 📎 → attach it", "info");
                 triggerPostExportNudge();
             } else if (result === "aborted") {
@@ -295,6 +306,7 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
             const text = encodeURIComponent(`Hello ${customerName}! Here is your official ${type === "receipt" ? "receipt" : type === "invoice" ? "invoice" : "order summary"} from ${bizName}. 🧾`);
 
             window.open(`https://wa.me/${directWaNumber}?text=${text}`, "_blank");
+            trackShareChannel("whatsapp_direct");
             showToast("Image saved! Opening WhatsApp chat with customer...", "success");
             triggerPostExportNudge();
         } catch (err) {
@@ -327,9 +339,11 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
             });
 
             if (result === "shared") {
+                trackShareChannel("web_share");
                 showToast("Shared!", "success");
                 triggerPostExportNudge();
             } else if (result === "downloaded") {
+                trackShareChannel("download");
                 showToast("Image saved — attach it manually", "info");
                 triggerPostExportNudge();
             } else if (result === "aborted") {
@@ -358,6 +372,7 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
 
             const ok = await downloadAsPDF(CAPTURE_ID, `Proofa-${type}-${Date.now()}.pdf`, isPro);
             if (ok) {
+                trackShareChannel("download_pdf");
                 showToast("Saved as PDF! 📄", "success");
                 triggerPostExportNudge();
             } else {
@@ -382,6 +397,7 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
             const dataUrl = await getFreshDataUrl();
             if (dataUrl) {
                 downloadImage(dataUrl, `Proofa-${type}-${Date.now()}.png`);
+                trackShareChannel("download_image");
                 showToast("Image saved in gallery!", "success");
                 triggerPostExportNudge();
             } else {
@@ -459,7 +475,15 @@ export default function LivePreview({ data, type, initialTemplate = "minimalist"
                         {templates.map((t) => (
                             <button
                                 key={t.id}
-                                onClick={() => setActiveTemplate(t.id as TemplateName)}
+                                onClick={() => {
+                                    setActiveTemplate(t.id as TemplateName);
+                                    trackTemplateChanged(t.id);
+                                    if (t.premium && !isPremium) {
+                                        trackProFeatureBlocked(`template_${t.id}`);
+                                    } else if (t.premium && isPremium) {
+                                        trackProFeatureUsed(`template_${t.id}`);
+                                    }
+                                }}
                                 className={`flex-1 min-w-[100px] whitespace-nowrap py-3 px-4 rounded-xl text-xs font-black uppercase tracking-widest transition-all relative ${activeTemplate === t.id
                                     ? "bg-white text-primary-500 shadow-md shadow-black/5 ring-1 ring-black/5"
                                     : "text-surface-400 hover:text-surface-600"

@@ -138,6 +138,29 @@ export function extractMerchantPhone(params?: {
 }
 
 /**
+ * Maps an event name onto the coarse `event_type` column.
+ *
+ * The segmentation engine keys off `event_name`, so this is only for human
+ * browsing of the raw table — but lumping every new event into `feature_intent`
+ * would make the table unreadable for anyone querying it directly.
+ */
+function deriveEventType(eventName: string): TelemetryPayload["eventType"] {
+    switch (eventName) {
+        case "doc_exported":
+            return "doc_exported";
+        case "session_ping":
+        case "doc_viewed":
+        case "doc_drafted":
+        case "history_opened":
+            return "session_ping";
+        case "upgrade_gate_viewed":
+            return "upgrade_gate_viewed";
+        default:
+            return "feature_intent";
+    }
+}
+
+/**
  * Core asynchronous non-blocking event dispatcher.
  * Uses keepalive: true so events complete even if the user closes or navigates.
  */
@@ -178,16 +201,17 @@ export async function trackEvent(
             } catch {}
         }
 
+        const referral = getReferralSource();
+        const mergedProperties = referral
+            ? { ...properties, _ref: { src: referral.src, sid: referral.sid, dt: referral.dt } }
+            : properties;
+
         const payload: TelemetryPayload = {
             shadowId,
             userId,
-            eventType: eventName.startsWith("gate_")
-                ? "upgrade_gate_viewed"
-                : eventName === "session_ping"
-                ? "session_ping"
-                : "feature_intent",
+            eventType: deriveEventType(eventName),
             eventName,
-            properties,
+            properties: mergedProperties,
             merchantProfile: resolvedMerchant,
             device: getDeviceInfo(),
             timestamp: new Date().toISOString(),
@@ -289,4 +313,120 @@ export function trackFeatureIntent(
         feature,
         ...details,
     });
+}
+
+/**
+ * ─────────────────────────────────────────────────────────────────────────────
+ * Authenticated / Pro behaviour.
+ *
+ * Guests were always tracked richly; paying customers were reduced to a document
+ * count, which is why "what is my Pro base actually doing" was unanswerable.
+ * These helpers close that gap with the same fidelity as guest tracking.
+ *
+ * Two distinct signals, deliberately kept apart:
+ *   trackProFeatureBlocked → touched a control the plan does not include (DESIRE)
+ *   trackProFeatureUsed    → actually used a paid feature (GETTING VALUE)
+ * Collapsing them makes it impossible to tell an unconverted prospect from a
+ * paying customer who is quietly not using what they bought.
+ * ─────────────────────────────────────────────────────────────────────────────
+ */
+
+export function trackProFeatureUsed(feature: string, details: Record<string, any> = {}) {
+    trackEvent("pro_feature_used", { feature, ...details });
+}
+
+export function trackProFeatureBlocked(feature: string, details: Record<string, any> = {}) {
+    trackEvent("pro_feature_blocked", { feature, ...details });
+}
+
+/**
+ * `variant` drives objection routing downstream: an export limit reads as a value
+ * objection, a logo gate as an identity objection, a history gate as loss aversion.
+ * Same offer, different first line.
+ */
+export function trackUpgradeGate(
+    variant: "export" | "logo" | "color" | "post_account" | "history" | string,
+    details: Record<string, any> = {},
+) {
+    trackEvent("upgrade_gate_viewed", { variant, ...details });
+}
+
+export function trackDocDrafted(docType: string, itemCount = 0) {
+    trackEvent("doc_drafted", { docType, itemCount });
+}
+
+export function trackHistoryOpened(resultCount: number) {
+    trackEvent("history_opened", { resultCount });
+}
+
+export function trackTemplateChanged(template: string) {
+    trackEvent("template_changed", { template });
+}
+
+export function trackShareChannel(channel: "whatsapp" | "status" | "copy" | "download" | "print" | string) {
+    trackEvent("share_channel_used", { channel });
+}
+
+/** Merchant pushed their own receipt to WhatsApp Status — a strong loyalty signal. */
+export function trackStatusShared(docType: string) {
+    trackEvent("status_shared", { docType });
+}
+
+export function trackPwaInstalled() {
+    trackEvent("pwa_installed", {});
+}
+
+export function trackAccountUpgraded(plan: string) {
+    trackEvent("account_upgraded", { plan });
+}
+
+export function trackPaymentFailed(reason?: string) {
+    trackEvent("payment_failed", { reason: reason ?? "unknown" });
+}
+
+const REFERRAL_KEY = "proofa_referral";
+
+/**
+ * Captures loop attribution (`?src=receipt&sid=...`) once, on first sight, and
+ * persists it. Write-once matters: if a later organic visit overwrote the source,
+ * the referral loop would always appear to have produced nothing.
+ *
+ * Never put a phone number, account number or buyer detail in the link — URLs leak
+ * through history, server logs and screenshots.
+ */
+export function captureReferralSource(): { src: string; sid: string; dt: string | null } | null {
+    if (typeof window === "undefined") return null;
+    try {
+        const url = new URL(window.location.href);
+        const src = url.searchParams.get("src");
+        const sid = url.searchParams.get("sid");
+        if (!src || !sid) return getReferralSource();
+
+        const record = { src, sid, dt: url.searchParams.get("dt"), at: Date.now() };
+        localStorage.setItem(REFERRAL_KEY, JSON.stringify(record));
+
+        // Strip the params so a shared or bookmarked URL does not re-attribute.
+        url.searchParams.delete("src");
+        url.searchParams.delete("sid");
+        url.searchParams.delete("dt");
+        window.history.replaceState({}, "", url.pathname + (url.search || "") + url.hash);
+
+        void trackEvent("referral_landing_viewed", { src, sid, dt: record.dt });
+        return { src: record.src, sid: record.sid, dt: record.dt };
+    } catch {
+        return null;
+    }
+}
+
+export function getReferralSource(): { src: string; sid: string; dt: string | null } | null {
+    if (typeof window === "undefined") return null;
+    try {
+        const raw = localStorage.getItem(REFERRAL_KEY);
+        if (!raw) return null;
+        const parsed = JSON.parse(raw);
+        if (!parsed?.src || !parsed?.sid) return null;
+        return { src: parsed.src, sid: parsed.sid, dt: parsed.dt ?? null };
+    } catch {
+        return null;
+    }
 }

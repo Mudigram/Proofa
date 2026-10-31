@@ -25,9 +25,14 @@ export const LogoUpload = ({ value, onChange, label = "Business Logo" }: LogoUpl
     const businessName = profile?.businessName || "Your Business";
 
     const handleClick = () => {
-        // Shadow tracking: log logo intent
-        import("@/lib/telemetry").then(({ trackFeatureIntent }) => {
+        // Shadow tracking: log logo intent & pro usage
+        import("@/lib/telemetry").then(({ trackFeatureIntent, trackProFeatureBlocked, trackProFeatureUsed }) => {
             trackFeatureIntent("logo_upload", { hasExistingLogo: Boolean(value) });
+            if (!isPro) {
+                trackProFeatureBlocked("logo_upload");
+            } else {
+                trackProFeatureUsed("logo_upload");
+            }
         }).catch(() => {});
 
         if (!gate("logo")) return;

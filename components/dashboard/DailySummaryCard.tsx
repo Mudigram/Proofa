@@ -9,6 +9,7 @@ import { captureElementAsImage } from "@/lib/ExportUtils";
 import { shareToWhatsApp } from "@/lib/ShareUtils";
 import { DashboardMetrics } from "@/lib/types";
 import { useAuth } from "@/context/AuthContext";
+import { trackStatusShared, trackShareChannel, getOrCreateShadowId } from "@/lib/telemetry";
 
 interface DailySummaryCardProps {
     metrics: DashboardMetrics;
@@ -34,21 +35,29 @@ export default function DailySummaryCard({ metrics }: DailySummaryCardProps) {
             const dataUrl = await captureElementAsImage(cardId);
             if (!dataUrl) return;
 
-            // `message` is not part of WhatsAppShareOptions —
-            // pass only the supported fields
-            await shareToWhatsApp({
+            const result = await shareToWhatsApp({
                 dataUrl,
                 docType: "sales summary",
                 filename: `Proofa-summary-${Date.now()}.png`,
+                shadowId: getOrCreateShadowId(),
             });
+
+            if (result === "shared") {
+                trackStatusShared("sales_summary");
+                trackShareChannel("whatsapp_status");
+            }
         } finally {
             setSharing(false);
         }
     };
 
     const handleTextShare = () => {
-        const text = `📊 *Proofa Daily Sales Summary*\n📅 ${today}\n🏢 Store: ${profile?.businessName ?? "My Business"}\n💰 *Total Revenue:* ${formatAmount(metrics.totalRevenue, metrics.currency)}\n📄 *Docs Issued:* ${metrics.totalDocs}\n📈 *Avg Doc Value:* ${formatAmount(metrics.avgDocValue, metrics.currency)}\n\nGenerated via Proofa Business (https://proofa.ng)`;
+        const shadowId = getOrCreateShadowId();
+        const refUrl = `https://proofa.ng?src=status&sid=${encodeURIComponent(shadowId)}&dt=summary`;
+        const text = `📊 *Proofa Daily Sales Summary*\n📅 ${today}\n🏢 Store: ${profile?.businessName ?? "My Business"}\n💰 *Total Revenue:* ${formatAmount(metrics.totalRevenue, metrics.currency)}\n📄 *Docs Issued:* ${metrics.totalDocs}\n📈 *Avg Doc Value:* ${formatAmount(metrics.avgDocValue, metrics.currency)}\n\nGenerated via Proofa Business (${refUrl})`;
         const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
+        trackStatusShared("sales_summary_text");
+        trackShareChannel("whatsapp_status_text");
         window.open(url, "_blank");
     };
 

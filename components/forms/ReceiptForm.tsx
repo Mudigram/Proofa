@@ -13,6 +13,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/components/ui/Toast";
 import { DatePicker } from "@/components/ui/DatePicker";
 import { Zap } from "lucide-react";
+import { trackDocDrafted } from "@/lib/telemetry";
 
 export default function ReceiptForm() {
     const searchParams = useSearchParams();
@@ -246,6 +247,7 @@ export default function ReceiptForm() {
         );
         setCurrentDocId(doc.id);
         setFormData(updatedData);
+        trackDocDrafted("receipt", (formData.items || []).length);
         showToast("Draft saved successfully!", "success");
     };
 

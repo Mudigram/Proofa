@@ -104,6 +104,16 @@ export async function POST(req: Request) {
             updates.contact_email = merchantProfile.contactEmail.trim();
         }
 
+        // Process referral attribution (write-once: set only when currently null)
+        const refData = properties?._ref || (eventName === "referral_landing_viewed" ? properties : null);
+        if (refData && !currentProfile.referred_by_shadow_id && (refData.sid || refData.referredBy)) {
+            updates.referred_by_shadow_id = String(refData.sid || refData.referredBy);
+            updates.referral_source = String(refData.src || "receipt");
+            if (refData.dt) {
+                updates.referral_landing = String(refData.dt);
+            }
+        }
+
         // Process doc exports
         if (eventName === "doc_exported") {
             const docType = String(properties.docType || "receipt").toLowerCase();

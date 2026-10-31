@@ -648,6 +648,16 @@ export default function AdminPage() {
                             Outreach & CRM
                         </button>
                     </div>
+
+                    <Link
+                        href="/admin/segments"
+                        title="Behavioural scoring, computed segments and de-duplicated target lists"
+                        className="inline-flex items-center gap-2 border border-[#EAEAEA] dark:border-[#222] bg-white dark:bg-[#141414] hover:bg-[#F7F6F3] dark:hover:bg-[#1F1F1F] px-3.5 py-2 rounded-md text-xs font-medium transition-colors"
+                    >
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#346538] dark:bg-[#86EFAC] inline-block" />
+                        Segments & Targeting
+                        <span aria-hidden>→</span>
+                    </Link>
                 </div>
 
                 {/* ── BENTO TELEMETRY GRID ───────────────────────────────────── */}

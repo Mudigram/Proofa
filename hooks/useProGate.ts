@@ -58,9 +58,10 @@ export function useProGate(): ProGateResult {
 
             if (!wasDismissed) {
                 setActiveVariant(variant);
-                // Shadow tracking: log upgrade gate encounter
-                import("@/lib/telemetry").then(({ trackEvent }) => {
-                    trackEvent("upgrade_gate_viewed", { variant });
+                // Shadow tracking: log upgrade gate encounter & blocked pro feature
+                import("@/lib/telemetry").then(({ trackUpgradeGate, trackProFeatureBlocked }) => {
+                    trackUpgradeGate(variant);
+                    trackProFeatureBlocked(variant);
                 }).catch(() => {});
             }
 

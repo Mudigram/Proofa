@@ -13,6 +13,7 @@ import { useAuth } from "@/context/AuthContext";
 import { BankSelector } from "@/components/ui/BankSelector";
 import { useToast } from "@/components/ui/Toast";
 import { Zap } from "lucide-react";
+import { trackDocDrafted } from "@/lib/telemetry";
 
 export default function OrderForm() {
     const searchParams = useSearchParams();
@@ -239,6 +240,7 @@ export default function OrderForm() {
         );
         setCurrentDocId(doc.id);
         setFormData(updatedData);
+        trackDocDrafted("order", (formData.items || []).length);
         showToast("Order Summary Draft saved!", "success");
     };
 

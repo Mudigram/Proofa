@@ -15,6 +15,7 @@ import { useAuth } from "@/context/AuthContext";
 import { fetchCloudHistory, deleteCloudDocument } from "@/lib/dashboard";
 import { Crown, Zap } from "lucide-react";
 import { BusinessAscensionCard } from "@/components/ui/BusinessAscensionCard";
+import { trackHistoryOpened } from "@/lib/telemetry";
 
 export default function HistoryPage() {
     const [history, setHistory] = useState<SavedDocument[]>([]);
@@ -29,6 +30,7 @@ export default function HistoryPage() {
         const localDocs = getHistory();
         if (!user?.id) {
             setHistory(localDocs);
+            trackHistoryOpened(localDocs.length);
             setIsLoading(false);
             return;
         }
@@ -44,8 +46,10 @@ export default function HistoryPage() {
                 (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
             );
             setHistory(merged);
+            trackHistoryOpened(merged.length);
         } catch (_) {
             setHistory(localDocs);
+            trackHistoryOpened(localDocs.length);
         } finally {
             setIsLoading(false);
         }

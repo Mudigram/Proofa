@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Download, X, Share, PlusSquare } from "lucide-react";
 import Image from "next/image";
 import { triggerHaptic } from "@/lib/haptics";
+import { trackPwaInstalled } from "@/lib/telemetry";
 
 export default function InstallPwaBanner() {
     const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
@@ -44,8 +45,17 @@ export default function InstallPwaBanner() {
             setShowBanner(true);
         };
 
+        const handleAppInstalled = () => {
+            trackPwaInstalled();
+            setShowBanner(false);
+        };
+
         window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
-        return () => window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+        window.addEventListener("appinstalled", handleAppInstalled);
+        return () => {
+            window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+            window.removeEventListener("appinstalled", handleAppInstalled);
+        };
     }, []);
 
     const handleInstallClick = async () => {
@@ -61,6 +71,7 @@ export default function InstallPwaBanner() {
         const { outcome } = await deferredPrompt.userChoice;
         if (outcome === "accepted") {
             triggerHaptic("success");
+            trackPwaInstalled();
             setShowBanner(false);
         }
         setDeferredPrompt(null);

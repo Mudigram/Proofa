@@ -78,6 +78,13 @@ export interface ShareOptions {
      * before it — preserving iOS gesture context so files actually go through.
      */
     prebaked?: File | null;
+    /**
+     * Merchant shadowId for attribution loop. When present, appends
+     * ?src=receipt&sid=<shadowId>&dt=<docType> to the share URL.
+     */
+    shadowId?: string | null;
+    /** Override default message body */
+    customText?: string;
 }
 
 /**
@@ -123,12 +130,18 @@ const attemptShare = async (opts: ShareOptions, title: string, text: string): Pr
     return "downloaded";
 };
 
-export const shareToWhatsApp = (opts: ShareOptions): Promise<ShareResult> =>
-    attemptShare(
+export const shareToWhatsApp = (opts: ShareOptions): Promise<ShareResult> => {
+    const referralQuery = opts.shadowId
+        ? `?src=receipt&sid=${encodeURIComponent(opts.shadowId)}&dt=${encodeURIComponent(opts.docType)}`
+        : "";
+    const defaultText = `Here is your ${opts.docType} 🧾\n_Sent via Proofa — https://proofa.ng${referralQuery}_`;
+
+    return attemptShare(
         opts,
         `Proofa ${opts.docType}`,
-        `Here is your ${opts.docType} 🧾\n_Sent via Proofa — proofa.app_`
+        opts.customText || defaultText
     );
+};
 
 export const shareViaWebShare = (opts: ShareOptions): Promise<ShareResult> =>
     attemptShare(

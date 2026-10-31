@@ -14,6 +14,7 @@ import { formatCurrency, formatDate } from "@/components/templates/TemplateUtils
 import { useToast } from "@/components/ui/Toast";
 import { DatePicker } from "@/components/ui/DatePicker";
 import { Zap } from "lucide-react";
+import { trackDocDrafted } from "@/lib/telemetry";
 
 export default function InvoiceForm() {
     const searchParams = useSearchParams();
@@ -252,6 +253,7 @@ export default function InvoiceForm() {
         );
         setCurrentDocId(doc.id);
         setFormData(updatedData);
+        trackDocDrafted("invoice", (formData.items || []).length);
         showToast("Invoice Draft saved!", "success");
     };
 
